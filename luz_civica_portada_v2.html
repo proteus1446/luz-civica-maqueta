@@ -567,10 +567,10 @@
     selComuna.addEventListener('change', function(){
       selAnio.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===2025?'selected':''}>${y}</option>`).join('');
       selAnio.disabled = false;
-      irAlPanel(); // comuna + año (2025 por defecto) ya alcanzan para ir directo al panel
+      // navegación automática desactivada: región/comuna/año ya no disparan
+      // la ida al panel por sí solos, hay que usar el botón de la flecha
     });
 
-    selAnio.addEventListener('change', irAlPanel);
     ctaIr.addEventListener('click', irAlPanel);
   })();
 </script>
