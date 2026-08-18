@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel comunal v3 — tarjetas</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+  :root{
+    --royal:#0F2A5F;--royal-mid:#1A4A9C;--royal-light:#1D4ED8;
+    --ink:#1D1D1F;--muted:#6B7280;--muted-soft:#9AA3B0;
+    --green:#166534;--green-bg:rgba(22,101,52,.10);
+    --amber:#92400E;--amber-bg:rgba(146,64,14,.08);
+    --red:#991B1B;
+    --glass:rgba(255,255,255,.65);--glass-border:rgba(255,255,255,.90);
+    --line:rgba(13,46,107,.07);
+    --tint:rgba(13,46,107,.06);--tint-strong:rgba(13,46,107,.10);
+    --shadow-sm:0 1px 3px rgba(13,46,107,.05),0 4px 16px rgba(13,46,107,.07);
+    --shadow-md:0 4px 16px rgba(13,46,107,.10),0 16px 40px rgba(13,46,107,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    background:linear-gradient(150deg,#E4EEF9 0%,#EBF2FC 40%,#E8F3F1 100%);
+    background-attachment:fixed;min-height:100vh;color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+    max-width:1280px;margin:0 auto;padding:0 50px 50px}
+  @media(max-width:960px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:640px){
+    .grid{grid-template-columns:1fr;gap:16px;padding:0 20px 20px}
+  }
+
+  .card{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--glass-border);border-radius:20px;
+    padding:24px;box-shadow:var(--shadow-sm);text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;min-height:400px;position:relative;overflow:hidden;
+    transition:transform .18s ease,box-shadow .18s ease}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .decor{position:absolute;right:-16px;bottom:-16px;z-index:0;pointer-events:none}
+  .card>*:not(.decor){position:relative;z-index:1}
+
+  /* header con ícono en contenedor + número + flecha */
+  .chead{display:flex;align-items:flex-start;gap:13px;margin-bottom:18px}
+  .cico{width:44px;height:44px;border-radius:13px;
+    background:linear-gradient(135deg,var(--a1,var(--tint)),var(--a2,var(--tint)));
+    display:flex;align-items:center;justify-content:center;flex:none}
+  .cico i{font-size:22px;color:var(--ai,var(--royal-mid))}
+  .chead .ct{flex:1;min-width:0}
+  .chead .cnum{font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--muted-soft)}
+  .chead .cname{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.015em;line-height:1.2}
+  .chead .cq{font-size:12px;color:var(--muted);margin-top:3px}
+
+  /* hero + chip */
+  .hero{margin-bottom:2px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .hero .n{font-size:42px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1}
+  .hero .n.pos{color:var(--green)}
+  .hero .n.neg{color:var(--red)}
+  .hero .u{font-size:15px;font-weight:600;color:var(--muted)}
+  .hero-label{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    padding:4px 11px;border-radius:999px}
+  .chip.good{background:var(--green-bg);color:var(--green)}
+  .chip.bad{background:rgba(153,27,27,.08);color:var(--red)}
+  .chip.warn{background:var(--amber-bg);color:var(--amber)}
+  .chip.neutral{background:var(--tint);color:var(--royal-mid)}
+  .chip i{font-size:12px}
+
+  /* cuerpo flexible */
+  .cbody{flex:1;display:flex;flex-direction:column;gap:14px}
+
+  /* barra composición */
+  .comp .pl,.rsh .pl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin-bottom:8px}
+  .comp .bar,.rsh .bar{display:flex;height:9px;border-radius:99px;overflow:hidden;gap:2px;margin-bottom:8px}
+  .comp .bar i,.rsh .bar i{height:100%;border-radius:99px}
+  .comp .legend,.rsh .legend{display:flex;flex-direction:column;gap:5px}
+  .comp .legend .row,.rsh .legend .row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px}
+  .comp .legend .nm,.rsh .legend .nm{display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .comp .legend .nm i,.rsh .legend .nm i{width:7px;height:7px;border-radius:50%;flex:none}
+  .comp .legend .val,.rsh .legend .val{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* escala de comparación entre pares */
+  .peer{background:var(--tint);border-radius:12px;padding:12px 14px}
+  .peer .pl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin-bottom:11px}
+  .peer .scale{position:relative;height:30px}
+  .peer .scale .line{position:absolute;top:14px;left:0;right:0;height:2px;background:rgba(13,46,107,.12)}
+  .peer .scale .band{position:absolute;top:7px;height:16px;border-radius:6px;
+    background:rgba(37,99,235,.14);border:1px solid rgba(37,99,235,.30)}
+  .peer .scale .you{position:absolute;top:3px;width:3px;height:24px;background:var(--royal);border-radius:2px}
+  .peer .scale .you::after{content:attr(data-label);position:absolute;top:-14px;left:50%;
+    transform:translateX(-50%);font-size:9px;font-weight:700;color:var(--royal);white-space:nowrap}
+
+  /* comparación de dos puntos — mismo lenguaje visual que .peer/.legal */
+  .twopoint{background:var(--tint);border-radius:12px;padding:12px 14px}
+  .twopoint .pl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin-bottom:11px}
+  .twopoint .row{display:flex;align-items:center;gap:8px}
+  .twopoint .yr{text-align:center;flex:none}
+  .twopoint .yr .yv{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+  .twopoint .yr .yl{font-size:9px;color:var(--muted-soft);margin-top:2px}
+  .twopoint .yr.now .yv{color:var(--ink);font-size:14px}
+  .twopoint .track{flex:1;height:2px;background:rgba(13,46,107,.12);min-width:10px}
+  .twopoint .dir{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;flex:none;white-space:nowrap}
+  .twopoint .dir.down{color:var(--red)}
+  .twopoint .dir.up{color:var(--green)}
+  .twopoint .dir i{font-size:14px}
+
+  /* alerta legal, redacción cauta */
+  .legal{background:var(--amber-bg);border:1px solid rgba(146,64,14,.16);
+    border-radius:12px;padding:11px 13px}
+  .legal .lt{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .legal .tag{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--amber);background:rgba(146,64,14,.12);padding:3px 8px;border-radius:5px}
+  .legal .ln{font-size:17px;font-weight:800;color:var(--amber);line-height:1}
+  .legal .ld{font-size:10.5px;color:var(--muted);line-height:1.45}
+
+  /* fila de sub-stats con separadores (como la referencia) */
+  .substats{display:flex;align-items:flex-start;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
+  .substats .ss{flex:1;min-width:0;padding:0 12px;border-left:1px solid var(--line);
+    display:flex;flex-direction:column;justify-content:flex-start}
+  .substats .ss:first-child{padding-left:0;border-left:0}
+  .substats .ss .sl{font-size:11px;color:var(--muted);font-weight:600;line-height:1.35;
+    margin-bottom:6px;min-height:28px}
+  .substats .ss .sv{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;line-height:1.2;word-break:break-word}
+
+  .foot{display:flex;justify-content:flex-end;margin-top:14px}
+  .go{font-size:11.5px;font-weight:700;color:var(--royal-mid);display:flex;align-items:center;gap:4px}
+  .card:hover .go{gap:7px}
+  .go i{font-size:12px;transition:transform .18s ease}
+
+  /* donut SVG para Dotación */
+  .donut-row{display:flex;align-items:center;gap:18px}
+  .donut{flex:none;position:relative;width:104px;height:104px}
+  .donut .dc{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center}
+  .donut .dc .dn{font-size:17px;font-weight:800;color:var(--ink);line-height:1}
+  .donut .dc .dl{font-size:9px;color:var(--muted-soft);font-weight:600}
+  /* barra superior — copiada exacta de luzcivica.cl (.barra-superior real, sin borde verde) */
+  .topbar{
+    background:rgba(255,255,255,.34);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    position:sticky;top:0;z-index:1000;
+    border-bottom:1px solid rgba(255,255,255,.72);
+  }
+  .topbar-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo-mark{width:40px;height:40px;border-radius:14px;
+    background:linear-gradient(135deg,#0f172a,#0369a1);
+    display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:0 10px 24px rgba(3,105,161,.18)}
+  .logo-text{font-size:22px;font-weight:900;color:var(--ink);letter-spacing:-.02em}
+
+  /* selectores — mismo componente glass que ya usas en Administración/Salud/etc */
+  .wrap-head{max-width:1280px;margin:0 auto;padding:32px 50px 0}
+  @media(max-width:640px){.wrap-head{padding:24px 20px 0}}
+  .selectors{display:flex;gap:10px;flex-wrap:wrap;padding:0 0 22px;align-items:flex-end}
+  .sel-group{display:flex;flex-direction:column;gap:4px}
+  .sel-group label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-soft);font-weight:700}
+  .sel-group select{
+    background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--glass-border);border-radius:10px;padding:9px 34px 9px 14px;
+    cursor:pointer;box-shadow:var(--shadow-sm);font-size:14px;font-weight:600;
+    color:var(--ink);appearance:none;min-width:170px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+  }
+  .sel-group select:hover{box-shadow:var(--shadow-md)}
+
+  /* header Panel Comunal */
+  .phead{padding-bottom:22px}
+  .p-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--royal-mid);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .p-eyebrow::before{content:'';width:14px;height:2px;background:var(--royal-mid);
+    border-radius:2px;display:inline-block}
+  .phead h1{font-size:clamp(26px,4vw,42px);font-weight:700;color:var(--royal);
+    letter-spacing:-.03em;line-height:1.08}
+  .phead h1 .c{color:var(--royal-light);font-weight:400}
+  .phead .sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;
+    color:var(--muted);font-size:13.5px}
+  .ppill{display:inline-flex;align-items:center;gap:5px;font-size:11px;
+    font-weight:600;padding:4px 10px;border-radius:6px;background:rgba(13,46,107,.08);color:var(--royal-mid)}
+
+  /* franja Alcalde/sa — sin tarjeta, bajo el título */
+  .abanda{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--glass-border);border-radius:18px;padding:18px 24px;
+    box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+    margin-bottom:22px}
+  .ab-who{display:flex;align-items:center;gap:14px;flex:1;min-width:230px}
+  .ab-ava{width:52px;height:52px;border-radius:50%;flex:none;
+    background:linear-gradient(135deg,var(--royal),var(--royal-light));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:16px;letter-spacing:-.02em}
+  .ab-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .ab-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;line-height:1.25;margin-top:3px}
+  .ab-grade-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+    margin-top:6px;
+    padding:2px 9px;border-radius:999px;background:rgba(13,46,107,.08);color:var(--royal-mid)}
+  .ab-stats{display:flex;gap:26px;flex-wrap:wrap}
+  .ab-stat{min-width:120px}
+  .ab-stat .al{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin-bottom:8px}
+  .ab-stat .av{font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .ab-stat .av.small{font-size:14px}
+
+  /* cierre global — resumen del resumen, después de las 6 tarjetas */
+  .gclose{background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);
+    border-radius:16px;padding:20px 26px;margin:26px auto 0;max-width:1180px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    box-shadow:0 16px 44px -10px rgba(13,46,107,.35)}
+  @media(max-width:640px){.gclose{margin:20px 20px 0}}
+  .gclose i{font-size:20px;color:#fff;flex:none}
+  .gclose .gc-text{color:rgba(255,255,255,.92);font-size:13.5px;font-weight:600;line-height:1.5;flex:1;min-width:240px}
+  .gclose .gc-text b{color:#fff;font-weight:800}
+
+  /* franja Remuneraciones — mismo ancho/estilo que .abanda (Alcalde), propio destino */
+  .rbanda{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--glass-border);border-radius:18px;padding:18px 24px;
+    box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+    margin:22px auto 0;max-width:1180px;
+    text-decoration:none;color:inherit;
+    transition:transform .18s ease,box-shadow .18s ease}
+  .rbanda:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  @media(max-width:640px){.rbanda{margin:18px 20px 0}}
+  .rb-who{display:flex;align-items:center;gap:14px;flex:1;min-width:230px}
+  .rb-ava{width:52px;height:52px;border-radius:16px;flex:none;
+    background:linear-gradient(135deg,#0E7490,#22A6C9);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px}
+  .rb-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .rb-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;line-height:1.25;margin-top:3px}
+  .rb-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+    margin-top:6px;padding:2px 9px;border-radius:999px;background:rgba(14,116,144,.10);color:#0E7490}
+  .rb-stats{display:flex;gap:26px;flex-wrap:wrap}
+  .rb-stat{min-width:120px}
+  .rb-stat .al{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin-bottom:8px}
+  .rb-stat .av{font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .rbanda .go{flex:none}
+</style>
+</head>
+<body>
+<header class="topbar" id="top-panel">
+  <div class="topbar-inner">
+    <button type="button" onclick="location.href='luz_civica_portada_v2.html'" aria-label="Volver al inicio de Luz Cívica" style="display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;">
+    <svg width="40" height="24" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+      <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+        <line x1="414" y1="278" x2="414" y2="242"/>
+        <line x1="440" y1="278" x2="440" y2="213"/>
+        <line x1="466" y1="278" x2="466" y2="250"/>
+        <line x1="492" y1="278" x2="492" y2="197"/>
+      </g>
+      <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </g>
+    </svg>
+    <span style="font-size:18px;font-weight:800;letter-spacing:.01em;color:#0F2A5F;">LUZ CÍVICA</span>
+  </button>
+  <a href="explorador-comunal.html" style="font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;">Explorador de datos →</a>
+  </div>
+</header>
+<div class="wrap-head">
+  <div class="selectors">
+    <div class="sel-group"><label>Región</label><select id="sel-region"><option selected>Metropolitana</option></select></div>
+    <div class="sel-group"><label>Comuna</label>
+      <select id="sel-comuna">
+        <option value="PROVIDENCIA">Providencia</option>
+        <option value="ÑUÑOA">Ñuñoa</option>
+        <option value="MAIPU">Maipú</option>
+      </select>
+    </div>
+    <div class="sel-group"><label>Año</label><select id="sel-anio"></select></div>
+  </div>
+  <div class="phead">
+    <div class="p-eyebrow">Panel Municipal</div>
+    <h1>Panel Comunal: <span class="c" id="hdr-comuna">Providencia</span></h1>
+    <div class="sub">
+      <span class="ppill"><i class="ti ti-map-pin"></i>Metropolitana</span>
+      <span class="ppill"><i class="ti ti-calendar"></i>Año <span id="hdr-anio">2024</span></span>
+    </div>
+  </div>
+
+  <div class="abanda" id="abanda-block">
+    <div class="ab-who">
+      <div class="ab-ava" id="ab-ava">—</div>
+      <div>
+        <div class="ab-role">Alcalde · <span id="ab-anio">2024</span></div>
+        <div class="ab-name" id="ab-name">—</div>
+        <div class="ab-grade-badge" id="ab-grade-badge" style="display:none;"><i class="ti ti-star-filled"></i><span id="ab-grade-text"></span></div>
+      </div>
+    </div>
+    <div class="ab-stats" id="ab-stats">
+      <div class="ab-stat">
+        <div class="al">Remuneración líquida (mediana)</div>
+        <div class="av" id="ab-mediana">—</div>
+      </div>
+      <div class="ab-stat">
+        <div class="al">Rango mensual</div>
+        <div class="av small" id="ab-rango">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="grid">
+
+<!-- 01 PERFIL COMUNAL -->
+<a class="card" href="maqueta_perfil.html" style="--a1:#DCEAFB;--a2:#B8D4F5;--ai:#1A4A9C">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-map-pin"></i></div>
+    <div class="ct">
+      <div class="cnum">01</div>
+      <div class="cname">Perfil comunal</div>
+      <div class="cq">¿Cómo es el territorio y la población?</div>
+    </div>
+  </div>
+  <div class="hero"><span class="n" id="c1-hero">—</span></div>
+  <div class="hero-label">personas viven en la comuna (Censo/INE)</div>
+  <div class="chips">
+    <span class="chip neutral" id="c1-chip"><i class="ti ti-building-community"></i><span id="c1-chip-text">—</span></span>
+  </div>
+  <div class="cbody"></div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Densidad</div><div class="sv" id="c1-densidad">—</div></div>
+    <div class="ss"><div class="sl">Áreas verdes/hab</div><div class="sv" id="c1-areasverdes">—</div></div>
+    <div class="ss"><div class="sl">Cementerios</div><div class="sv" id="c1-cementerio">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Ver perfil comunal <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+<!-- 02 ADMINISTRACIÓN -->
+<a class="card" href="maqueta_administracion.html" style="--a1:#DDE4FB;--a2:#B0C4F0;--ai:#0F2A5F">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-building-bank"></i></div>
+    <div class="ct">
+      <div class="cnum">02</div>
+      <div class="cname">Administración</div>
+      <div class="cq">¿Cuál es la situación presupuestaria?</div>
+    </div>
+  </div>
+  <div class="hero"><span class="n" id="c2-hero">—</span></div>
+  <div class="hero-label" id="c2-herolabel">—</div>
+  <div class="chips">
+    <span class="chip" id="c2-chip1"><i class="ti ti-circle-check"></i><span id="c2-chip1-text">—</span></span>
+    <span class="chip" id="c2-chip2"><i class="ti ti-arrow-down-right"></i><span id="c2-chip2-text">—</span></span>
+  </div>
+  <div class="cbody"></div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Dependencia FCM</div><div class="sv" id="c2-fcm">—</div></div>
+    <div class="ss"><div class="sl">Deuda arrastre pagada</div><div class="sv" id="c2-deuda">—</div></div>
+    <div class="ss"><div class="sl">Gasto por habitante</div><div class="sv" id="c2-gastohab">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Explorar presupuesto <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+<!-- 03 EDUCACIÓN -->
+<a class="card" href="maqueta_educacion.html" style="--a1:#E8E1FB;--a2:#D0C2F5;--ai:#5B3FA0">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-school"></i></div>
+    <div class="ct">
+      <div class="cnum">03</div>
+      <div class="cname">Educación</div>
+      <div class="cq">¿Cuál es la situación presupuestaria de educación?</div>
+    </div>
+  </div>
+  <div class="hero"><span class="n" id="c3-hero">—</span></div>
+  <div class="hero-label" id="c3-herolabel">—</div>
+  <div class="chips">
+    <span class="chip" id="c3-chip1"><i class="ti ti-circle-check"></i><span id="c3-chip1-text">—</span></span>
+    <span class="chip" id="c3-chip2"><i class="ti ti-arrow-up-right"></i><span id="c3-chip2-text">—</span></span>
+    <span class="chip neutral" id="c3-chip3" style="display:none;"><i class="ti ti-building"></i><span id="c3-chip3-text">—</span></span>
+  </div>
+  <div class="cbody"></div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Cobertura municipal</div><div class="sv" id="c3-cobertura">—</div></div>
+    <div class="ss"><div class="sl">Gasto/alumno mes</div><div class="sv" id="c3-gastoalu">—</div></div>
+    <div class="ss"><div class="sl">Alumnos por docente</div><div class="sv" id="c3-aludoc">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Explorar educación <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+<!-- 04 SALUD -->
+<a class="card" href="maqueta_salud.html" style="--a1:#DDF3EE;--a2:#B7E6DA;--ai:#0F7A62">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-heartbeat"></i></div>
+    <div class="ct">
+      <div class="cnum">04</div>
+      <div class="cname">Salud</div>
+      <div class="cq">¿Cuál es la situación presupuestaria de salud?</div>
+    </div>
+  </div>
+  <div class="hero"><span class="n" id="c4-hero">—</span></div>
+  <div class="hero-label" id="c4-herolabel">—</div>
+  <div class="chips">
+    <span class="chip" id="c4-chip1"><i class="ti ti-circle-x"></i><span id="c4-chip1-text">—</span></span>
+    <span class="chip" id="c4-chip2"><i class="ti ti-arrow-down-right"></i><span id="c4-chip2-text">—</span></span>
+  </div>
+  <div class="cbody"></div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Médicos/1.000 inscritos</div><div class="sv" id="c4-medicos">—</div></div>
+    <div class="ss"><div class="sl">Inscritos FONASA</div><div class="sv" id="c4-inscritos">—</div></div>
+    <div class="ss"><div class="sl">Gasto por inscrito</div><div class="sv" id="c4-gastoinsc">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Explorar salud <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+<!-- 05 DOTACIÓN -->
+<a class="card" href="maqueta_dotacion.html" style="--a1:#DDF3FB;--a2:#B8E6F5;--ai:#0E7490">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-id-badge-2"></i></div>
+    <div class="ct">
+      <div class="cnum">05</div>
+      <div class="cname">Dotación municipal</div>
+      <div class="cq">¿Cuántas personas trabajan para la comuna?</div>
+    </div>
+  </div>
+  <div class="cbody">
+    <div class="donut-row">
+      <div class="donut">
+        <svg viewBox="0 0 42 42" width="104" height="104">
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="rgba(13,46,107,.08)" stroke-width="5"/>
+          <circle id="donut-muni" cx="21" cy="21" r="15.9" fill="none" stroke="var(--royal)" stroke-width="5" stroke-linecap="round"/>
+          <circle id="donut-edu" cx="21" cy="21" r="15.9" fill="none" stroke="var(--royal-light)" stroke-width="5" stroke-linecap="round"/>
+          <circle id="donut-sal" cx="21" cy="21" r="15.9" fill="none" stroke="var(--muted-soft)" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <div class="dc"><div class="dn" id="c5-total">—</div><div class="dl">total</div></div>
+      </div>
+      <div class="comp" style="flex:1">
+        <div class="legend">
+          <div class="row"><span class="nm"><i style="background:var(--royal)"></i>Municipal</span><span class="val" id="c5-muni">—</span></div>
+          <div class="row"><span class="nm"><i style="background:var(--royal-light)"></i>Educación</span><span class="val" id="c5-edu">—</span></div>
+          <div class="row"><span class="nm"><i style="background:var(--muted-soft)"></i>Salud</span><span class="val" id="c5-sal">—</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="legal">
+      <div class="lt"><span class="tag">Solo área municipal</span><span class="ln" id="c5-lim">—</span></div>
+      <div class="ld" id="c5-limtext">—</div>
+    </div>
+  </div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Gasto en personal</div><div class="sv" id="c5-gastopersonal">—</div></div>
+    <div class="ss"><div class="sl">Personal de planta</div><div class="sv" id="c5-plantapct">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Ver personal municipal <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+<!-- 06 SOCIAL -->
+<a class="card" href="maqueta_social.html" style="--a1:#FBE9DD;--a2:#F5CBA8;--ai:#B5651C">
+  <div class="chead">
+    <div class="cico"><i class="ti ti-users-group"></i></div>
+    <div class="ct">
+      <div class="cnum">06</div>
+      <div class="cname">Social</div>
+      <div class="cq">¿Cuál es el contexto socioeconómico?</div>
+    </div>
+  </div>
+  <div class="hero"><span class="n" id="c6-hero">—<span class="u">%</span></span></div>
+  <div class="hero-label" id="c6-herolabel">—</div>
+  <div class="cbody">
+    <div class="rsh">
+      <div class="pl" id="c6-hogares-label">—</div>
+      <div class="bar" id="c6-bar"></div>
+      <div class="legend" id="c6-legend"></div>
+    </div>
+  </div>
+  <div class="substats">
+    <div class="ss"><div class="sl">Asistencia social/hab</div><div class="sv" id="c6-asistencia">—</div></div>
+    <div class="ss"><div class="sl">Personas en RSH</div><div class="sv" id="c6-rshnp">—</div></div>
+  </div>
+  <div class="foot"><div class="go">Ver indicadores sociales <i class="ti ti-arrow-right"></i></div></div>
+</a>
+
+</div>
+
+<a class="rbanda" href="remuneraciones.html" id="rbanda-block">
+  <div class="rb-who">
+    <div class="rb-ava"><i class="ti ti-cash"></i></div>
+    <div>
+      <div class="rb-role">Análisis de remuneraciones</div>
+      <div class="rb-name">¿Gana cada funcionario lo esperado para su cargo?</div>
+      <div class="rb-badge" id="rb-badge"><i class="ti ti-alert-triangle"></i><span id="rb-badge-text">—</span></div>
+    </div>
+  </div>
+  <div class="rb-stats" id="rb-stats">
+    <div class="rb-stat">
+      <div class="al">Funcionarios analizados</div>
+      <div class="av" id="rb-funcionarios">—</div>
+    </div>
+    <div class="rb-stat">
+      <div class="al">Comparación</div>
+      <div class="av" id="rb-comparacion">Por cargo, grado y vínculo</div>
+    </div>
+  </div>
+  <div class="go">Ver análisis <i class="ti ti-arrow-right"></i></div>
+</a>
+
+<div class="gclose">
+  <i class="ti ti-report-analytics"></i>
+  <div class="gc-text" id="gc-text">—</div>
+</div>
+<script>
+const DATA = {"PROVIDENCIA": {"2016": {"poblacion": 149165, "perfil": {"densidad": 10654.64, "areas_verdes_hab": 5.12, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 15283802.26, "delta_pct": -14.258, "gasto_hab": 404.709}, "educacion": {"deficit": -897308, "delta_pct": -253.576, "admin_tipo": "Corporación", "cobertura": 74.89, "gasto_alumno_mensual": 149.855, "alumnos_docente": 21.202}, "salud": {"deficit": -529683, "delta_pct": 19.548, "medicos_1000": 0.73, "inscritos_fonasa": 50699, "gasto_inscrito": 191.97}, "dotacion": {"total": 2564, "municipal": 999, "educacion": 994, "salud": 571, "gasto_personal": 48599159, "planta_pct": 38.222, "lim40": 188.41}, "social": {"casen_pct": 3.05, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 2.717, "rshnp": null}, "alcalde": null, "remuneraciones": null}, "2017": {"poblacion": 150742, "perfil": {"densidad": 10767.29, "areas_verdes_hab": 5.06, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 19007957.25, "delta_pct": 24.367, "gasto_hab": 400.226}, "educacion": {"deficit": -237557, "delta_pct": 73.526, "admin_tipo": "Corporación", "cobertura": 76.79, "gasto_alumno_mensual": 153.544, "alumnos_docente": 21.408}, "salud": {"deficit": 293746, "delta_pct": 155.457, "medicos_1000": 0.886, "inscritos_fonasa": 51906, "gasto_inscrito": 197.77}, "dotacion": {"total": 3006, "municipal": 1350, "educacion": 1096, "salud": 560, "gasto_personal": 50322532, "planta_pct": 32.069, "lim40": 197.05}, "social": {"casen_pct": 0.74, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 2.032, "rshnp": null}, "alcalde": null, "remuneraciones": null}, "2018": {"poblacion": 152268, "perfil": {"densidad": 10876.29, "areas_verdes_hab": 5.02, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 23169098.03, "delta_pct": 21.892, "gasto_hab": 455.955}, "educacion": {"deficit": 30781, "delta_pct": 112.957, "admin_tipo": "Corporación", "cobertura": 77.31, "gasto_alumno_mensual": 168.081, "alumnos_docente": 21.333}, "salud": {"deficit": 15328, "delta_pct": -94.782, "medicos_1000": 0.921, "inscritos_fonasa": 53189, "gasto_inscrito": 209.12}, "dotacion": {"total": 2603, "municipal": 1044, "educacion": 1076, "salud": 483, "gasto_personal": 52412676, "planta_pct": 37.073, "lim40": 209.98}, "social": {"casen_pct": 0.43, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 2.202, "rshnp": null}, "alcalde": null, "remuneraciones": null}, "2019": {"poblacion": 154446, "perfil": {"densidad": 11031.86, "areas_verdes_hab": 4.95, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 22795339.04, "delta_pct": -1.613, "gasto_hab": 498.389}, "educacion": {"deficit": 186343, "delta_pct": 505.383, "admin_tipo": "Corporación", "cobertura": 70.38, "gasto_alumno_mensual": 175.616, "alumnos_docente": 20.391}, "salud": {"deficit": 163202, "delta_pct": 964.731, "medicos_1000": 0.851, "inscritos_fonasa": 59908, "gasto_inscrito": 197.74}, "dotacion": {"total": 2686, "municipal": 1099, "educacion": 1097, "salud": 490, "gasto_personal": 55699140, "planta_pct": 46.984, "lim40": 82.25}, "social": {"casen_pct": 0.43, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 3.534, "rshnp": null}, "alcalde": null, "remuneraciones": null}, "2020": {"poblacion": 157749, "perfil": {"densidad": 11267.79, "areas_verdes_hab": 4.82, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 27010763.18, "delta_pct": 18.492, "gasto_hab": 422.007}, "educacion": {"deficit": 773572, "delta_pct": 315.133, "admin_tipo": "Corporación", "cobertura": 71.3, "gasto_alumno_mensual": 176.909, "alumnos_docente": 22.404}, "salud": {"deficit": 262364, "delta_pct": 60.76, "medicos_1000": 0.908, "inscritos_fonasa": 60565, "gasto_inscrito": 230.06}, "dotacion": {"total": 2981, "municipal": 1383, "educacion": 1045, "salud": 553, "gasto_personal": 55276473, "planta_pct": 42.033, "lim40": 74.4}, "social": {"casen_pct": 0.43, "vulnerabilidad_pct": 37.532, "hogares": {"total": 18848, "vulnerables": 7074, "medios": 3945, "medios_altos": 7820}, "asistencia_hab": 2.826, "rshnp": 34223}, "alcalde": null, "remuneraciones": null}, "2021": {"poblacion": 160043, "perfil": {"densidad": 11431.64, "areas_verdes_hab": 4.75, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 35426909.22, "delta_pct": 31.158, "gasto_hab": 428.687}, "educacion": {"deficit": 1403233, "delta_pct": 81.397, "admin_tipo": "Corporación", "cobertura": 72.45, "gasto_alumno_mensual": 205.292, "alumnos_docente": 21.977}, "salud": {"deficit": 1484426, "delta_pct": 465.789, "medicos_1000": 0.978, "inscritos_fonasa": 62400, "gasto_inscrito": 258.42}, "dotacion": {"total": 3015, "municipal": 1297, "educacion": 1105, "salud": 613, "gasto_personal": 59267731, "planta_pct": 38.541, "lim40": 71.36}, "social": {"casen_pct": 3.64, "vulnerabilidad_pct": 38.363, "hogares": {"total": 38683, "vulnerables": 14840, "medios": 10953, "medios_altos": 37981}, "asistencia_hab": 3.508, "rshnp": 63774}, "alcalde": null, "remuneraciones": null}, "2022": {"poblacion": 161568, "perfil": {"densidad": 11540.57, "areas_verdes_hab": 4.71, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 38432205.98, "delta_pct": 8.483, "gasto_hab": 517.668}, "educacion": {"deficit": 487059, "delta_pct": -65.29, "admin_tipo": "Corporación", "cobertura": 70.06, "gasto_alumno_mensual": 202.233, "alumnos_docente": 20.493}, "salud": {"deficit": 934495, "delta_pct": -37.047, "medicos_1000": 0.983, "inscritos_fonasa": 65100, "gasto_inscrito": 255.43}, "dotacion": {"total": 3207, "municipal": 1471, "educacion": 1133, "salud": 603, "gasto_personal": 63986289, "planta_pct": 41.285, "lim40": 85.66}, "social": {"casen_pct": 3.63, "vulnerabilidad_pct": 23.273, "hogares": {"total": 39767, "vulnerables": 9255, "medios": 7263, "medios_altos": 23249}, "asistencia_hab": 4.212, "rshnp": 64534}, "alcalde": null, "remuneraciones": null}, "2023": {"poblacion": 162837, "perfil": {"densidad": 11631.21, "areas_verdes_hab": 4.67, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 42982255.45, "delta_pct": 11.839, "gasto_hab": 610.812}, "educacion": {"deficit": 75159, "delta_pct": -84.569, "admin_tipo": "Corporación", "cobertura": 67.09, "gasto_alumno_mensual": 226.786, "alumnos_docente": 20.245}, "salud": {"deficit": 731223, "delta_pct": -21.752, "medicos_1000": null, "inscritos_fonasa": null, "gasto_inscrito": null}, "dotacion": {"total": 3023, "municipal": 1210, "educacion": 1180, "salud": 633, "gasto_personal": 72168715, "planta_pct": 37.777, "lim40": 102.19}, "social": {"casen_pct": 1.3, "vulnerabilidad_pct": 25.739, "hogares": {"total": 40238, "vulnerables": 10357, "medios": 8675, "medios_altos": 21206}, "asistencia_hab": 4.403, "rshnp": 64475}, "alcalde": null, "remuneraciones": null}, "2024": {"poblacion": 164009, "perfil": {"densidad": 11714.93, "areas_verdes_hab": 4.59, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 39862137.16, "delta_pct": -7.259, "gasto_hab": 640.033}, "educacion": {"deficit": 1741435, "delta_pct": 2217.001, "admin_tipo": "Corporación", "cobertura": 64.13, "gasto_alumno_mensual": 233.311, "alumnos_docente": 19.78}, "salud": {"deficit": -270839, "delta_pct": -137.039, "medicos_1000": 0.888, "inscritos_fonasa": 70929, "gasto_inscrito": 295.85}, "dotacion": {"total": 3020, "municipal": 1285, "educacion": 1079, "salud": 656, "gasto_personal": 76634175, "planta_pct": 43.775, "lim40": 112.67}, "social": {"casen_pct": 1.32, "vulnerabilidad_pct": 26.143, "hogares": {"total": 40699, "vulnerables": 10640, "medios": 8493, "medios_altos": 21566}, "asistencia_hab": 3.881, "rshnp": 64695}, "alcalde": {"nombre": "Evelyn Matthei Fornet", "grado": 1, "mediana": 6569152.5, "min": 1400267, "max": 8685444}, "remuneraciones": null}, "2025": {"poblacion": 165134, "perfil": {"densidad": 11795.29, "areas_verdes_hab": 4.22, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 46745454.27, "delta_pct": 17.268, "gasto_hab": 664.297}, "educacion": {"deficit": 509626, "delta_pct": -70.735, "admin_tipo": "Corporación", "cobertura": 61.16, "gasto_alumno_mensual": 278.376, "alumnos_docente": 17.632}, "salud": {"deficit": 72467, "delta_pct": 126.756, "medicos_1000": 0.854, "inscritos_fonasa": 73768, "gasto_inscrito": 281.49}, "dotacion": {"total": 3187, "municipal": 1368, "educacion": 1182, "salud": 637, "gasto_personal": 81640159, "planta_pct": 39.034, "lim40": 119.24}, "social": {"casen_pct": 1.3, "vulnerabilidad_pct": 26.404, "hogares": {"total": 41070, "vulnerables": 10844, "medios": 8611, "medios_altos": 21615}, "asistencia_hab": 3.592, "rshnp": 64763}, "alcalde": null, "remuneraciones": null}}, "ÑUÑOA": {"2016": {"poblacion": 225109, "perfil": {"densidad": 13241.71, "areas_verdes_hab": 5.06, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 1095551.29, "delta_pct": 234.947, "gasto_hab": 124.942}, "educacion": {"deficit": -922283, "delta_pct": null, "admin_tipo": "Corporación", "cobertura": 37.86, "gasto_alumno_mensual": 150.418, "alumnos_docente": 18.87}, "salud": {"deficit": 0, "delta_pct": null, "medicos_1000": 0.641, "inscritos_fonasa": 70179, "gasto_inscrito": 139.63}, "dotacion": {"total": 2124, "municipal": 479, "educacion": 1062, "salud": 583, "gasto_personal": 29165426, "planta_pct": 37.194, "lim40": 63.5}, "social": {"casen_pct": 0.55, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 5.038, "rshnp": null}, "alcalde": {"nombre": "Andres Zarhi Troy", "grado": 2, "mediana": 4376735, "min": 4210699, "max": 5687880}, "remuneraciones": null}, "2017": {"poblacion": 229434, "perfil": {"densidad": 13496.12, "areas_verdes_hab": 4.86, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 601511.67, "delta_pct": -45.095, "gasto_hab": 129.934}, "educacion": {"deficit": 0, "delta_pct": 100.0, "admin_tipo": "Corporación", "cobertura": 38.07, "gasto_alumno_mensual": 155.867, "alumnos_docente": 18.756}, "salud": {"deficit": 0, "delta_pct": null, "medicos_1000": 0.942, "inscritos_fonasa": 70045, "gasto_inscrito": 170.6}, "dotacion": {"total": 2317, "municipal": 555, "educacion": 1156, "salud": 606, "gasto_personal": 30797103, "planta_pct": 36.47, "lim40": 90.59}, "social": {"casen_pct": 2.41, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 4.217, "rshnp": null}, "alcalde": {"nombre": "Andres Zarhi Troy", "grado": 2, "mediana": 4167574, "min": 4011419, "max": 5752284}, "remuneraciones": null}, "2018": {"poblacion": 233739, "perfil": {"densidad": 13749.35, "areas_verdes_hab": 5.16, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 2815155.57, "delta_pct": 368.013, "gasto_hab": 137.332}, "educacion": {"deficit": 1458196, "delta_pct": null, "admin_tipo": "Corporación", "cobertura": 39.66, "gasto_alumno_mensual": 142.031, "alumnos_docente": 18.786}, "salud": {"deficit": 273041, "delta_pct": null, "medicos_1000": 0.772, "inscritos_fonasa": 69924, "gasto_inscrito": 187.57}, "dotacion": {"total": 2521, "municipal": 511, "educacion": 1389, "salud": 621, "gasto_personal": 36614242, "planta_pct": 33.717, "lim40": 109.93}, "social": {"casen_pct": 0.9, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 4.094, "rshnp": null}, "alcalde": {"nombre": "Andres Zarhi Troy", "grado": 2, "mediana": 4299698, "min": 4234963, "max": 5952952}, "remuneraciones": null}, "2019": {"poblacion": 240753, "perfil": {"densidad": 14161.94, "areas_verdes_hab": null, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 7555199.42, "delta_pct": 168.376, "gasto_hab": 139.427}, "educacion": {"deficit": 1830904, "delta_pct": 25.56, "admin_tipo": "Corporación", "cobertura": 41.16, "gasto_alumno_mensual": 165.358, "alumnos_docente": 18.106}, "salud": {"deficit": 1068349, "delta_pct": 291.278, "medicos_1000": null, "inscritos_fonasa": 74180, "gasto_inscrito": 194.45}, "dotacion": {"total": 645, "municipal": 645, "educacion": 0, "salud": 0, "gasto_personal": 40694893, "planta_pct": 62.636, "lim40": 83.33}, "social": {"casen_pct": 0.9, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 3.443, "rshnp": null}, "alcalde": {"nombre": "Andres Zarhi Troy", "grado": 2, "mediana": 4441659, "min": 4189283, "max": 6001744}, "remuneraciones": null}, "2020": {"poblacion": 250192, "perfil": {"densidad": 14717.18, "areas_verdes_hab": 3.28, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 8449479.56, "delta_pct": 11.837, "gasto_hab": 137.608}, "educacion": {"deficit": -1917751, "delta_pct": -204.743, "admin_tipo": "Corporación", "cobertura": 40.78, "gasto_alumno_mensual": 172.454, "alumnos_docente": 18.555}, "salud": {"deficit": -3248614, "delta_pct": -404.078, "medicos_1000": 1.423, "inscritos_fonasa": 73100, "gasto_inscrito": 287.53}, "dotacion": {"total": 3106, "municipal": 823, "educacion": 1443, "salud": 840, "gasto_personal": 46592498, "planta_pct": 51.449, "lim40": 67.51}, "social": {"casen_pct": 0.9, "vulnerabilidad_pct": 41.635, "hogares": {"total": 42253, "vulnerables": 17592, "medios": 9437, "medios_altos": 15120}, "asistencia_hab": 3.092, "rshnp": 85982}, "alcalde": {"nombre": "Andres Zarhi Troy", "grado": 2, "mediana": 4234717, "min": 4229992, "max": 6467846}, "remuneraciones": null}, "2021": {"poblacion": 255823, "perfil": {"densidad": 15048.41, "areas_verdes_hab": 4.37, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 12583826.71, "delta_pct": 48.93, "gasto_hab": 144.459}, "educacion": {"deficit": 574252, "delta_pct": 129.944, "admin_tipo": "Corporación", "cobertura": 41.29, "gasto_alumno_mensual": 181.44, "alumnos_docente": 17.85}, "salud": {"deficit": -1038841, "delta_pct": 68.022, "medicos_1000": 1.352, "inscritos_fonasa": 73948, "gasto_inscrito": 306.71}, "dotacion": {"total": 3890, "municipal": 745, "educacion": 2381, "salud": 764, "gasto_personal": 51699843, "planta_pct": 49.229, "lim40": 73.14}, "social": {"casen_pct": 3.98, "vulnerabilidad_pct": 49.729, "hogares": {"total": 79119, "vulnerables": 39345, "medios": 27715, "medios_altos": 77001}, "asistencia_hab": 3.035, "rshnp": 144061}, "alcalde": {"nombre": "Cristina Emilia Rios Saavedra", "grado": 2, "mediana": 5154828, "min": 5114738, "max": 6591455}, "remuneraciones": null}, "2022": {"poblacion": 259712, "perfil": {"densidad": 15277.18, "areas_verdes_hab": 4.3, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 9450781.83, "delta_pct": -24.897, "gasto_hab": 167.057}, "educacion": {"deficit": -3762090, "delta_pct": -755.129, "admin_tipo": "Corporación", "cobertura": 41.46, "gasto_alumno_mensual": 212.696, "alumnos_docente": 16.787}, "salud": {"deficit": -1144342, "delta_pct": -10.156, "medicos_1000": 1.072, "inscritos_fonasa": 78382, "gasto_inscrito": 317.4}, "dotacion": {"total": 3193, "municipal": 866, "educacion": 1649, "salud": 678, "gasto_personal": 58061114, "planta_pct": 41.528, "lim40": 103.88}, "social": {"casen_pct": 3.97, "vulnerabilidad_pct": 26.721, "hogares": {"total": 81188, "vulnerables": 21694, "medios": 15880, "medios_altos": 43614}, "asistencia_hab": 2.787, "rshnp": 144975}, "alcalde": {"nombre": "Cristina Emilia Rios Saavedra", "grado": 2, "mediana": 5470398, "min": 5415413, "max": 7456600}, "remuneraciones": null}, "2023": {"poblacion": 263319, "perfil": {"densidad": 15489.35, "areas_verdes_hab": 4.32, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 15905145.36, "delta_pct": 68.294, "gasto_hab": 182.249}, "educacion": {"deficit": -1175544, "delta_pct": 68.753, "admin_tipo": "Corporación", "cobertura": 41.57, "gasto_alumno_mensual": 223.996, "alumnos_docente": 15.967}, "salud": {"deficit": -1945611, "delta_pct": -70.02, "medicos_1000": null, "inscritos_fonasa": null, "gasto_inscrito": null}, "dotacion": {"total": 1534, "municipal": 750, "educacion": 0, "salud": 784, "gasto_personal": 65251326, "planta_pct": 50.13, "lim40": 99.71}, "social": {"casen_pct": 1.5, "vulnerabilidad_pct": 28.984, "hogares": {"total": 84111, "vulnerables": 24379, "medios": 18845, "medios_altos": 40887}, "asistencia_hab": 2.296, "rshnp": 147348}, "alcalde": {"nombre": "Cristina Emilia Rios Saavedra", "grado": 2, "mediana": 6035171, "min": 5687296, "max": 8298585}, "remuneraciones": null}, "2024": {"poblacion": 266906, "perfil": {"densidad": 15700.35, "areas_verdes_hab": 4.26, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 9619284.13, "delta_pct": -39.521, "gasto_hab": 188.169}, "educacion": {"deficit": -355572, "delta_pct": 69.753, "admin_tipo": "Administra MINEDUC", "cobertura": 40.78, "gasto_alumno_mensual": 233.777, "alumnos_docente": 16.067}, "salud": {"deficit": -1845927, "delta_pct": 5.124, "medicos_1000": 1.248, "inscritos_fonasa": 92967, "gasto_inscrito": 309.51}, "dotacion": {"total": 3717, "municipal": 755, "educacion": 1953, "salud": 1009, "gasto_personal": 69212904, "planta_pct": 38.553, "lim40": 89.51}, "social": {"casen_pct": 1.49, "vulnerabilidad_pct": 28.744, "hogares": {"total": 86859, "vulnerables": 24967, "medios": 18844, "medios_altos": 43048}, "asistencia_hab": 2.465, "rshnp": 149998}, "alcalde": {"nombre": "Cristina Emilia Rios Saavedra", "grado": 2, "mediana": 6379198, "min": 3694438, "max": 8385932}, "remuneraciones": null}, "2025": {"poblacion": 270521, "perfil": {"densidad": 15913, "areas_verdes_hab": 4.26, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 11423624.75, "delta_pct": 18.758, "gasto_hab": 185.837}, "educacion": {"deficit": -1270661, "delta_pct": -257.357, "admin_tipo": "Administra MINEDUC", "cobertura": 40.36, "gasto_alumno_mensual": 262.935, "alumnos_docente": 15.027}, "salud": {"deficit": -979752, "delta_pct": 46.924, "medicos_1000": 0.858, "inscritos_fonasa": 100224, "gasto_inscrito": 300.54}, "dotacion": {"total": 4068, "municipal": 729, "educacion": 2554, "salud": 785, "gasto_personal": 75938334, "planta_pct": 43.83, "lim40": 103.96}, "social": {"casen_pct": 1.5, "vulnerabilidad_pct": 28.697, "hogares": {"total": 89632, "vulnerables": 25722, "medios": 19398, "medios_altos": 44512}, "asistencia_hab": 2.7, "rshnp": 153213}, "alcalde": {"nombre": "Sebastian Sichel Ramirez", "grado": 2, "mediana": 6480968, "min": 6367708, "max": 8111354}, "remuneraciones": null}}, "MAIPU": {"2016": {"poblacion": 554548, "perfil": {"densidad": 4169.53, "areas_verdes_hab": 5.92, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 7629205.57, "delta_pct": -54.912, "gasto_hab": 192.741}, "educacion": {"deficit": -20050, "delta_pct": 98.258, "admin_tipo": "Corporación", "cobertura": 15.73, "gasto_alumno_mensual": 173.287, "alumnos_docente": 20.378}, "salud": {"deficit": 601532, "delta_pct": 276.722, "medicos_1000": 0.364, "inscritos_fonasa": 148162, "gasto_inscrito": 89.78}, "dotacion": {"total": 6889, "municipal": 3813, "educacion": 2539, "salud": 537, "gasto_personal": 76052354, "planta_pct": 21.077, "lim40": 64.13}, "social": {"casen_pct": 3.88, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 2.691, "rshnp": null}, "alcalde": {"nombre": "Christian Manuel Vittori Muñoz", "grado": 3, "mediana": 4090390, "min": 0, "max": 5590713}, "remuneraciones": null}, "2017": {"poblacion": 559123, "perfil": {"densidad": 4203.93, "areas_verdes_hab": 5.8, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 9136428.9, "delta_pct": 19.756, "gasto_hab": 181.172}, "educacion": {"deficit": -592823, "delta_pct": -2856.723, "admin_tipo": "Corporación", "cobertura": 15.36, "gasto_alumno_mensual": 181.235, "alumnos_docente": 19.68}, "salud": {"deficit": -1020885, "delta_pct": -269.714, "medicos_1000": 0.372, "inscritos_fonasa": 150624, "gasto_inscrito": 107.32}, "dotacion": {"total": 7148, "municipal": 3823, "educacion": 2592, "salud": 733, "gasto_personal": 83044550, "planta_pct": 20.118, "lim40": 87.18}, "social": {"casen_pct": 5.24, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 3.298, "rshnp": null}, "alcalde": {"nombre": "Cathy Carolina Barriga Guerra", "grado": 3, "mediana": 4239936, "min": 3750057, "max": 5861165}, "remuneraciones": null}, "2018": {"poblacion": 563499, "perfil": {"densidad": 4236.83, "areas_verdes_hab": 5.88, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 8294422.38, "delta_pct": -9.216, "gasto_hab": 193.479}, "educacion": {"deficit": 668824, "delta_pct": 212.82, "admin_tipo": "Corporación", "cobertura": 15.16, "gasto_alumno_mensual": 200.201, "alumnos_docente": 18.376}, "salud": {"deficit": 332318, "delta_pct": 132.552, "medicos_1000": 0.384, "inscritos_fonasa": 148266, "gasto_inscrito": 114.09}, "dotacion": {"total": 4191, "municipal": 792, "educacion": 2614, "salud": 785, "gasto_personal": 91110095, "planta_pct": 33.763, "lim40": 90.5}, "social": {"casen_pct": 2.57, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 3.357, "rshnp": null}, "alcalde": {"nombre": "Cathy Carolina Barriga Guerra", "grado": 3, "mediana": 4338695, "min": 4326726, "max": 6054607}, "remuneraciones": null}, "2019": {"poblacion": 566664, "perfil": {"densidad": 4260.63, "areas_verdes_hab": 5.9, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 7259473.43, "delta_pct": -12.478, "gasto_hab": 209.445}, "educacion": {"deficit": -693964, "delta_pct": -203.759, "admin_tipo": "Corporación", "cobertura": 16.39, "gasto_alumno_mensual": 216.541, "alumnos_docente": 17.681}, "salud": {"deficit": -1117528, "delta_pct": -436.283, "medicos_1000": 0.38, "inscritos_fonasa": 155194, "gasto_inscrito": 129.93}, "dotacion": {"total": 7481, "municipal": 3919, "educacion": 2749, "salud": 813, "gasto_personal": 100404412, "planta_pct": 22.056, "lim40": 100.8}, "social": {"casen_pct": 2.57, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "asistencia_hab": 2.847, "rshnp": null}, "alcalde": {"nombre": "Cathy Carolina Barriga Guerra", "grado": 3, "mediana": 4489581, "min": 4479627, "max": 6173309}, "remuneraciones": null}, "2020": {"poblacion": 578605, "perfil": {"densidad": 4350.41, "areas_verdes_hab": 5.78, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 3802400.91, "delta_pct": -47.622, "gasto_hab": 185.901}, "educacion": {"deficit": -234412, "delta_pct": 66.221, "admin_tipo": "Corporación", "cobertura": 15.81, "gasto_alumno_mensual": 213.729, "alumnos_docente": 17.781}, "salud": {"deficit": -834386, "delta_pct": 25.336, "medicos_1000": 0.65, "inscritos_fonasa": 156811, "gasto_inscrito": 141.81}, "dotacion": {"total": 7305, "municipal": 3900, "educacion": 2687, "salud": 718, "gasto_personal": 103856739, "planta_pct": 23.217, "lim40": 76.09}, "social": {"casen_pct": 2.57, "vulnerabilidad_pct": 48.28, "hogares": {"total": 188800, "vulnerables": 91153, "medios": 44710, "medios_altos": 52915}, "asistencia_hab": 4.007, "rshnp": 405463}, "alcalde": {"nombre": "Cathy Carolina Barriga Guerra", "grado": 1, "mediana": 5246760, "min": 5233023, "max": 6638972}, "remuneraciones": null}, "2021": {"poblacion": 584053, "perfil": {"densidad": 4391.38, "areas_verdes_hab": 5.72, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 14136810.97, "delta_pct": 271.786, "gasto_hab": 187.457}, "educacion": {"deficit": -636434, "delta_pct": -171.502, "admin_tipo": "Corporación", "cobertura": 15.5, "gasto_alumno_mensual": 237.126, "alumnos_docente": 17.504}, "salud": {"deficit": 912085, "delta_pct": 209.312, "medicos_1000": 0.45, "inscritos_fonasa": 157785, "gasto_inscrito": 157.68}, "dotacion": {"total": 6981, "municipal": 3543, "educacion": 2610, "salud": 828, "gasto_personal": 104783727, "planta_pct": 26.501, "lim40": 75.82}, "social": {"casen_pct": 7.04, "vulnerabilidad_pct": 81.36, "hogares": {"total": 246598, "vulnerables": 200633, "medios": 107923, "medios_altos": 170637}, "asistencia_hab": 4.689, "rshnp": 479193}, "alcalde": {"nombre": "Tomás Vodanovic Escudero", "grado": 1, "mediana": 5514830, "min": 5314627, "max": 7294337}, "remuneraciones": null}, "2022": {"poblacion": 585684, "perfil": {"densidad": 4403.64, "areas_verdes_hab": 5.71, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 28441083.66, "delta_pct": 101.185, "gasto_hab": 210.728}, "educacion": {"deficit": -50224, "delta_pct": 92.109, "admin_tipo": "Corporación", "cobertura": 14.99, "gasto_alumno_mensual": 264.911, "alumnos_docente": 16.636}, "salud": {"deficit": -1765930, "delta_pct": -293.615, "medicos_1000": 0.357, "inscritos_fonasa": 171014, "gasto_inscrito": 175.38}, "dotacion": {"total": 6813, "municipal": 3223, "educacion": 2800, "salud": 790, "gasto_personal": 110693282, "planta_pct": 27.712, "lim40": 107.35}, "social": {"casen_pct": 7.03, "vulnerabilidad_pct": 38.83, "hogares": {"total": 247479, "vulnerables": 96095, "medios": 56433, "medios_altos": 94951}, "asistencia_hab": 1.333, "rshnp": 472379}, "alcalde": {"nombre": "Tomas Vodanovic Escudero", "grado": 1, "mediana": 5684456, "min": 5621809, "max": 7793959}, "remuneraciones": null}, "2023": {"poblacion": 586337, "perfil": {"densidad": 4408.55, "areas_verdes_hab": 5.7, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 29020536.53, "delta_pct": 2.037, "gasto_hab": 276.445}, "educacion": {"deficit": 1620687, "delta_pct": 3326.917, "admin_tipo": "Corporación", "cobertura": 14.91, "gasto_alumno_mensual": 294.105, "alumnos_docente": 16.96}, "salud": {"deficit": -1182501, "delta_pct": 33.038, "medicos_1000": null, "inscritos_fonasa": null, "gasto_inscrito": null}, "dotacion": {"total": 7093, "municipal": 3281, "educacion": 2828, "salud": 984, "gasto_personal": 126088998, "planta_pct": 25.335, "lim40": 135.28}, "social": {"casen_pct": 3.3, "vulnerabilidad_pct": 42.413, "hogares": {"total": 248966, "vulnerables": 105593, "medios": 63001, "medios_altos": 80372}, "asistencia_hab": 2.128, "rshnp": 464183}, "alcalde": {"nombre": "Tomas Vodanovic Escudero", "grado": 1, "mediana": 6270320, "min": 5902433, "max": 8305471}, "remuneraciones": null}, "2024": {"poblacion": 586812, "perfil": {"densidad": 4412.12, "areas_verdes_hab": 5.61, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 21672705.38, "delta_pct": -25.319, "gasto_hab": 306.538}, "educacion": {"deficit": -2253962, "delta_pct": -239.074, "admin_tipo": "Corporación", "cobertura": 14.38, "gasto_alumno_mensual": 347.01, "alumnos_docente": 16.131}, "salud": {"deficit": -2337745, "delta_pct": -97.695, "medicos_1000": 0.339, "inscritos_fonasa": 203502, "gasto_inscrito": 197.82}, "dotacion": {"total": 6037, "municipal": 2137, "educacion": 2624, "salud": 1276, "gasto_personal": 135895779, "planta_pct": 29.137, "lim40": 130.01}, "social": {"casen_pct": 3.25, "vulnerabilidad_pct": 43.07, "hogares": {"total": 249588, "vulnerables": 107497, "medios": 62678, "medios_altos": 79413}, "asistencia_hab": 2.646, "rshnp": 457712}, "alcalde": {"nombre": "Tomas Vodanovic Escudero", "grado": 1, "mediana": 6612924, "min": 5101417, "max": 7727665}, "remuneraciones": null}, "2025": {"poblacion": 587189, "perfil": {"densidad": 4414.95, "areas_verdes_hab": 5.48, "cementerio": "Sin Servicio"}, "administracion": {"deficit": 24498359.61, "delta_pct": 13.038, "gasto_hab": 305.93}, "educacion": {"deficit": 1303314, "delta_pct": 157.823, "admin_tipo": "Administra MINEDUC", "cobertura": 0, "gasto_alumno_mensual": null, "alumnos_docente": null}, "salud": {"deficit": -1018835, "delta_pct": 56.418, "medicos_1000": 0.386, "inscritos_fonasa": 220321, "gasto_inscrito": 195.5}, "dotacion": {"total": 4316, "municipal": 3110, "educacion": 0, "salud": 1206, "gasto_personal": 90367910, "planta_pct": 23.332, "lim40": 115.07}, "social": {"casen_pct": 3.3, "vulnerabilidad_pct": 42.5, "hogares": {"total": 248518, "vulnerables": 105619, "medios": 63487, "medios_altos": 79412}, "asistencia_hab": 3.016, "rshnp": 451495}, "alcalde": {"nombre": "Tomas Vodanovic Escudero", "grado": 1, "mediana": 6958054, "min": 6873964, "max": 9103818}, "remuneraciones": null}}};
+const REMUN_LOOKUP = {"ÑUÑOA": {"n_total": 792, "n_atipicos": 25}, "MAIPU": {"n_total": 5124, "n_atipicos": 472}};
+const NOMBRES = {"PROVIDENCIA":"Providencia","ÑUÑOA":"Ñuñoa","MAIPU":"Maipú"};
+
+function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
+function fmtPct(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec||1,maximumFractionDigits:dec||1}); }
+function fmtCLP(n){ if(n===null||n===undefined) return "Sin dato"; const s=n<0?"-$":"$"; return s+Math.abs(Math.round(n)).toLocaleString('es-CL'); }
+function fmtMM(n){ if(n===null||n===undefined) return "Sin dato"; const mm=n/1000; const s=mm<0?"-$":"+$"; return s+Math.round(Math.abs(mm)).toLocaleString('es-CL')+" MM"; }
+function initials(name){ if(!name) return "—"; const p=name.trim().split(/\s+/); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
+
+function setChip(el, textEl, cls, text, icon){
+  el.className = 'chip ' + cls;
+  textEl.textContent = text;
+  if(icon) el.querySelector('i').className = 'ti ' + icon;
+}
+
+function render(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const anio = document.getElementById('sel-anio').value;
+  const d = DATA[comuna][anio];
+  if(!d) return;
+  const nombre = NOMBRES[comuna];
+
+  document.getElementById('hdr-comuna').textContent = nombre;
+  document.getElementById('hdr-anio').textContent = anio;
+
+  // ---- Alcalde ----
+  const al = d.alcalde;
+  if(al){
+    document.getElementById('abanda-block').style.display = '';
+    document.getElementById('ab-ava').textContent = initials(al.nombre);
+    document.getElementById('ab-anio').textContent = anio;
+    document.getElementById('ab-name').textContent = al.nombre;
+    document.getElementById('ab-mediana').textContent = fmtCLP(al.mediana);
+    document.getElementById('ab-rango').textContent = (al.min!==null && al.max!==null) ? `${fmtCLP(al.min)} – ${fmtCLP(al.max)}` : 'Sin dato';
+    const gb = document.getElementById('ab-grade-badge');
+    if(al.grado){ gb.style.display='inline-flex'; document.getElementById('ab-grade-text').textContent = `Grado ${al.grado} de sueldo`; }
+    else { gb.style.display='none'; }
+  } else {
+    document.getElementById('abanda-block').style.display = 'none';
+  }
+
+  // ---- 01 Perfil ----
+  document.getElementById('c1-hero').textContent = fmtInt(d.poblacion);
+  const cem = d.perfil.cementerio;
+  const cemAdmin = (cem==='Si'||cem==='SI'||cem==='Sí');
+  document.getElementById('c1-chip-text').textContent = cemAdmin ? 'Administra cementerio' : 'No administra cementerio';
+  document.getElementById('c1-densidad').textContent = fmtInt(d.perfil.densidad)+' hab/km²';
+  document.getElementById('c1-areasverdes').textContent = (d.perfil.areas_verdes_hab!==null) ? fmtPct(d.perfil.areas_verdes_hab,2)+' m²' : 'Sin dato';
+  document.getElementById('c1-cementerio').textContent = cemAdmin ? 'Administra' : 'No administra';
+
+  // ---- 02 Administración ----
+  const adm = d.administracion;
+  const supA = adm.deficit!==null && adm.deficit>=0;
+  document.getElementById('c2-hero').textContent = adm.deficit!==null ? fmtMM(adm.deficit) : 'Sin dato';
+  document.getElementById('c2-hero').className = 'n ' + (adm.deficit===null?'':(supA?'pos':'neg'));
+  document.getElementById('c2-herolabel').textContent = adm.deficit===null ? `Sin dato de Contraloría para ${anio}.` :
+    `Los ingresos municipales ${supA?'superaron':'fueron menores a'} los gastos en ${anio} (dato reportado a Contraloría)`;
+  setChip(document.getElementById('c2-chip1'), document.getElementById('c2-chip1-text'), supA?'good':'bad', supA?'Superávit':'Déficit', supA?'ti-circle-check':'ti-circle-x');
+  if(adm.delta_pct!==null){
+    const up = adm.delta_pct>=0;
+    setChip(document.getElementById('c2-chip2'), document.getElementById('c2-chip2-text'), up?'good':'warn',
+      `${up?'+':''}${fmtPct(adm.delta_pct,1)}% vs. ${anio-1}`, up?'ti-arrow-up-right':'ti-arrow-down-right');
+  } else { document.getElementById('c2-chip2').style.display='none'; }
+  document.getElementById('c2-fcm').textContent = 'Ver detalle';
+  document.getElementById('c2-deuda').textContent = 'Ver detalle';
+  document.getElementById('c2-gastohab').textContent = adm.gasto_hab!==null ? fmtCLP(adm.gasto_hab) : 'Sin dato';
+
+  // ---- 03 Educación ----
+  const edu = d.educacion;
+  const supE = edu.deficit!==null && edu.deficit>=0;
+  document.getElementById('c3-hero').textContent = edu.deficit!==null ? fmtMM(edu.deficit) : 'Sin dato';
+  document.getElementById('c3-hero').className = 'n ' + (edu.deficit===null?'':(supE?'pos':'neg'));
+  document.getElementById('c3-herolabel').textContent = edu.deficit===null ? `${nombre} no administra Educación en ${anio}, o no hay dato.` :
+    `Los ingresos de educación ${supE?'superaron':'fueron menores a'} los gastos en ${anio}`;
+  setChip(document.getElementById('c3-chip1'), document.getElementById('c3-chip1-text'), supE?'good':'bad', supE?'Superávit':'Déficit', supE?'ti-circle-check':'ti-circle-x');
+  if(edu.delta_pct!==null){
+    const up = edu.delta_pct>=0;
+    setChip(document.getElementById('c3-chip2'), document.getElementById('c3-chip2-text'), up?'good':'warn',
+      `${up?'+':''}${fmtPct(edu.delta_pct,0)}% vs. ${anio-1}`, up?'ti-arrow-up-right':'ti-arrow-down-right');
+  } else { document.getElementById('c3-chip2').style.display='none'; }
+  const c3chip3 = document.getElementById('c3-chip3');
+  if(edu.admin_tipo){ c3chip3.style.display='inline-flex'; document.getElementById('c3-chip3-text').textContent = `Administra: ${edu.admin_tipo}`; }
+  else { c3chip3.style.display='none'; }
+  document.getElementById('c3-cobertura').textContent = edu.cobertura!==null ? fmtPct(edu.cobertura,1)+'%' : 'Sin dato';
+  document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? fmtCLP(edu.gasto_alumno_mensual*1000).replace('$','$')+' ' : 'Sin dato';
+  document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? '$'+Math.round(edu.gasto_alumno_mensual).toLocaleString('es-CL')+' mil' : 'Sin dato';
+  document.getElementById('c3-aludoc').textContent = edu.alumnos_docente!==null ? fmtPct(edu.alumnos_docente,1) : 'Sin dato';
+
+  // ---- 04 Salud ----
+  const sal = d.salud;
+  const supS = sal.deficit!==null && sal.deficit>=0;
+  document.getElementById('c4-hero').textContent = sal.deficit!==null ? fmtMM(sal.deficit) : 'Sin dato';
+  document.getElementById('c4-hero').className = 'n ' + (sal.deficit===null?'':(supS?'pos':'neg'));
+  document.getElementById('c4-herolabel').textContent = sal.deficit===null ? `Sin dato para Salud en ${anio}.` :
+    `Los ${supS?'ingresos':'gastos'} de salud superaron los ${supS?'gastos':'ingresos'} en ${anio}`;
+  setChip(document.getElementById('c4-chip1'), document.getElementById('c4-chip1-text'), supS?'good':'bad', supS?'Superávit':'Déficit', supS?'ti-circle-check':'ti-circle-x');
+  if(sal.delta_pct!==null){
+    const worse = sal.delta_pct<0;
+    setChip(document.getElementById('c4-chip2'), document.getElementById('c4-chip2-text'), worse?'bad':'good',
+      `${sal.delta_pct>=0?'+':''}${fmtPct(sal.delta_pct,1)}% vs. ${anio-1}`, worse?'ti-arrow-down-right':'ti-arrow-up-right');
+  } else { document.getElementById('c4-chip2').style.display='none'; }
+  document.getElementById('c4-medicos').textContent = sal.medicos_1000!==null ? fmtPct(sal.medicos_1000,2) : 'Sin dato';
+  document.getElementById('c4-inscritos').textContent = fmtInt(sal.inscritos_fonasa);
+  document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito).toLocaleString('es-CL')+' mil' : 'Sin dato';
+
+  // ---- 05 Dotación (donut) ----
+  const dot = d.dotacion;
+  const tot = dot.total || 1;
+  const pM = (dot.municipal||0)/tot*100, pE=(dot.educacion||0)/tot*100, pS=(dot.salud||0)/tot*100;
+  const circ = 99.9;
+  document.getElementById('donut-muni').setAttribute('stroke-dasharray', `${(pM/100*circ).toFixed(1)} ${circ}`);
+  document.getElementById('donut-muni').setAttribute('stroke-dashoffset','25');
+  document.getElementById('donut-edu').setAttribute('stroke-dasharray', `${(pE/100*circ).toFixed(1)} ${circ}`);
+  document.getElementById('donut-edu').setAttribute('stroke-dashoffset', (25-(pM/100*circ)).toFixed(1));
+  document.getElementById('donut-sal').setAttribute('stroke-dasharray', `${(pS/100*circ).toFixed(1)} ${circ}`);
+  document.getElementById('donut-sal').setAttribute('stroke-dashoffset', (25-(pM/100*circ)-(pE/100*circ)).toFixed(1));
+  document.getElementById('c5-total').textContent = fmtInt(dot.total);
+  document.getElementById('c5-muni').textContent = dot.municipal!==null ? `${fmtInt(dot.municipal)} (${fmtPct(pM,1)}%)` : 'No administra';
+  document.getElementById('c5-edu').textContent = dot.educacion!==null ? `${fmtInt(dot.educacion)} (${fmtPct(pE,1)}%)` : 'No administra';
+  document.getElementById('c5-sal').textContent = dot.salud!==null ? `${fmtInt(dot.salud)} (${fmtPct(pS,1)}%)` : 'No administra';
+  const overLim = dot.lim40!==null && dot.lim40>100;
+  document.getElementById('c5-lim').textContent = dot.lim40!==null ? fmtPct(dot.lim40,1)+'%' : 'Sin dato';
+  document.getElementById('c5-lim').style.color = overLim ? '#dc2626' : '#16a34a';
+  document.getElementById('c5-limtext').textContent = overLim
+    ? 'Supera el límite de referencia para personal a contrata (Ley 20.922). No aplica a educación ni salud, que se rigen por otros estatutos.'
+    : 'Dentro del límite de referencia para personal a contrata (Ley 20.922). No aplica a educación ni salud, que se rigen por otros estatutos.';
+  document.getElementById('c5-gastopersonal').textContent = dot.gasto_personal!==null ? fmtMM(dot.gasto_personal).replace('+','') : 'Sin dato';
+  document.getElementById('c5-plantapct').textContent = dot.planta_pct!==null ? fmtPct(dot.planta_pct,1)+'%' : 'Sin dato';
+
+  // ---- 06 Social ----
+  const soc = d.social;
+  document.getElementById('c6-hero').innerHTML = fmtPct(soc.casen_pct,2)+'<span class="u">%</span>';
+  const cada = soc.casen_pct ? Math.round(100/soc.casen_pct) : null;
+  document.getElementById('c6-herolabel').innerHTML = `pobreza por ingresos según encuesta CASEN` + (cada?` — <b style="color:var(--ink)">1 de cada ${cada} personas</b>`:'');
+  const h = soc.hogares;
+  document.getElementById('c6-hogares-label').textContent = `Hogares por tramo de ingreso (RSH) · ${fmtInt(h.total)} hogares`;
+  const pV = h.total?(h.vulnerables/h.total*100):0, pMe=h.total?(h.medios/h.total*100):0, pA=h.total?(h.medios_altos/h.total*100):0;
+  document.getElementById('c6-bar').innerHTML = `<i style="width:${pV.toFixed(1)}%;background:#DC2626"></i><i style="width:${pMe.toFixed(1)}%;background:#F5A623"></i><i style="width:${pA.toFixed(1)}%;background:var(--royal-mid)"></i>`;
+  document.getElementById('c6-legend').innerHTML = `
+    <div class="row"><span class="nm"><i style="background:#DC2626"></i>Vulnerables (0-40%)</span><span class="val">${fmtPct(pV,1)}%</span></div>
+    <div class="row"><span class="nm"><i style="background:#F5A623"></i>Medios (41-70%)</span><span class="val">${fmtPct(pMe,1)}%</span></div>
+    <div class="row"><span class="nm"><i style="background:var(--royal-mid)"></i>Medios altos (71-100%)</span><span class="val">${fmtPct(pA,1)}%</span></div>`;
+  document.getElementById('c6-asistencia').textContent = soc.asistencia_hab!==null ? '$'+Math.round(soc.asistencia_hab*1000).toLocaleString('es-CL') : 'Sin dato';
+  document.getElementById('c6-rshnp').textContent = fmtInt(soc.rshnp);
+
+  // ---- Franja Remuneraciones ----
+  const rb = REMUN_LOOKUP[comuna];
+  if(rb){
+    document.getElementById('rbanda-block').style.display = '';
+    document.getElementById('rb-badge').style.background = '';
+    document.getElementById('rb-badge').style.color = '';
+    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-alert-triangle';
+    document.getElementById('rb-badge-text').textContent = `${fmtInt(rb.n_atipicos)} sueldos por sobre lo esperado`;
+    document.getElementById('rb-funcionarios').textContent = fmtInt(rb.n_total);
+    document.getElementById('rb-comparacion').textContent = 'Por cargo, grado y vínculo';
+  } else {
+    document.getElementById('rbanda-block').style.display = '';
+    document.getElementById('rb-badge').style.background = 'rgba(107,114,128,.12)';
+    document.getElementById('rb-badge').style.color = '#6B7280';
+    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-info-circle';
+    document.getElementById('rb-badge-text').textContent = `${nombre} — Información no disponible (no reporta a Transparencia)`;
+    document.getElementById('rb-funcionarios').textContent = 'Información no disponible';
+    document.getElementById('rb-comparacion').textContent = 'Información no disponible';
+  }
+
+  // ---- Cierre ----
+  const partes = [];
+  if(adm.deficit!==null) partes.push(`Administración ${supA?'en superávit':'en déficit'}`);
+  if(edu.deficit!==null) partes.push(`Educación ${supE?'en superávit':'en déficit'}`);
+  if(sal.deficit!==null) partes.push(`Salud ${supS?'en superávit':'en déficit'}`);
+  document.getElementById('gc-text').innerHTML = partes.length ? `<b>${partes.join(' · ')}.</b> Año ${anio}, ${nombre}.` : `Sin datos suficientes para ${nombre} en ${anio}.`;
+}
+
+function populateAnio(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>b-a);
+  const selAnio = document.getElementById('sel-anio');
+  const prev = selAnio.value;
+  selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(+prev)) selAnio.value = prev;
+  else selAnio.value = years.includes(2025) ? 2025 : years[0];
+}
+
+document.getElementById('sel-comuna').addEventListener('change', ()=>{ populateAnio(); render(); });
+document.getElementById('sel-anio').addEventListener('change', render);
+
+// Preseleccionar comuna y año si vienen en la URL (usada por la portada)
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const comunaParam = params.get('comuna');
+  if(comunaParam && DATA[comunaParam.toUpperCase()]){
+    document.getElementById('sel-comuna').value = comunaParam.toUpperCase();
+  }
+})();
+
+populateAnio();
+
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const anioParam = params.get('anio');
+  const selAnio = document.getElementById('sel-anio');
+  if(anioParam && [...selAnio.options].some(o=>o.value===anioParam)){
+    selAnio.value = anioParam;
+  }
+})();
+
+render();
+</script>
+</body>
+</html>

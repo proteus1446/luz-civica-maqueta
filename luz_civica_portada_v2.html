@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luz Cívica — Panel Comunal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+  :root{
+    --navy:#0F2A5F;
+    --blue:#1D4ED8;
+    --gold:#F5B912;
+    --muted:#5A6B8C;
+    --muted-soft:#7887A5;
+    --border:rgba(15,42,95,.08);
+    --border-mid:rgba(15,42,95,.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    color:var(--navy);
+    background:linear-gradient(150deg,#E4EEF9 0%,#EBF2FC 45%,#EAF1FB 100%);
+    background-attachment:fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{ color:var(--blue); text-decoration:none; }
+  .page{ max-width:1344px; margin:0 auto; position:relative; }
+
+  /* --- header: réplica fiel de .barra-superior del HTML original del técnico --- */
+  .barra-superior{
+    position:sticky; top:0; z-index:1000;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 60px;
+    border-bottom:1px solid var(--border);
+    background:rgba(255,255,255,.7);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+  }
+  @media (max-width:640px){ .barra-superior{ padding:16px 24px; flex-wrap:wrap; gap:12px; } }
+  .contenedor-logo{
+    display:flex; align-items:center; gap:14px; min-width:max-content;
+    border:0; background:transparent; cursor:pointer;
+  }
+  .logo-mark{ display:flex; align-items:center; }
+  .titulo-logo{ font-size:22px; font-weight:800; letter-spacing:.01em; color:var(--navy); }
+  .nav-links{ display:flex; align-items:center; gap:44px; }
+  .nav-links a{ font-size:15px; font-weight:500; color:var(--muted); }
+  .nav-links a:hover{ color:var(--navy); }
+
+  /* --- hero --- */
+  main{ position:relative; z-index:1; max-width:1220px; margin:0 auto; padding:56px 60px 0; }
+  @media (max-width:960px){ main{ padding:40px 24px 0; } }
+
+  .hero-grid{
+    display:grid; grid-template-columns:minmax(0,1fr) 460px; gap:40px; align-items:start;
+  }
+  @media (max-width:960px){ .hero-grid{ grid-template-columns:1fr; position:relative; } }
+
+  .hero-badge{
+    display:inline-flex; align-items:center; padding:9px 18px; border-radius:999px;
+    background:#E8EFFC; color:var(--blue); font-size:12.5px; font-weight:700; letter-spacing:.10em;
+    text-transform:uppercase;
+  }
+  h1{
+    margin:22px 0 0; font-size:52px; line-height:1.1; font-weight:800; letter-spacing:-.025em;
+    color:var(--navy);
+  }
+  @media (max-width:640px){ h1{ font-size:34px; } }
+  h1 .accent{ color:var(--blue); }
+  h1 .dot{ color:var(--gold); }
+  .lead{ margin:22px 0 0; max-width:560px; font-size:17px; line-height:1.55; font-weight:500; color:var(--muted); }
+
+  .hero-visual{ position:relative; height:500px; overflow:visible; }
+  @media (max-width:960px){
+    .hero-visual{
+      position:absolute; top:-16px; left:0; right:0; height:300px;
+      margin:0; overflow:hidden; z-index:0; opacity:.5; pointer-events:none;
+    }
+    .carousel-viewport{ position:relative; z-index:1; }
+    .lamp-stack{ top:4px !important; transform:translateX(-50%) scale(.6); transform-origin:top center; }
+    .chart-panel{ transform:translate(-46%,-50%) scale(.42) !important; }
+    .constellation-holder{ opacity:.55; }
+  }
+  .lamp-stack{
+    position:absolute; top:-118px; left:50%; transform:translateX(-50%);
+    width:248px; height:320px; z-index:1; pointer-events:none;
+  }
+  .lamp-fixture{ position:relative; display:block; z-index:3; }
+  .lamp-glow{
+    position:absolute; left:50%; top:200px; transform:translateX(-50%);
+    width:620px; height:540px; z-index:1; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 10%,
+      rgba(255,252,236,.98) 0%,
+      rgba(255,248,220,.72) 18%,
+      rgba(255,246,214,.38) 40%,
+      rgba(255,246,214,.12) 62%,
+      rgba(255,246,214,0) 78%);
+  }
+  .constellation-holder{ position:absolute; inset:-20px -30px; opacity:.95; z-index:0; pointer-events:none; }
+  .constellation-holder svg{ overflow:visible; }
+
+  .chart-panel{ position:absolute; top:46%; left:50%; transform:translate(-46%,-50%) scale(.55); z-index:3; }
+  .trend-line{
+    position:absolute; left:2%; right:-2%; top:58%; height:22%;
+    z-index:2; pointer-events:none; overflow:visible;
+  }
+
+  /* --- carrusel real del técnico: ahora es el titular principal del hero --- */
+  .carousel-viewport{ overflow:hidden; }
+  .landing-carousel-inner{
+    display:flex;
+    transform:translateX(calc(var(--lc-slide-index, 0) * -100%));
+    transition:transform .45s cubic-bezier(.4,0,.2,1);
+  }
+  .landing-slide{ flex:0 0 100%; }
+
+  .carousel-controls{
+    display:flex; align-items:center; gap:16px;
+  }
+  .carousel-arrows{ display:flex; gap:10px; }
+  .carousel-arrow{
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; border:1px solid var(--border-mid);
+    color:var(--navy); cursor:pointer; font-size:15px; line-height:1;
+  }
+  .carousel-dots{ display:flex; gap:6px; }
+  .carousel-dot{
+    width:6px; height:6px; border-radius:50%; background:#C7D2E6; border:0; padding:0; cursor:pointer;
+  }
+  .carousel-dot.is-active{ width:18px; border-radius:4px; background:var(--blue); }
+
+  /* --- filtros --- */
+  .filters-card{
+    position:relative; margin:-56px 0 0; max-width:860px;
+    padding:26px 28px; border-radius:14px;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 24px 60px -28px rgba(15,42,95,.28);
+    display:grid; grid-template-columns:1fr 1fr .8fr auto; gap:22px; align-items:end;
+    z-index:2;
+  }
+  @media (max-width:960px){ .filters-card{ margin-top:24px; grid-template-columns:1fr; } }
+  .field label{ display:block; font-size:13px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+  .select-shell{
+    position:relative; width:100%; padding:13px 40px 13px 15px;
+    font:500 15px -apple-system,sans-serif; color:var(--muted-soft);
+    background:rgba(255,255,255,.75); border:1px solid var(--border-mid); border-radius:9px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .select-shell.disabled{ color:var(--muted-soft); cursor:not-allowed; }
+  select.select-shell{
+    appearance:none; -webkit-appearance:none; cursor:pointer;
+  }
+  select.select-shell:disabled{ color:var(--muted-soft); cursor:not-allowed; }
+  select.select-shell:not(:disabled){ color:var(--navy); }
+  .select-caret{
+    position:absolute; right:15px; top:50%; transform:translateY(-50%);
+    color:#8494B0; font-size:15px; pointer-events:none;
+  }
+  .cta-icon{
+    display:flex; align-items:center; justify-content:center;
+    width:48px; height:48px; border:none; border-radius:50%; flex-shrink:0;
+    background:var(--blue); color:#fff; cursor:pointer;
+    box-shadow:0 10px 22px -10px rgba(29,78,216,.7);
+  }
+  .cta-icon:hover{ background:#1741B6; }
+  .cta-icon i{ font-size:20px; }
+
+  /* --- franja de cifras --- */
+  .stats-strip{
+    margin:26px 0 0; padding:26px 10px; border-radius:14px;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 10px 30px -22px rgba(15,42,95,.3);
+  }
+  .stats-row{ display:grid; grid-template-columns:repeat(4,1fr); }
+  @media (max-width:760px){ .stats-row{ grid-template-columns:repeat(2,1fr); row-gap:22px; } }
+  .stat-item{
+    display:flex; align-items:center; gap:20px; padding:0 26px;
+    border-right:1px solid var(--border);
+  }
+  .stat-item:last-child{ border-right:0; }
+  @media (max-width:760px){
+    .stat-item:nth-child(2n){ border-right:0; }
+    .stat-item:nth-child(-n+2){ border-bottom:1px solid var(--border); padding-bottom:18px; }
+  }
+  .stat-icon{
+    flex:none; width:56px; height:56px; border-radius:50%;
+    background:#EAF0FC; color:#2E5FD0;
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+  }
+  .stat-num{ font-size:34px; font-weight:700; letter-spacing:-.02em; line-height:1; color:var(--navy); }
+  .stat-label{ margin-top:7px; font-size:15px; font-weight:500; color:var(--muted); }
+
+  /* --- explorador de datos --- */
+  .explorer-strip{
+    margin:22px 0 0; padding:30px 34px; border-radius:14px;
+    background:rgba(243,247,254,.65);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(29,78,216,.14);
+    display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+  }
+  .explorer-left{ display:flex; align-items:center; gap:26px; }
+  .explorer-icon{
+    flex:none; width:70px; height:70px; border-radius:50%;
+    background:#DCE7FB; color:var(--blue);
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+  }
+  .explorer-title{ display:flex; align-items:center; gap:14px; }
+  .explorer-title h2{ margin:0; font-size:26px; font-weight:600; letter-spacing:-.015em; color:var(--navy); }
+  .explorer-badge{
+    padding:5px 10px; border-radius:6px; background:#D9E5FB; color:var(--blue);
+    font-size:11px; font-weight:800; letter-spacing:.08em;
+  }
+  .explorer-left p{ margin:11px 0 0; font-size:16px; line-height:1.5; font-weight:500; color:var(--muted); }
+  .explorer-btn{
+    flex:none; display:flex; align-items:center; gap:14px; padding:15px 24px; border-radius:9px;
+    background:#fff; border:1px solid rgba(29,78,216,.28); color:var(--blue);
+    font-size:15.5px; font-weight:700; cursor:pointer;
+  }
+  .explorer-btn:hover{ background:#EAF1FE; }
+  .explorer-btn i{ font-size:17px; }
+
+  /* --- footer --- */
+  footer{
+    position:relative; margin-top:44px; padding:22px 60px;
+    border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+  }
+  @media (max-width:640px){ footer{ padding:18px 24px; } }
+  .footer-left{ max-width:460px; }
+  .footer-left span{ font-size:13px; font-weight:500; color:var(--muted-soft); }
+  .footer-links{ display:flex; gap:22px; flex-wrap:wrap; }
+  .footer-links a{ font-size:12.5px; font-weight:700; color:var(--muted-soft); }
+  .footer-links a:hover{ color:var(--navy); }
+</style>
+</head>
+<body>
+
+<nav class="barra-superior">
+  <button class="contenedor-logo logo-home-link" type="button" data-go-landing="" aria-label="Volver al inicio de Luz Cívica">
+    <span class="logo-mark" aria-hidden="true">
+      <svg width="46" height="27" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+        <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+          <line x1="414" y1="278" x2="414" y2="242"/>
+          <line x1="440" y1="278" x2="440" y2="213"/>
+          <line x1="466" y1="278" x2="466" y2="250"/>
+          <line x1="492" y1="278" x2="492" y2="197"/>
+        </g>
+        <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </g>
+      </svg>
+    </span>
+    <span class="titulo-logo">LUZ CÍVICA</span>
+  </button>
+  <div class="nav-links">
+    <a href="#" data-scroll-about>Sobre el proyecto</a>
+    <a href="explorador-comunal.html">Explorador de datos</a>
+    <a href="#" data-go-contact>Contacto</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <main>
+    <div class="hero-grid">
+      <div class="carousel-viewport">
+        <div class="landing-carousel-inner" data-lc-carousel-track style="--lc-slide-index: 0;">
+
+          <div class="landing-slide is-active" data-lc-slide aria-hidden="false">
+            <div class="hero-badge">Datos municipales de Chile</div>
+            <h1>Conoce tu comuna. Entiende sus <span class="accent">datos</span><span class="dot">.</span></h1>
+            <p class="lead">Información pública de 345 comunas y 17 años de datos municipales, presentada de forma clara, comparable y verificable.</p>
+          </div>
+
+          <div class="landing-slide" data-lc-slide aria-hidden="true">
+            <div class="hero-badge">Quiénes somos</div>
+            <h1>Datos públicos para escrutinio ciudadano</h1>
+            <p class="lead">Luz Cívica es una fundación dedicada a transformar datos públicos en herramientas comprensibles para el escrutinio ciudadano y el debate democrático. Nuestro foco es convertir información dispersa en evidencia accesible, verificable y útil para comprender instituciones, decisiones e impactos.</p>
+          </div>
+
+          <div class="landing-slide" data-lc-slide aria-hidden="true">
+            <div class="hero-badge">Datos públicos, explicados para personas</div>
+            <h1>Indicadores oficiales en lectura práctica</h1>
+            <p class="lead">Luz Cívica conecta fuentes oficiales como SINIM y transforma indicadores en lectura práctica. La idea es que cada número pueda entenderse en contexto: qué mide, cómo evoluciona y por qué importa para la comuna.</p>
+          </div>
+
+          <div class="landing-slide" data-lc-slide aria-hidden="true">
+            <div class="hero-badge">Transformamos datos públicos en claridad</div>
+            <h1>Claridad para fortalecer la democracia</h1>
+            <p class="lead">Analizamos, visualizamos y explicamos información pública para que cualquier ciudadano pueda comprender cómo funcionan las instituciones, quiénes toman decisiones y qué intereses están en juego.</p>
+          </div>
+
+        </div>
+
+        <div class="carousel-controls" style="max-width:560px;margin-top:22px">
+          <div class="carousel-arrows">
+            <button class="carousel-arrow" type="button" data-lc-carousel-prev aria-label="Anterior">‹</button>
+            <button class="carousel-arrow" type="button" data-lc-carousel-next aria-label="Siguiente">›</button>
+          </div>
+          <div class="carousel-dots">
+            <button class="carousel-dot is-active" type="button" data-lc-carousel-dot="0" aria-label="Ver diapositiva 1"></button>
+            <button class="carousel-dot" type="button" data-lc-carousel-dot="1" aria-label="Ver diapositiva 2"></button>
+            <button class="carousel-dot" type="button" data-lc-carousel-dot="2" aria-label="Ver diapositiva 3"></button>
+            <button class="carousel-dot" type="button" data-lc-carousel-dot="3" aria-label="Ver diapositiva 4"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="lamp-stack">
+          <div class="lamp-glow" aria-hidden="true"></div>
+          <svg class="lamp-fixture" width="248" height="318" viewBox="0 -80 280 330" aria-hidden="true">
+            <defs>
+              <linearGradient id="bodyShine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#0B2F78"/>
+                <stop offset="0.22" stop-color="#1E5BB8"/>
+                <stop offset="0.38" stop-color="#8EC4F5"/>
+                <stop offset="0.48" stop-color="#1A4F9E"/>
+                <stop offset="0.72" stop-color="#0D327A"/>
+                <stop offset="1" stop-color="#071E52"/>
+              </linearGradient>
+              <linearGradient id="rimShine" x1="0" y1="0" x2="1" y2="0.15">
+                <stop offset="0" stop-color="#0A2A6E"/>
+                <stop offset="0.28" stop-color="#2A6BC4"/>
+                <stop offset="0.5" stop-color="#1650A4"/>
+                <stop offset="0.78" stop-color="#0C327C"/>
+                <stop offset="1" stop-color="#061A48"/>
+              </linearGradient>
+              <linearGradient id="stemGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#0A2868"/>
+                <stop offset="0.4" stop-color="#2A6BC4"/>
+                <stop offset="1" stop-color="#082254"/>
+              </linearGradient>
+              <linearGradient id="rodGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#0C3480"/>
+                <stop offset="1" stop-color="#071E52"/>
+              </linearGradient>
+              <radialGradient id="bulbFace" cx="0.5" cy="0.45" r="0.6">
+                <stop offset="0" stop-color="#FFFDF4"/>
+                <stop offset="0.7" stop-color="#F6E7B4"/>
+                <stop offset="1" stop-color="#E8D08A"/>
+              </radialGradient>
+            </defs>
+            <rect x="46" y="-90" width="7" height="228" rx="1.5" fill="url(#rodGrad)"/>
+            <rect x="226" y="-90" width="7" height="228" rx="1.5" fill="url(#rodGrad)"/>
+            <rect x="134" y="-90" width="11" height="136" rx="1.5" fill="url(#stemGrad)"/>
+            <rect x="118" y="40" width="44" height="36" rx="4" fill="url(#stemGrad)"/>
+            <rect x="126" y="32" width="28" height="14" rx="2" fill="url(#stemGrad)"/>
+            <path d="M86,92 C90,70 108,62 140,62 C172,62 190,70 194,92 L204,128 C206,138 198,146 186,148 L94,148 C82,146 74,138 76,128 Z" fill="url(#bodyShine)"/>
+            <path d="M76,126 C78,116 88,112 140,112 C192,112 202,116 204,126 L206,146 C204,154 190,158 140,158 C90,158 76,154 74,146 Z" fill="url(#rimShine)"/>
+            <rect x="38" y="128" width="22" height="22" rx="3" fill="url(#stemGrad)"/>
+            <rect x="220" y="128" width="22" height="22" rx="3" fill="url(#stemGrad)"/>
+            <ellipse cx="140" cy="168" rx="108" ry="22" fill="#08255E"/>
+            <ellipse cx="140" cy="162" rx="108" ry="22" fill="url(#rimShine)"/>
+            <ellipse cx="140" cy="164" rx="78" ry="14" fill="url(#bulbFace)"/>
+            <path d="M108,78 C118,70 128,68 136,78 C128,92 116,108 108,124 C100,108 100,90 108,78 Z" fill="#EAF6FF" opacity="0.38"/>
+          </svg>
+        </div>
+        <div class="constellation-holder" id="dotmapHolder" aria-hidden="true"></div>
+        <svg class="trend-line" viewBox="0 0 420 140" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="8,108 92,86 168,78 248,118 412,28" fill="none" stroke="#B9C6E0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="92" cy="86" r="4.2" fill="#E4C56A"/>
+          <circle cx="168" cy="78" r="4.2" fill="#E4C56A"/>
+          <circle cx="248" cy="118" r="4.2" fill="#E4C56A"/>
+        </svg>
+        <svg class="chart-panel" width="280" height="210" viewBox="0 0 280 210" aria-hidden="true">
+          <rect x="18" y="98" width="22" height="86" rx="6" fill="#2B5FBF"/>
+          <rect x="52" y="58" width="22" height="126" rx="6" fill="#2B5FBF"/>
+          <rect x="86" y="22" width="22" height="162" rx="6" fill="#2B5FBF"/>
+          <path d="M128,78 L162,118 L228,28" fill="none" stroke="#2B5FBF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="148" cy="168" r="9" fill="#2B5FBF"/>
+          <path d="M178,186 L218,110 L258,186 Z" fill="#2B5FBF"/>
+        </svg>
+      </div>
+    </div>
+
+    <section class="filters-card">
+      <div class="field">
+        <label>1. Selecciona tu región</label>
+        <div class="select-shell" style="padding:0;">
+          <select class="select-shell" id="sel-region">
+            <option value="Metropolitana">Metropolitana</option>
+          </select>
+          <i class="ti ti-chevron-down select-caret"></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>2. Selecciona tu comuna</label>
+        <div class="select-shell" style="padding:0;">
+          <select class="select-shell" id="sel-comuna">
+            <option value="" selected disabled>Comuna</option>
+            <option value="PROVIDENCIA">Providencia</option>
+            <option value="ÑUÑOA">Ñuñoa</option>
+            <option value="MAIPU">Maipú</option>
+          </select>
+          <i class="ti ti-chevron-down select-caret"></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>3. Selecciona el año</label>
+        <div class="select-shell" style="padding:0;">
+          <select class="select-shell" id="sel-anio" disabled>
+            <option value="2025" selected>2025</option>
+          </select>
+          <i class="ti ti-chevron-down select-caret"></i>
+        </div>
+      </div>
+      <button class="cta-icon" type="button" id="cta-ir" aria-label="Ver panel comunal"><i class="ti ti-arrow-right"></i></button>
+    </section>
+
+    <section class="stats-strip">
+      <div class="stats-row">
+        <div class="stat-item">
+          <div class="stat-icon"><i class="ti ti-building-bank"></i></div>
+          <div><div class="stat-num">345</div><div class="stat-label">comunas</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon"><i class="ti ti-calendar-stats"></i></div>
+          <div><div class="stat-num">17</div><div class="stat-label">años de datos<br>(2008–2024)</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon"><i class="ti ti-stack-2"></i></div>
+          <div><div class="stat-num">7</div><div class="stat-label">áreas temáticas</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon"><i class="ti ti-database"></i></div>
+          <div><div class="stat-num" style="font-size:28px">SINIM</div><div class="stat-label">fuente principal</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="explorer-strip">
+      <div class="explorer-left">
+        <div class="explorer-icon"><i class="ti ti-chart-histogram"></i></div>
+        <div>
+          <div class="explorer-title">
+            <h2>Explorador de datos</h2>
+            <span class="explorer-badge">NUEVO</span>
+          </div>
+          <p>Explora datos de todas las comunas,<br>todos los años y todos los indicadores.</p>
+        </div>
+      </div>
+      <button class="explorer-btn" type="button">Ir al explorador <i class="ti ti-arrow-right"></i></button>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-left">
+      <span>Datos públicos convertidos en información clara para el escrutinio ciudadano y el debate democrático.</span>
+    </div>
+    <div class="footer-links">
+      <a href="#">Fuentes oficiales y datos municipales</a>
+      <a href="#">Transparencia y visualización ciudadana</a>
+      <a href="#">© 2026 · Todos los derechos reservados</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var holder = document.getElementById('dotmapHolder');
+    if(!holder) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 420 460');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+
+    var g = document.createElementNS(ns, 'g');
+    g.setAttribute('stroke', '#B9C6E0');
+    g.setAttribute('stroke-width', '1.3');
+    g.setAttribute('fill', 'none');
+    g.setAttribute('opacity', '0.48');
+    [
+      'M8,290 L58,228 L28,370',
+      'M8,290 L92,210',
+      'M58,228 L18,168',
+      'M28,370 L72,408',
+      'M330,210 L382,262 L408,198',
+      'M330,210 L300,330',
+      'M382,262 L418,318',
+      'M408,198 L372,142'
+    ].forEach(function(d){
+      var p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d);
+      g.appendChild(p);
+    });
+    svg.appendChild(g);
+    [[8,290,'#9AABD1'],[58,228,'#9AABD1'],[28,370,'#F5B912'],[92,210,'#F5B912'],[18,168,'#9AABD1'],[72,408,'#9AABD1'],[330,210,'#9AABD1'],[382,262,'#F5B912'],[408,198,'#9AABD1'],[300,330,'#F5B912'],[418,318,'#9AABD1'],[372,142,'#F5B912']].forEach(function(d){
+      var c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', d[0]); c.setAttribute('cy', d[1]);
+      c.setAttribute('r', 4); c.setAttribute('fill', d[2]);
+      svg.appendChild(c);
+    });
+    holder.appendChild(svg);
+  })();
+
+  (function(){
+    var track = document.querySelector('[data-lc-carousel-track]');
+    var slides = document.querySelectorAll('[data-lc-slide]');
+    var dots = document.querySelectorAll('[data-lc-carousel-dot]');
+    var prevBtn = document.querySelector('[data-lc-carousel-prev]');
+    var nextBtn = document.querySelector('[data-lc-carousel-next]');
+    var index = 0;
+    function render(){
+      track.style.setProperty('--lc-slide-index', index);
+      slides.forEach(function(s, i){
+        s.classList.toggle('is-active', i === index);
+        s.setAttribute('aria-hidden', i === index ? 'false' : 'true');
+      });
+      dots.forEach(function(d, i){ d.classList.toggle('is-active', i === index); });
+    }
+    function go(n){ index = (n + slides.length) % slides.length; render(); }
+    if(prevBtn) prevBtn.addEventListener('click', function(){ go(index - 1); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ go(index + 1); });
+    dots.forEach(function(d, i){ d.addEventListener('click', function(){ go(i); }); });
+  })();
+
+  (function(){
+    const selComuna = document.getElementById('sel-comuna');
+    const selAnio = document.getElementById('sel-anio');
+    const ctaIr = document.getElementById('cta-ir');
+    const YEARS = [2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
+
+    function irAlPanel(){
+      if(!selComuna.value) return;
+      const comuna = encodeURIComponent(selComuna.value);
+      const anio = encodeURIComponent(selAnio.value || '2025');
+      window.location.href = `panel_comunal.html?comuna=${comuna}&anio=${anio}`;
+    }
+
+    selComuna.addEventListener('change', function(){
+      selAnio.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===2025?'selected':''}>${y}</option>`).join('');
+      selAnio.disabled = false;
+    });
+
+    selAnio.addEventListener('change', irAlPanel);
+    ctaIr.addEventListener('click', irAlPanel);
+  })();
+</script>
+</body>
+</html>

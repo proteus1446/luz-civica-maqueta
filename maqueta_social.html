@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Luz Cívica — Maqueta Social (basada en Salud, datos reales de tu referencia)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* ============================================================
+     BLOQUE 1 — CSS calcado del sistema de diseño REAL de producción
+     (del técnico): detail-hero-top, panel-quick-nav, dashboard-grid-3,
+     chart-box, indicator-trends-section, indicator-search-panel, etc.
+     Estas clases NO se tocan — son la parte de la página que el técnico
+     controla y que se mantiene igual a producción.
+  ============================================================ */
+  :root {
+    --bg-main: radial-gradient(circle at top left, #f8fafc, #e2e8f0, #cbd5e1);
+    --card-bg: rgba(255, 255, 255, 0.54);
+    --card-bg-strong: rgba(255, 255, 255, 0.78);
+    --card-border: rgba(255, 255, 255, 0.72);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --green: #047857; --red: #991b1b; --blue: #1d4ed8; --amber: #b45309; --purple: #6d28d9; --cyan: #0891b2;
+    --shadow: 0 24px 80px rgba(15, 23, 42, .08);
+    /* paleta propia (de luz_civica_salud_3.html) — SOLO para las 3 zonas editables */
+    --royal:#0F2A5F; --royal-mid:#1A4A9C; --royal-light:#1D4ED8; --muted-soft:#9AA3B0; --line:rgba(13,46,107,.07);
+    --glass:rgba(255,255,255,.65); --glass-border:rgba(255,255,255,.90); --ink:#1D1D1F;
+    --shadow-sm:0 1px 3px rgba(13,46,107,.05),0 4px 16px rgba(13,46,107,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+    background: var(--bg-main); background-attachment: fixed; color: var(--text-main);
+  }
+
+  .barra-superior{
+    background: rgba(255,255,255,.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 1000; padding: 14px 40px; display:flex; align-items:center; gap:16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .titulo-logo{font-size:18px;font-weight:900;}
+  .filtro-top{margin-left:auto;display:flex;gap:10px;}
+  .filtro-top select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--text-main);}
+
+  .wrap-filtros{max-width:1160px;margin:0 auto;padding:22px 32px 0;}
+  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;}
+  .filtro-box-real{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+  .filtro-box-real label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+  .filtro-box-real select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-main);}
+  .status-linea-real{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(220,252,231,.6);color:#166534;font-weight:800;font-size:13px;border-radius:999px;padding:8px 16px;max-width:400px;margin:0 auto 18px;}
+  .dot-status{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;}
+  .nav-areas-real{display:flex;gap:6px;background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:14px;padding:6px;overflow-x:auto;}
+  .btn-volver-real{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;}
+  .btn-area-real{background:none;border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:800;color:var(--text-muted);cursor:pointer;white-space:nowrap;}
+  .btn-area-real.activo{background:rgba(15,23,42,.08);color:var(--text-main);}
+  .btn-area-real:hover:not(.activo){background:rgba(15,23,42,.05);}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:32px 32px 90px;}
+
+  .card-glass{
+    background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border); border-radius: 30px; padding: 32px; margin-bottom: 26px; box-shadow: var(--shadow);
+  }
+
+  .pill{display:inline-flex;gap:8px;align-items:center;border-radius:999px;padding:8px 14px;background:rgba(15,23,42,.06);color:var(--text-muted);font-weight:850;font-size:12px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;}
+
+  .detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;flex-wrap:wrap;}
+  .detail-hero-main h2{margin:0 0 6px;font-size:clamp(30px,3vw,42px);font-weight:950;letter-spacing:-1.45px;}
+  .detail-hero-main .hero-sub{margin:0;color:var(--text-muted);font-weight:800;font-size:15px;}
+
+  .panel-quick-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;padding-top:20px;margin-top:20px;border-top:1px solid rgba(15,23,42,.08);}
+  .panel-quick-title{color:var(--text-muted);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.055em;margin-right:4px;}
+  .panel-quick-btn{border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.09);color:#1d4ed8;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;}
+  .panel-quick-btn:hover{background:rgba(37,99,235,.15);}
+
+  .detail-hero-metrics{margin-top:26px;}
+  .dashboard-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;}
+  .dashboard-grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;}
+  .dashboard-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;}
+
+  .chart-box{position:relative;width:100%;height:260px;}
+  .chart-box.small{height:200px;}
+
+  .grid-gastos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .gasto-box{padding:18px;border-radius:20px;text-align:center;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.5);}
+  .gasto-box span{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
+  .gasto-box strong{display:block;font-size:17px;margin-top:6px;}
+  .porcentaje-gasto{font-size:12px;font-weight:900;margin-top:8px;padding-top:8px;border-top:1px solid rgba(15,23,42,.08);}
+
+  .data-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(15,23,42,.06);font-size:13px;font-weight:750;}
+  .data-row:last-child{border-bottom:none;}
+  .data-row strong{font-weight:950;}
+
+  .alert-box{display:flex;align-items:center;gap:16px;background:rgba(254,242,242,.7);border:1px solid rgba(153,27,27,.16);border-radius:24px;padding:22px 26px;}
+  .alert-icon{width:48px;height:48px;border-radius:14px;background:#991b1b;color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px;flex:0 0 auto;}
+  .alert-box .t{font-size:11px;font-weight:900;text-transform:uppercase;color:#991b1b;letter-spacing:.03em;}
+  .alert-box .v{font-size:28px;font-weight:950;color:#991b1b;margin:2px 0 4px;}
+  .alert-box .n{font-size:12px;color:#7f1d1d;font-weight:700;}
+  .alert-box.ok{background:rgba(220,252,231,.7);border-color:rgba(21,128,61,.16);}
+  .alert-box.ok .alert-icon{background:#15803d;}
+  .alert-box.ok .t,.alert-box.ok .v{color:#15803d;}
+  .alert-box.ok .n{color:#166534;}
+
+  .indicator-trends-section{display:grid;gap:20px;}
+  .indicator-trends-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .indicator-trend-card{padding:18px;border-radius:20px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.55);}
+  .indicator-trend-card .code{font-size:10px;font-weight:900;color:#1d4ed8;background:rgba(37,99,235,.1);padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;}
+  .indicator-trend-card h4{margin:0 0 2px;font-size:13px;font-weight:900;line-height:1.3;}
+  .indicator-trend-card .cur{font-size:12px;color:var(--text-muted);font-weight:800;margin-bottom:6px;}
+
+  .indicator-search-panel{display:block;}
+  .indicator-search-input{width:min(100%,480px);min-height:46px;border:1px solid rgba(148,163,184,.4);border-radius:14px;padding:10px 16px;font-size:14px;background:rgba(255,255,255,.7);}
+  .indicator-search-count{display:inline-flex;align-items:center;min-height:32px;border-radius:999px;padding:6px 12px;background:rgba(15,23,42,.06);color:var(--text-muted);font-size:12px;font-weight:900;margin-left:10px;}
+  .indicator-row{display:flex;justify-content:space-between;align-items:center;padding:14px 6px;border-bottom:1px solid rgba(15,23,42,.06);}
+  .indicator-row:last-child{border-bottom:none;}
+  .indicator-row[hidden]{display:none;}
+  .indicator-name{font-weight:850;font-size:14px;}
+  .indicator-meta{font-size:11px;color:var(--text-muted);font-weight:750;margin-top:2px;}
+  .indicator-value{font-weight:950;font-size:16px;white-space:nowrap;}
+
+  h3.section-title{font-size:20px;font-weight:700;margin:0 0 6px;letter-spacing:-.3px;color:var(--text-main);}
+  p.section-desc{color:var(--text-muted);font-weight:500;font-size:13px;margin:0 0 18px;line-height:1.5;}
+
+  /* ============================================================
+     ZONA EDITABLE — componentes propios (rescatados de luz_civica_salud_3.html):
+     KPI narrativo (reemplaza círculos), veredicto (reemplaza cuadro rojo),
+     panel/eyebrow y stack/litem (reemplaza donut + cajas de gasto).
+  ============================================================ */
+  .kpis-propios{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .kpi-propio{background:rgba(255,255,255,.55);border:1px solid var(--card-border);border-radius:16px;padding:18px 18px;box-shadow:var(--shadow-sm,0 4px 16px rgba(13,46,107,.06));}
+  .kpi-propio .kn{font-size:30px;font-weight:800;color:var(--royal);line-height:1;margin-bottom:6px;letter-spacing:-.03em;}
+  .kpi-propio .kn .ku{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:2px;}
+  .kpi-propio .kt{font-size:12.5px;font-weight:800;color:var(--text-main);margin-bottom:4px;}
+  .kpi-propio .kd{font-size:11.5px;color:var(--text-muted);line-height:1.45;}
+
+  .panel-propio{background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:22px;padding:26px;}
+  .eyebrow-propio{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--royal-mid);font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:16px;}
+  .big-propio{font-size:38px;font-weight:800;color:var(--royal);line-height:1;letter-spacing:-.03em;}
+  .big-label-propio{font-size:12.5px;color:var(--text-muted);font-weight:600;margin-top:2px;}
+  .split-row-propio{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px;}
+  .split-row-propio .nm{color:var(--text-main);font-weight:700;}
+  .bar-track-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;display:flex;margin-bottom:14px;}
+  .bar-track-propio i{display:block;height:100%;}
+  .cov-bar-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;margin-top:8px;margin-bottom:6px;}
+  .cov-bar-propio div{height:100%;border-radius:99px;background:linear-gradient(90deg,#059669,#10b981);}
+
+  .veredicto{background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);border-radius:24px;padding:28px 32px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;box-shadow:0 20px 50px -12px rgba(13,46,107,.35);}
+  .veredicto .vtext{font-size:15px;line-height:1.55;color:rgba(255,255,255,.88);max-width:52ch;}
+  .veredicto .vtext b{color:#fff;font-weight:800;}
+  .veredicto .vbadge{text-align:center;border-left:1px solid rgba(255,255,255,.18);padding-left:28px;}
+  .veredicto .vbadge .n{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em;}
+  .veredicto .vbadge .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:6px;font-weight:700;}
+  .veredicto .vbadge.pos .n{color:#4ade80;}
+  .veredicto .vbadge.neg .n{color:#f87171;}
+
+  .fin-stack{height:8px;border-radius:99px;overflow:hidden;display:flex;gap:2px;margin:14px 0 16px;}
+  .fin-stack i{height:100%;border-radius:99px;}
+  .fin-total{font-size:26px;font-weight:800;color:var(--royal);margin-bottom:4px;letter-spacing:-.02em;}
+  .litem-propio{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .litem-propio:last-child{border-bottom:none;}
+  .litem-propio .ln{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--text-main);}
+  .litem-propio .ln i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
+  .litem-propio .lv .a{font-weight:800;color:var(--royal);}
+  .litem-propio .lv .p{font-size:11px;color:var(--text-muted);margin-left:5px;}
+
+  .stat-row-propio{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+  .stat-row-propio:last-child{border-bottom:none;}
+  .stat-row-propio .st-label{font-size:13px;font-weight:700;color:var(--text-main);}
+  .stat-row-propio .st-num{font-size:22px;font-weight:800;color:var(--royal);letter-spacing:-.02em;text-align:right;}
+  .stat-row-propio .st-sub{font-size:10.5px;color:var(--muted-soft);margin-top:2px;text-align:right;}
+
+  @media (max-width:900px){
+    .kpis-propios{grid-template-columns:1fr;}
+    .veredicto{grid-template-columns:1fr;gap:16px;}
+    .veredicto .vbadge{text-align:left;border-left:none;padding-left:0;border-top:1px solid rgba(255,255,255,.18);padding-top:16px;}
+  }
+
+  /* Trayectorias (reemplazan el gráfico combinado índice-100 del técnico) */
+  .traj-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;}
+  .traj-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm);}
+  @media (max-width:920px){ .traj-grid{grid-template-columns:1fr;} }
+  .traj-title-hl{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--royal);background:rgba(37,99,235,.12);padding:8px 14px;border-radius:10px;margin-bottom:14px;}
+  .traj-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
+  .traj-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .traj-row-label-propio{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin:4px 0 10px;}
+  .traj-chart-propio{display:flex;gap:8px;margin-bottom:4px;}
+  .traj-y-propio{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;min-width:64px;}
+  .traj-y-propio span{font-size:9px;color:var(--muted-soft);font-weight:600;white-space:nowrap;}
+  .traj-bars-propio{display:flex;align-items:flex-end;gap:3px;height:150px;flex:1;position:relative;}
+  .traj-bars-propio b{display:block;width:100%;border-radius:3px 3px 0 0;}
+  .traj-bars-propio .gap-propio{width:100%;height:1px;align-self:center;background:transparent;border-bottom:1px dashed var(--line);}
+  .traj-axis-propio{display:flex;gap:3px;margin-bottom:10px;padding-left:72px;}
+  .traj-axis-propio span{flex:1;text-align:center;font-size:8.5px;color:var(--muted-soft);font-weight:600;}
+  .traj-text-propio{font-size:12px;color:var(--ink);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;}
+  .traj-text-propio b{color:var(--royal);}
+
+  @media (max-width:900px){
+    .dashboard-grid-3,.dashboard-grid-2{grid-template-columns:1fr;}
+    .grid-gastos{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<body>
+<nav class="barra-superior">
+  <button type="button" onclick="location.href='luz_civica_portada_v2.html'" aria-label="Volver al inicio de Luz Cívica" style="display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;">
+    <svg width="40" height="24" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+      <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+        <line x1="414" y1="278" x2="414" y2="242"/>
+        <line x1="440" y1="278" x2="440" y2="213"/>
+        <line x1="466" y1="278" x2="466" y2="250"/>
+        <line x1="492" y1="278" x2="492" y2="197"/>
+      </g>
+      <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </g>
+    </svg>
+    <span style="font-size:18px;font-weight:800;letter-spacing:.01em;color:#0F2A5F;">LUZ CÍVICA</span>
+  </button>
+</nav>
+
+<div class="wrap-filtros">
+  <div class="filtros-reales">
+    <div class="filtro-box-real">
+      <label>Región</label>
+      <select id="sel-region"><option>Metropolitana</option></select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Comuna</label>
+      <select id="sel-comuna">
+        <option value="PROVIDENCIA">Providencia</option>
+        <option value="ÑUÑOA">Ñuñoa</option>
+        <option value="MAIPU">Maipú</option>
+      </select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Año</label>
+      <select id="sel-anio"></select>
+    </div>
+  </div>
+  <nav class="nav-areas-real">
+    <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html'">Volver al panel</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html'">Administración</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_salud.html'">Salud</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html'">Educación</button>
+    <button class="btn-area-real activo" type="button">Social</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_perfil.html'">Perfil</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_dotacion.html'">Dotación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html'">Remuneraciones</button>
+    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html'">Explorador</button>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <div class="card-glass">
+    <div class="detail-hero-top">
+      <div class="detail-hero-main">
+        <h2>Indicadores Sociales</h2>
+        <p class="hero-sub"><span id="hdr-comuna">PROVIDENCIA</span> · Año <span id="hdr-anio">2024</span> · Montos en miles de pesos</p>
+      </div>
+    </div>
+    <nav class="panel-quick-nav">
+      <span class="panel-quick-title">Ir a</span>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-evolucion').scrollIntoView({behavior:'smooth'})">Evolución anual de finanzas municipales</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Evolución anual por indicador</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Buscador de indicadores</button>
+    </nav>
+
+    <div class="detail-hero-metrics kpis-propios">
+      <div class="kpi-propio">
+        <div class="kn"><span id="kpi-vuln-n">—</span><span class="ku">%</span></div>
+        <div class="kt">Vulnerabilidad social</div>
+        <div class="kd">Hogares en el tramo 0-40% de ingresos (RSH), sobre el total de hogares registrados (RSHNH40 / total hogares)</div>
+      </div>
+      <div class="kpi-propio">
+        <div class="kn" id="kpi-rshnp-n">—</div>
+        <div class="kt">Personas inscritas en RSH</div>
+        <div class="kd">Cobertura del Registro Social de Hogares en la comuna (RSHNP)</div>
+      </div>
+      <div class="kpi-propio">
+        <div class="kn"><span id="kpi-asist-n">—</span><span class="ku">/hab</span></div>
+        <div class="kt">Asistencia social directa por habitante</div>
+        <div class="kd" id="kpi-asist-d">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Contexto socioeconómico</div>
+      <div class="stat-row-propio">
+        <div class="st-label">Encuesta CASEN (pobreza)</div>
+        <div class="st-num" id="ctx-casen-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Personas inscritas en RSH</div>
+        <div class="st-num" id="ctx-rshnp-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Adultos mayores (60+) en RSH</div>
+        <div><div class="st-num" id="ctx-rsh60-n">—</div><div class="st-sub" id="ctx-rsh60-d">—</div></div>
+      </div>
+    </div>
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Caracterización de hogares (RSH)</div>
+      <div class="fin-total"><span id="hog-total-n">—</span> <span style="font-size:13px;color:var(--text-muted);font-weight:500;">hogares encuestados</span></div>
+      <div class="fin-stack" id="hog-stack"></div>
+      <div id="hog-litems"></div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio" style="grid-column:1/-1;">
+      <div class="eyebrow-propio">Organizaciones y gasto social</div>
+      <div class="fin-total"><span id="gs-total-n">—</span> <span style="font-size:13px;color:var(--text-muted);font-weight:500;">M$ destinados al área social</span></div>
+      <div class="fin-stack" id="gs-stack"></div>
+      <div id="gs-litems"></div>
+    </div>
+  </div>
+
+  <section class="card-glass" id="sec-evolucion">
+    <h3 class="section-title">¿Cómo ha evolucionado <span id="traj-nombre">Providencia</span>?</h3>
+    <p class="section-desc">Gráficos recalculados por comuna/año (versión Chart.js, en vez de las barras dibujadas a mano del original).</p>
+    <div class="dashboard-grid-2" style="margin-top:14px;">
+      <div class="panel-propio">
+        <div class="eyebrow-propio">Asistencia social directa · M$</div>
+        <div style="position:relative;width:100%;height:200px;"><canvas id="evoAsist"></canvas></div>
+        <div class="traj-text-propio" id="traj-asist-text">—</div>
+      </div>
+      <div class="panel-propio">
+        <div class="eyebrow-propio">Gasto en programas sociales · M$</div>
+        <div style="position:relative;width:100%;height:200px;"><canvas id="evoProg"></canvas></div>
+        <div class="traj-text-propio" id="traj-prog-text">—</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-glass" id="sec-indicadores">
+    <h3 class="section-title">Evolución anual por indicador · Buscador de indicadores</h3>
+    <p class="section-desc">No tengo el detalle exacto de estas dos secciones para Social — así que no las simulo para no inventar contenido. Mismo patrón que en las demás áreas: son del técnico, no se tocan.</p>
+  </section>
+
+</div>
+<script>
+const DATA = {"PROVIDENCIA": {"2008": {"poblacion": 126016, "casen_pct": 3.5, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 176271, "asistencia_directa_hab": 1.399, "asistencia_rm_avg": 1.465, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 37253.404, "gasto_prog_sociales": null, "gasto_social_total": 37253.404}, "2009": {"poblacion": 126436, "casen_pct": 3.5, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 199988, "asistencia_directa_hab": 1.582, "asistencia_rm_avg": 1.551, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 33823.5, "gasto_prog_sociales": 3787864, "gasto_social_total": 3821687.5}, "2010": {"poblacion": 126712, "casen_pct": 0.2, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 219813, "asistencia_directa_hab": 1.735, "asistencia_rm_avg": 1.611, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 33907.726, "gasto_prog_sociales": 2067350, "gasto_social_total": 2101257.726}, "2011": {"poblacion": 126643, "casen_pct": 0.2, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 217593, "asistencia_directa_hab": 1.718, "asistencia_rm_avg": 1.948, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 36184.777, "gasto_prog_sociales": 2644158, "gasto_social_total": 2680342.777}, "2012": {"poblacion": 126487, "casen_pct": 0.2, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 237391, "asistencia_directa_hab": 1.877, "asistencia_rm_avg": 2.484, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 39752, "gasto_prog_sociales": 1717189, "gasto_social_total": 1756941}, "2013": {"poblacion": 126595, "casen_pct": 0.19, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 299226, "asistencia_directa_hab": 2.364, "asistencia_rm_avg": 2.407, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 62994.864, "gasto_prog_sociales": 2864339, "gasto_social_total": 2927333.864}, "2014": {"poblacion": 145869, "casen_pct": 0.19, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 345404, "asistencia_directa_hab": 2.368, "asistencia_rm_avg": 2.393, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 76723.8, "gasto_prog_sociales": 3261681, "gasto_social_total": 3338404.8}, "2015": {"poblacion": 147533, "casen_pct": 3.05, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 414785, "asistencia_directa_hab": 2.811, "asistencia_rm_avg": 2.521, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 118706.433, "gasto_prog_sociales": 3809646, "gasto_social_total": 3928352.433}, "2016": {"poblacion": 149165, "casen_pct": 3.05, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 405260, "asistencia_directa_hab": 2.717, "asistencia_rm_avg": 2.798, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 80355.97, "gasto_prog_sociales": 3991387, "gasto_social_total": 4071742.97}, "2017": {"poblacion": 150742, "casen_pct": 0.74, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 306279, "asistencia_directa_hab": 2.032, "asistencia_rm_avg": 2.878, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 40641.15, "gasto_prog_sociales": 3440955, "gasto_social_total": 3481596.15}, "2018": {"poblacion": 152268, "casen_pct": 0.43, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 335328, "asistencia_directa_hab": 2.202, "asistencia_rm_avg": 2.777, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 45960, "gasto_prog_sociales": 4754436, "gasto_social_total": 4800396}, "2019": {"poblacion": 154446, "casen_pct": 0.43, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 545834, "asistencia_directa_hab": 3.534, "asistencia_rm_avg": 3.005, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 53837, "gasto_prog_sociales": 5033312, "gasto_social_total": 5087149}, "2020": {"poblacion": 157749, "casen_pct": 0.43, "rshnp": 34223, "rsh60": 10982, "rsh60_pct": 32.09, "asistencia_directa": 445854, "asistencia_directa_hab": 2.826, "asistencia_rm_avg": 3.72, "vulnerabilidad_pct": 37.532, "hogares": {"total": 18848, "vulnerables": 7074, "medios": 3945, "medios_altos": 7820}, "org_comunitarias": 42687.24, "gasto_prog_sociales": 4654259, "gasto_social_total": 4696946.24}, "2021": {"poblacion": 160043, "casen_pct": 3.64, "rshnp": 63774, "rsh60": 16693, "rsh60_pct": 26.175, "asistencia_directa": 561368, "asistencia_directa_hab": 3.508, "asistencia_rm_avg": 5.178, "vulnerabilidad_pct": 38.363, "hogares": {"total": 38683, "vulnerables": 14840, "medios": 10953, "medios_altos": 37981}, "org_comunitarias": 64300.518, "gasto_prog_sociales": 4910845, "gasto_social_total": 4975145.518}, "2022": {"poblacion": 161568, "casen_pct": 3.63, "rshnp": 64534, "rsh60": 17732, "rsh60_pct": 27.477, "asistencia_directa": 680452, "asistencia_directa_hab": 4.212, "asistencia_rm_avg": 5.343, "vulnerabilidad_pct": 23.273, "hogares": {"total": 39767, "vulnerables": 9255, "medios": 7263, "medios_altos": 23249}, "org_comunitarias": 75019.457, "gasto_prog_sociales": 5854673, "gasto_social_total": 5929692.457}, "2023": {"poblacion": 162837, "casen_pct": 1.3, "rshnp": 64475, "rsh60": 18490, "rsh60_pct": 28.678, "asistencia_directa": 717008, "asistencia_directa_hab": 4.403, "asistencia_rm_avg": 7.539, "vulnerabilidad_pct": 25.739, "hogares": {"total": 40238, "vulnerables": 10357, "medios": 8675, "medios_altos": 21206}, "org_comunitarias": 101255, "gasto_prog_sociales": 4107563, "gasto_social_total": 4208818}, "2024": {"poblacion": 164009, "casen_pct": 1.32, "rshnp": 64695, "rsh60": 19156, "rsh60_pct": 29.61, "asistencia_directa": 636463, "asistencia_directa_hab": 3.881, "asistencia_rm_avg": 8.812, "vulnerabilidad_pct": 26.143, "hogares": {"total": 40699, "vulnerables": 10640, "medios": 8493, "medios_altos": 21566}, "org_comunitarias": 92690.762, "gasto_prog_sociales": 5150311, "gasto_social_total": 5243001.762}, "2025": {"poblacion": 165134, "casen_pct": 1.3, "rshnp": 64763, "rsh60": 19779, "rsh60_pct": 30.541, "asistencia_directa": 593238, "asistencia_directa_hab": 3.592, "asistencia_rm_avg": 9.674, "vulnerabilidad_pct": 26.404, "hogares": {"total": 41070, "vulnerables": 10844, "medios": 8611, "medios_altos": 21615}, "org_comunitarias": 83155.092, "gasto_prog_sociales": 5559144, "gasto_social_total": 5642299.092}}, "ÑUÑOA": {"2008": {"poblacion": 151045, "casen_pct": 4.3, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1083385, "asistencia_directa_hab": 7.173, "asistencia_rm_avg": 1.465, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 128297.447, "gasto_prog_sociales": null, "gasto_social_total": 128297.447}, "2009": {"poblacion": 149205, "casen_pct": 4.3, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1058858, "asistencia_directa_hab": 7.097, "asistencia_rm_avg": 1.551, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 136322.916, "gasto_prog_sociales": 0, "gasto_social_total": 136322.916}, "2010": {"poblacion": 147380, "casen_pct": 2.8, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 733404, "asistencia_directa_hab": 4.976, "asistencia_rm_avg": 1.611, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 68248.939, "gasto_prog_sociales": 0, "gasto_social_total": 68248.939}, "2011": {"poblacion": 145116, "casen_pct": 2.8, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 648991, "asistencia_directa_hab": 4.472, "asistencia_rm_avg": 1.948, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 103925.89, "gasto_prog_sociales": 952, "gasto_social_total": 104877.89}, "2012": {"poblacion": 142857, "casen_pct": 2.8, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 701162, "asistencia_directa_hab": 4.908, "asistencia_rm_avg": 2.484, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 117271.333, "gasto_prog_sociales": 1041705, "gasto_social_total": 1158976.333}, "2013": {"poblacion": 140531, "casen_pct": 5.16, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1097011, "asistencia_directa_hab": 7.806, "asistencia_rm_avg": 2.407, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 160467.488, "gasto_prog_sociales": 1622755, "gasto_social_total": 1783222.488}, "2014": {"poblacion": 216452, "casen_pct": 5.16, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1133928, "asistencia_directa_hab": 5.239, "asistencia_rm_avg": 2.393, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 181915.888, "gasto_prog_sociales": 1325025, "gasto_social_total": 1506940.888}, "2015": {"poblacion": 220779, "casen_pct": 0.55, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1251937, "asistencia_directa_hab": 5.671, "asistencia_rm_avg": 2.521, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 162185.439, "gasto_prog_sociales": 1602733, "gasto_social_total": 1764918.439}, "2016": {"poblacion": 225109, "casen_pct": 0.55, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1134186, "asistencia_directa_hab": 5.038, "asistencia_rm_avg": 2.798, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 184198.034, "gasto_prog_sociales": 1354274, "gasto_social_total": 1538472.034}, "2017": {"poblacion": 229434, "casen_pct": 2.41, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 967550, "asistencia_directa_hab": 4.217, "asistencia_rm_avg": 2.878, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 213162.206, "gasto_prog_sociales": 1225705, "gasto_social_total": 1438867.206}, "2018": {"poblacion": 233739, "casen_pct": 0.9, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 957042, "asistencia_directa_hab": 4.094, "asistencia_rm_avg": 2.777, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 197707.044, "gasto_prog_sociales": 1028766, "gasto_social_total": 1226473.044}, "2019": {"poblacion": 240753, "casen_pct": 0.9, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 828932, "asistencia_directa_hab": 3.443, "asistencia_rm_avg": 3.005, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 254696.602, "gasto_prog_sociales": 927008, "gasto_social_total": 1181704.602}, "2020": {"poblacion": 250192, "casen_pct": 0.9, "rshnp": 85982, "rsh60": 24419, "rsh60_pct": 28.4, "asistencia_directa": 773587, "asistencia_directa_hab": 3.092, "asistencia_rm_avg": 3.72, "vulnerabilidad_pct": 41.635, "hogares": {"total": 42253, "vulnerables": 17592, "medios": 9437, "medios_altos": 15120}, "org_comunitarias": 219335.694, "gasto_prog_sociales": 882062, "gasto_social_total": 1101397.694}, "2021": {"poblacion": 255823, "casen_pct": 3.98, "rshnp": 144061, "rsh60": 34675, "rsh60_pct": 24.07, "asistencia_directa": 776491, "asistencia_directa_hab": 3.035, "asistencia_rm_avg": 5.178, "vulnerabilidad_pct": 49.729, "hogares": {"total": 79119, "vulnerables": 39345, "medios": 27715, "medios_altos": 77001}, "org_comunitarias": 220305.101, "gasto_prog_sociales": 941295, "gasto_social_total": 1161600.101}, "2022": {"poblacion": 259712, "casen_pct": 3.97, "rshnp": 144975, "rsh60": 36257, "rsh60_pct": 25.009, "asistencia_directa": 723697, "asistencia_directa_hab": 2.787, "asistencia_rm_avg": 5.343, "vulnerabilidad_pct": 26.721, "hogares": {"total": 81188, "vulnerables": 21694, "medios": 15880, "medios_altos": 43614}, "org_comunitarias": 297135.741, "gasto_prog_sociales": 859687, "gasto_social_total": 1156822.741}, "2023": {"poblacion": 263319, "casen_pct": 1.5, "rshnp": 147348, "rsh60": 37965, "rsh60_pct": 25.766, "asistencia_directa": 604593, "asistencia_directa_hab": 2.296, "asistencia_rm_avg": 7.539, "vulnerabilidad_pct": 28.984, "hogares": {"total": 84111, "vulnerables": 24379, "medios": 18845, "medios_altos": 40887}, "org_comunitarias": 443511.82, "gasto_prog_sociales": 748242, "gasto_social_total": 1191753.82}, "2024": {"poblacion": 266906, "casen_pct": 1.49, "rshnp": 149998, "rsh60": 39297, "rsh60_pct": 26.198, "asistencia_directa": 658025, "asistencia_directa_hab": 2.465, "asistencia_rm_avg": 8.812, "vulnerabilidad_pct": 28.744, "hogares": {"total": 86859, "vulnerables": 24967, "medios": 18844, "medios_altos": 43048}, "org_comunitarias": 704445.778, "gasto_prog_sociales": 800834, "gasto_social_total": 1505279.778}, "2025": {"poblacion": 270521, "casen_pct": 1.5, "rshnp": 153213, "rsh60": 40766, "rsh60_pct": 26.607, "asistencia_directa": 730367, "asistencia_directa_hab": 2.7, "asistencia_rm_avg": 9.674, "vulnerabilidad_pct": 28.697, "hogares": {"total": 89632, "vulnerables": 25722, "medios": 19398, "medios_altos": 44512}, "org_comunitarias": 450549.082, "gasto_prog_sociales": 837311, "gasto_social_total": 1287860.082}}, "MAIPU": {"2008": {"poblacion": 734494, "casen_pct": 9.1, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1070427, "asistencia_directa_hab": 1.457, "asistencia_rm_avg": 1.465, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 52368.883, "gasto_prog_sociales": null, "gasto_social_total": 52368.883}, "2009": {"poblacion": 770290, "casen_pct": 9.1, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1171134, "asistencia_directa_hab": 1.52, "asistencia_rm_avg": 1.551, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 47151.215, "gasto_prog_sociales": 6418622, "gasto_social_total": 6465773.215}, "2010": {"poblacion": 805503, "casen_pct": 6.4, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 996330, "asistencia_directa_hab": 1.237, "asistencia_rm_avg": 1.611, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 44452.428, "gasto_prog_sociales": 3423359, "gasto_social_total": 3467811.428}, "2011": {"poblacion": 847004, "casen_pct": 6.4, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1115675, "asistencia_directa_hab": 1.317, "asistencia_rm_avg": 1.948, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 49376.017, "gasto_prog_sociales": 3285430, "gasto_social_total": 3334806.017}, "2012": {"poblacion": 888377, "casen_pct": 6.4, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1296391, "asistencia_directa_hab": 1.459, "asistencia_rm_avg": 2.484, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 58115.629, "gasto_prog_sociales": 4502532, "gasto_social_total": 4560647.629}, "2013": {"poblacion": 931211, "casen_pct": 9.2, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1186894, "asistencia_directa_hab": 1.275, "asistencia_rm_avg": 2.407, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 61764.132, "gasto_prog_sociales": 3895418, "gasto_social_total": 3957182.132}, "2014": {"poblacion": 544876, "casen_pct": 9.2, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1305103, "asistencia_directa_hab": 2.395, "asistencia_rm_avg": 2.393, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 60644.789, "gasto_prog_sociales": 3711548, "gasto_social_total": 3772192.789}, "2015": {"poblacion": 549788, "casen_pct": 3.88, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1611246, "asistencia_directa_hab": 2.931, "asistencia_rm_avg": 2.521, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 70958.336, "gasto_prog_sociales": 4587493, "gasto_social_total": 4658451.336}, "2016": {"poblacion": 554548, "casen_pct": 3.88, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1492125, "asistencia_directa_hab": 2.691, "asistencia_rm_avg": 2.798, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 123415.21, "gasto_prog_sociales": 4279637, "gasto_social_total": 4403052.21}, "2017": {"poblacion": 559123, "casen_pct": 5.24, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1844211, "asistencia_directa_hab": 3.298, "asistencia_rm_avg": 2.878, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 90352.712, "gasto_prog_sociales": 4371275, "gasto_social_total": 4461627.712}, "2018": {"poblacion": 563499, "casen_pct": 2.57, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1891509, "asistencia_directa_hab": 3.357, "asistencia_rm_avg": 2.777, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 69793.609, "gasto_prog_sociales": 4884446, "gasto_social_total": 4954239.609}, "2019": {"poblacion": 566664, "casen_pct": 2.57, "rshnp": null, "rsh60": null, "rsh60_pct": null, "asistencia_directa": 1613167, "asistencia_directa_hab": 2.847, "asistencia_rm_avg": 3.005, "vulnerabilidad_pct": null, "hogares": {"total": null, "vulnerables": 0, "medios": 0, "medios_altos": 0}, "org_comunitarias": 79904.26, "gasto_prog_sociales": 4800452, "gasto_social_total": 4880356.26}, "2020": {"poblacion": 578605, "casen_pct": 2.57, "rshnp": 405463, "rsh60": 76093, "rsh60_pct": 18.767, "asistencia_directa": 2318398, "asistencia_directa_hab": 4.007, "asistencia_rm_avg": 3.72, "vulnerabilidad_pct": 48.28, "hogares": {"total": 188800, "vulnerables": 91153, "medios": 44710, "medios_altos": 52915}, "org_comunitarias": 0, "gasto_prog_sociales": 4778452, "gasto_social_total": 4778452}, "2021": {"poblacion": 584053, "casen_pct": 7.04, "rshnp": 479193, "rsh60": 92470, "rsh60_pct": 19.297, "asistencia_directa": 2738706, "asistencia_directa_hab": 4.689, "asistencia_rm_avg": 5.178, "vulnerabilidad_pct": 81.36, "hogares": {"total": 246598, "vulnerables": 200633, "medios": 107923, "medios_altos": 170637}, "org_comunitarias": 0, "gasto_prog_sociales": 4504910, "gasto_social_total": 4504910}, "2022": {"poblacion": 585684, "casen_pct": 7.03, "rshnp": 472379, "rsh60": 95800, "rsh60_pct": 20.28, "asistencia_directa": 780824, "asistencia_directa_hab": 1.333, "asistencia_rm_avg": 5.343, "vulnerabilidad_pct": 38.83, "hogares": {"total": 247479, "vulnerables": 96095, "medios": 56433, "medios_altos": 94951}, "org_comunitarias": 61798.85, "gasto_prog_sociales": 2827433, "gasto_social_total": 2889231.85}, "2023": {"poblacion": 586337, "casen_pct": 3.3, "rshnp": 464183, "rsh60": 100559, "rsh60_pct": 21.664, "asistencia_directa": 1247712, "asistencia_directa_hab": 2.128, "asistencia_rm_avg": 7.539, "vulnerabilidad_pct": 42.413, "hogares": {"total": 248966, "vulnerables": 105593, "medios": 63001, "medios_altos": 80372}, "org_comunitarias": 85478.07, "gasto_prog_sociales": 3454414, "gasto_social_total": 3539892.07}, "2024": {"poblacion": 586812, "casen_pct": 3.25, "rshnp": 457712, "rsh60": 104657, "rsh60_pct": 22.865, "asistencia_directa": 1552912, "asistencia_directa_hab": 2.646, "asistencia_rm_avg": 8.812, "vulnerabilidad_pct": 43.07, "hogares": {"total": 249588, "vulnerables": 107497, "medios": 62678, "medios_altos": 79413}, "org_comunitarias": 112655.255, "gasto_prog_sociales": 4201295, "gasto_social_total": 4313950.255}, "2025": {"poblacion": 587189, "casen_pct": 3.3, "rshnp": 451495, "rsh60": 108843, "rsh60_pct": 24.107, "asistencia_directa": 1770943, "asistencia_directa_hab": 3.016, "asistencia_rm_avg": 9.674, "vulnerabilidad_pct": 42.5, "hogares": {"total": 248518, "vulnerables": 105619, "medios": 63487, "medios_altos": 79412}, "org_comunitarias": 111959.335, "gasto_prog_sociales": 4677628, "gasto_social_total": 4789587.335}}};
+const NOMBRES = {"PROVIDENCIA":"Providencia","ÑUÑOA":"Ñuñoa","MAIPU":"Maipú"};
+
+function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
+function fmtPct(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec||1,maximumFractionDigits:dec||1}); }
+function fmtCLP(n){ if(n===null||n===undefined) return "Sin dato"; return "$"+Math.round(n).toLocaleString('es-CL'); }
+function litem(label, color, value, pct){
+  return `<div class="litem-propio"><span class="ln"><i style="background:${color};"></i>${label}</span><span class="lv"><span class="a">${value}</span><span class="p">${pct}</span></span></div>`;
+}
+
+let charts = {};
+function destroyCharts(){ Object.values(charts).forEach(c=>c && c.destroy()); charts={}; }
+
+function render(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const anio = document.getElementById('sel-anio').value;
+  const d = DATA[comuna][anio];
+  if(!d) return;
+
+  document.getElementById('hdr-comuna').textContent = NOMBRES[comuna].toUpperCase();
+  document.getElementById('hdr-anio').textContent = anio;
+  document.getElementById('traj-nombre').textContent = NOMBRES[comuna];
+
+  document.getElementById('kpi-vuln-n').textContent = fmtPct(d.vulnerabilidad_pct,1);
+  document.getElementById('kpi-rshnp-n').textContent = fmtInt(d.rshnp);
+  document.getElementById('kpi-asist-n').textContent = fmtCLP(d.asistencia_directa_hab!==null ? Math.round(d.asistencia_directa_hab*1000)/1000*1000 : null).replace(/\.00$/,'');
+  document.getElementById('kpi-asist-n').textContent = d.asistencia_directa_hab!==null ? '$'+Math.round(d.asistencia_directa_hab*1000).toLocaleString('es-CL') : 'Sin dato';
+  document.getElementById('kpi-asist-d').textContent = (d.asistencia_rm_avg!==null)
+    ? `En ${anio} — ${d.asistencia_directa_hab<=d.asistencia_rm_avg?'por debajo del':'por sobre el'} promedio RM ($${Math.round(d.asistencia_rm_avg*1000).toLocaleString('es-CL')}/hab)`
+    : `En ${anio}.`;
+
+  document.getElementById('ctx-casen-n').textContent = fmtPct(d.casen_pct,2)+'%';
+  document.getElementById('ctx-rshnp-n').textContent = fmtInt(d.rshnp);
+  document.getElementById('ctx-rsh60-n').textContent = fmtInt(d.rsh60);
+  document.getElementById('ctx-rsh60-d').textContent = (d.rsh60_pct!==null) ? `${fmtPct(d.rsh60_pct,1)}% del total inscrito` : '';
+
+  const h = d.hogares;
+  document.getElementById('hog-total-n').textContent = fmtInt(h.total);
+  const hogItems = [
+    {label:'Hogares vulnerables (0-40%)', color:'#DC2626', val:h.vulnerables},
+    {label:'Hogares medios (41-70%)', color:'#F5A623', val:h.medios},
+    {label:'Hogares medios altos (71-100%)', color:'var(--royal-mid)', val:h.medios_altos},
+  ];
+  document.getElementById('hog-stack').innerHTML = hogItems.filter(i=>i.val).map(i=>
+    `<i style="width:${(i.val/h.total*100).toFixed(1)}%;background:${i.color};"></i>`).join('');
+  document.getElementById('hog-litems').innerHTML = hogItems.map(i=>{
+    if(!i.val) return litem(i.label,i.color,'Sin dato','');
+    const pct = h.total ? (i.val/h.total*100).toFixed(1).replace('.',',')+'%' : '';
+    return litem(i.label, i.color, fmtInt(i.val), pct);
+  }).join('');
+
+  const gsItems = [
+    {label:'Transferencias a organizaciones comunitarias', color:'var(--royal)', val:d.org_comunitarias},
+    {label:'Gasto en programas sociales', color:'#0D9488', val:d.gasto_prog_sociales},
+  ];
+  document.getElementById('gs-total-n').textContent = fmtCLP(d.gasto_social_total);
+  document.getElementById('gs-stack').innerHTML = gsItems.filter(i=>i.val).map(i=>
+    `<i style="width:${(i.val/d.gasto_social_total*100).toFixed(2)}%;background:${i.color};"></i>`).join('');
+  document.getElementById('gs-litems').innerHTML = gsItems.map(i=>{
+    if(i.val===null) return litem(i.label,i.color,'Sin dato','');
+    const pct = d.gasto_social_total ? (i.val/d.gasto_social_total*100).toFixed(1).replace('.',',')+'%' : '';
+    return litem(i.label, i.color, fmtCLP(i.val), pct);
+  }).join('');
+
+  destroyCharts();
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>a-b);
+  const baseOpts = (ytitle)=>({ responsive:true, maintainAspectRatio:false, spanGaps:true,
+    plugins:{legend:{display:false}},
+    scales:{ y:{title:{display:true,text:ytitle},ticks:{color:'#6B7280'},grid:{color:'rgba(13,46,107,.08)'}},
+             x:{ticks:{color:'#6B7280'},grid:{display:false}} } });
+
+  charts.asist = new Chart(document.getElementById('evoAsist'), {
+    type:'bar',
+    data:{ labels: years, datasets:[{ data: years.map(y=>DATA[comuna][y].asistencia_directa), backgroundColor:'#1A4A9C' }] },
+    options: baseOpts('Miles de pesos ($)')
+  });
+  const asistSerie = years.map(y=>DATA[comuna][y].asistencia_directa).filter(v=>v!==null && v!==undefined);
+  document.getElementById('traj-asist-text').textContent = asistSerie.length
+    ? `De ${fmtCLP(asistSerie[0])} en ${years[0]} a ${fmtCLP(asistSerie[asistSerie.length-1])} en ${years[years.length-1]}.` : 'Sin datos.';
+
+  charts.prog = new Chart(document.getElementById('evoProg'), {
+    type:'bar',
+    data:{ labels: years, datasets:[{ data: years.map(y=>DATA[comuna][y].gasto_prog_sociales), backgroundColor:'#0D9488' }] },
+    options: baseOpts('Miles de pesos ($)')
+  });
+  const progSerie = years.map(y=>DATA[comuna][y].gasto_prog_sociales).filter(v=>v!==null && v!==undefined && v>0);
+  document.getElementById('traj-prog-text').textContent = progSerie.length
+    ? `Máximo histórico: ${fmtCLP(Math.max(...progSerie))}.` : 'Sin datos.';
+}
+
+function populateAnio(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>b-a);
+  const selAnio = document.getElementById('sel-anio');
+  const prev = selAnio.value;
+  selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(+prev)) selAnio.value = prev;
+  else selAnio.value = years.includes(2025) ? 2025 : years[0];
+}
+
+document.getElementById('sel-comuna').addEventListener('change', ()=>{ populateAnio(); render(); });
+document.getElementById('sel-anio').addEventListener('change', render);
+
+populateAnio();
+render();
+</script>
+</body>
+</html>

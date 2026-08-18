@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Luz Cívica — Maqueta Perfil Comunal (basada en Social, datos reales de tu referencia)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* ============================================================
+     BLOQUE 1 — CSS calcado del sistema de diseño REAL de producción
+     (del técnico): detail-hero-top, panel-quick-nav, dashboard-grid-3,
+     chart-box, indicator-trends-section, indicator-search-panel, etc.
+     Estas clases NO se tocan — son la parte de la página que el técnico
+     controla y que se mantiene igual a producción.
+  ============================================================ */
+  :root {
+    --bg-main: radial-gradient(circle at top left, #f8fafc, #e2e8f0, #cbd5e1);
+    --card-bg: rgba(255, 255, 255, 0.54);
+    --card-bg-strong: rgba(255, 255, 255, 0.78);
+    --card-border: rgba(255, 255, 255, 0.72);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --green: #047857; --red: #991b1b; --blue: #1d4ed8; --amber: #b45309; --purple: #6d28d9; --cyan: #0891b2;
+    --shadow: 0 24px 80px rgba(15, 23, 42, .08);
+    /* paleta propia (de luz_civica_salud_3.html) — SOLO para las 3 zonas editables */
+    --royal:#0F2A5F; --royal-mid:#1A4A9C; --royal-light:#1D4ED8; --muted-soft:#9AA3B0; --line:rgba(13,46,107,.07);
+    --glass:rgba(255,255,255,.65); --glass-border:rgba(255,255,255,.90); --ink:#1D1D1F;
+    --shadow-sm:0 1px 3px rgba(13,46,107,.05),0 4px 16px rgba(13,46,107,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+    background: var(--bg-main); background-attachment: fixed; color: var(--text-main);
+  }
+
+  .barra-superior{
+    background: rgba(255,255,255,.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 1000; padding: 14px 40px; display:flex; align-items:center; gap:16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .titulo-logo{font-size:18px;font-weight:900;}
+  .filtro-top{margin-left:auto;display:flex;gap:10px;}
+  .filtro-top select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--text-main);}
+
+  .wrap-filtros{max-width:1160px;margin:0 auto;padding:22px 32px 0;}
+  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;}
+  .filtro-box-real{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+  .filtro-box-real label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+  .filtro-box-real select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-main);}
+  .status-linea-real{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(220,252,231,.6);color:#166534;font-weight:800;font-size:13px;border-radius:999px;padding:8px 16px;max-width:400px;margin:0 auto 18px;}
+  .dot-status{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;}
+  .nav-areas-real{display:flex;gap:6px;background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:14px;padding:6px;overflow-x:auto;}
+  .btn-volver-real{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;}
+  .btn-area-real{background:none;border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:800;color:var(--text-muted);cursor:pointer;white-space:nowrap;}
+  .btn-area-real.activo{background:rgba(15,23,42,.08);color:var(--text-main);}
+  .btn-area-real:hover:not(.activo){background:rgba(15,23,42,.05);}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:32px 32px 90px;}
+
+  .card-glass{
+    background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border); border-radius: 30px; padding: 32px; margin-bottom: 26px; box-shadow: var(--shadow);
+  }
+
+  .pill{display:inline-flex;gap:8px;align-items:center;border-radius:999px;padding:8px 14px;background:rgba(15,23,42,.06);color:var(--text-muted);font-weight:850;font-size:12px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;}
+
+  .detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;flex-wrap:wrap;}
+  .detail-hero-main h2{margin:0 0 6px;font-size:clamp(30px,3vw,42px);font-weight:950;letter-spacing:-1.45px;}
+  .detail-hero-main .hero-sub{margin:0;color:var(--text-muted);font-weight:800;font-size:15px;}
+
+  .panel-quick-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;padding-top:20px;margin-top:20px;border-top:1px solid rgba(15,23,42,.08);}
+  .panel-quick-title{color:var(--text-muted);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.055em;margin-right:4px;}
+  .panel-quick-btn{border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.09);color:#1d4ed8;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;}
+  .panel-quick-btn:hover{background:rgba(37,99,235,.15);}
+
+  .detail-hero-metrics{margin-top:26px;}
+  .dashboard-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;}
+  .dashboard-grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;}
+  .dashboard-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;}
+
+  .chart-box{position:relative;width:100%;height:260px;}
+  .chart-box.small{height:200px;}
+
+  .grid-gastos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .gasto-box{padding:18px;border-radius:20px;text-align:center;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.5);}
+  .gasto-box span{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
+  .gasto-box strong{display:block;font-size:17px;margin-top:6px;}
+  .porcentaje-gasto{font-size:12px;font-weight:900;margin-top:8px;padding-top:8px;border-top:1px solid rgba(15,23,42,.08);}
+
+  .data-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(15,23,42,.06);font-size:13px;font-weight:750;}
+  .data-row:last-child{border-bottom:none;}
+  .data-row strong{font-weight:950;}
+
+  .alert-box{display:flex;align-items:center;gap:16px;background:rgba(254,242,242,.7);border:1px solid rgba(153,27,27,.16);border-radius:24px;padding:22px 26px;}
+  .alert-icon{width:48px;height:48px;border-radius:14px;background:#991b1b;color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px;flex:0 0 auto;}
+  .alert-box .t{font-size:11px;font-weight:900;text-transform:uppercase;color:#991b1b;letter-spacing:.03em;}
+  .alert-box .v{font-size:28px;font-weight:950;color:#991b1b;margin:2px 0 4px;}
+  .alert-box .n{font-size:12px;color:#7f1d1d;font-weight:700;}
+  .alert-box.ok{background:rgba(220,252,231,.7);border-color:rgba(21,128,61,.16);}
+  .alert-box.ok .alert-icon{background:#15803d;}
+  .alert-box.ok .t,.alert-box.ok .v{color:#15803d;}
+  .alert-box.ok .n{color:#166534;}
+
+  .indicator-trends-section{display:grid;gap:20px;}
+  .indicator-trends-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .indicator-trend-card{padding:18px;border-radius:20px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.55);}
+  .indicator-trend-card .code{font-size:10px;font-weight:900;color:#1d4ed8;background:rgba(37,99,235,.1);padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;}
+  .indicator-trend-card h4{margin:0 0 2px;font-size:13px;font-weight:900;line-height:1.3;}
+  .indicator-trend-card .cur{font-size:12px;color:var(--text-muted);font-weight:800;margin-bottom:6px;}
+
+  .indicator-search-panel{display:block;}
+  .indicator-search-input{width:min(100%,480px);min-height:46px;border:1px solid rgba(148,163,184,.4);border-radius:14px;padding:10px 16px;font-size:14px;background:rgba(255,255,255,.7);}
+  .indicator-search-count{display:inline-flex;align-items:center;min-height:32px;border-radius:999px;padding:6px 12px;background:rgba(15,23,42,.06);color:var(--text-muted);font-size:12px;font-weight:900;margin-left:10px;}
+  .indicator-row{display:flex;justify-content:space-between;align-items:center;padding:14px 6px;border-bottom:1px solid rgba(15,23,42,.06);}
+  .indicator-row:last-child{border-bottom:none;}
+  .indicator-row[hidden]{display:none;}
+  .indicator-name{font-weight:850;font-size:14px;}
+  .indicator-meta{font-size:11px;color:var(--text-muted);font-weight:750;margin-top:2px;}
+  .indicator-value{font-weight:950;font-size:16px;white-space:nowrap;}
+
+  h3.section-title{font-size:20px;font-weight:700;margin:0 0 6px;letter-spacing:-.3px;color:var(--text-main);}
+  p.section-desc{color:var(--text-muted);font-weight:500;font-size:13px;margin:0 0 18px;line-height:1.5;}
+
+  /* ============================================================
+     ZONA EDITABLE — componentes propios (rescatados de luz_civica_salud_3.html):
+     KPI narrativo (reemplaza círculos), veredicto (reemplaza cuadro rojo),
+     panel/eyebrow y stack/litem (reemplaza donut + cajas de gasto).
+  ============================================================ */
+  .kpis-propios{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .kpi-propio{background:rgba(255,255,255,.55);border:1px solid var(--card-border);border-radius:16px;padding:18px 18px;box-shadow:var(--shadow-sm,0 4px 16px rgba(13,46,107,.06));}
+  .kpi-propio .kn{font-size:30px;font-weight:800;color:var(--royal);line-height:1;margin-bottom:6px;letter-spacing:-.03em;}
+  .kpi-propio .kn .ku{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:2px;}
+  .kpi-propio .kt{font-size:12.5px;font-weight:800;color:var(--text-main);margin-bottom:4px;}
+  .kpi-propio .kd{font-size:11.5px;color:var(--text-muted);line-height:1.45;}
+
+  .panel-propio{background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:22px;padding:26px;}
+  .eyebrow-propio{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--royal-mid);font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:16px;}
+  .big-propio{font-size:38px;font-weight:800;color:var(--royal);line-height:1;letter-spacing:-.03em;}
+  .big-label-propio{font-size:12.5px;color:var(--text-muted);font-weight:600;margin-top:2px;}
+  .split-row-propio{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px;}
+  .split-row-propio .nm{color:var(--text-main);font-weight:700;}
+  .bar-track-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;display:flex;margin-bottom:14px;}
+  .bar-track-propio i{display:block;height:100%;}
+  .cov-bar-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;margin-top:8px;margin-bottom:6px;}
+  .cov-bar-propio div{height:100%;border-radius:99px;background:linear-gradient(90deg,#059669,#10b981);}
+
+  .veredicto{background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);border-radius:24px;padding:28px 32px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;box-shadow:0 20px 50px -12px rgba(13,46,107,.35);}
+  .veredicto .vtext{font-size:15px;line-height:1.55;color:rgba(255,255,255,.88);max-width:52ch;}
+  .veredicto .vtext b{color:#fff;font-weight:800;}
+  .veredicto .vbadge{text-align:center;border-left:1px solid rgba(255,255,255,.18);padding-left:28px;}
+  .veredicto .vbadge .n{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em;}
+  .veredicto .vbadge .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:6px;font-weight:700;}
+  .veredicto .vbadge.pos .n{color:#4ade80;}
+  .veredicto .vbadge.neg .n{color:#f87171;}
+
+  .fin-stack{height:8px;border-radius:99px;overflow:hidden;display:flex;gap:2px;margin:14px 0 16px;}
+  .fin-stack i{height:100%;border-radius:99px;}
+  .fin-total{font-size:26px;font-weight:800;color:var(--royal);margin-bottom:4px;letter-spacing:-.02em;}
+  .litem-propio{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .litem-propio:last-child{border-bottom:none;}
+  .litem-propio .ln{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--text-main);}
+  .litem-propio .ln i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
+  .litem-propio .lv .a{font-weight:800;color:var(--royal);}
+  .litem-propio .lv .p{font-size:11px;color:var(--text-muted);margin-left:5px;}
+
+  .stat-row-propio{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+  .stat-row-propio:last-child{border-bottom:none;}
+  .stat-row-propio .st-label{font-size:13px;font-weight:700;color:var(--text-main);}
+  .stat-row-propio .st-num{font-size:22px;font-weight:800;color:var(--royal);letter-spacing:-.02em;text-align:right;}
+  .stat-row-propio .st-sub{font-size:10.5px;color:var(--muted-soft);margin-top:2px;text-align:right;}
+
+  .flagrow-propio{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);}
+  .flagrow-propio:last-child{border-bottom:none;}
+  .flagrow-propio .fn{font-size:13px;font-weight:700;color:var(--text-main);}
+  .flagrow-propio .fd{font-size:10.5px;color:var(--muted-soft);margin-top:1px;}
+  .badge-propio{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:6px;flex:none;background:rgba(21,128,61,.12);color:#15803d;border:1px solid rgba(21,128,61,.22);}
+
+  @media (max-width:900px){
+    .kpis-propios{grid-template-columns:1fr;}
+    .veredicto{grid-template-columns:1fr;gap:16px;}
+    .veredicto .vbadge{text-align:left;border-left:none;padding-left:0;border-top:1px solid rgba(255,255,255,.18);padding-top:16px;}
+  }
+
+  /* Trayectorias (reemplazan el gráfico combinado índice-100 del técnico) */
+  .traj-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;}
+  .traj-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm);}
+  @media (max-width:920px){ .traj-grid{grid-template-columns:1fr;} }
+  .traj-title-hl{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--royal);background:rgba(37,99,235,.12);padding:8px 14px;border-radius:10px;margin-bottom:14px;}
+  .traj-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
+  .traj-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .traj-row-label-propio{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin:4px 0 10px;}
+  .traj-chart-propio{display:flex;gap:8px;margin-bottom:4px;}
+  .traj-y-propio{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;min-width:64px;}
+  .traj-y-propio span{font-size:9px;color:var(--muted-soft);font-weight:600;white-space:nowrap;}
+  .traj-bars-propio{display:flex;align-items:flex-end;gap:3px;height:150px;flex:1;position:relative;}
+  .traj-bars-propio b{display:block;width:100%;border-radius:3px 3px 0 0;}
+  .traj-bars-propio .gap-propio{width:100%;height:1px;align-self:center;background:transparent;border-bottom:1px dashed var(--line);}
+  .traj-axis-propio{display:flex;gap:3px;margin-bottom:10px;padding-left:72px;}
+  .traj-axis-propio span{flex:1;text-align:center;font-size:8.5px;color:var(--muted-soft);font-weight:600;}
+  .traj-text-propio{font-size:12px;color:var(--ink);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;}
+  .traj-text-propio b{color:var(--royal);}
+
+  @media (max-width:900px){
+    .dashboard-grid-3,.dashboard-grid-2{grid-template-columns:1fr;}
+    .grid-gastos{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<body>
+<nav class="barra-superior">
+  <button type="button" onclick="location.href='luz_civica_portada_v2.html'" aria-label="Volver al inicio de Luz Cívica" style="display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;">
+    <svg width="40" height="24" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+      <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+        <line x1="414" y1="278" x2="414" y2="242"/>
+        <line x1="440" y1="278" x2="440" y2="213"/>
+        <line x1="466" y1="278" x2="466" y2="250"/>
+        <line x1="492" y1="278" x2="492" y2="197"/>
+      </g>
+      <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </g>
+    </svg>
+    <span style="font-size:18px;font-weight:800;letter-spacing:.01em;color:#0F2A5F;">LUZ CÍVICA</span>
+  </button>
+</nav>
+
+<div class="wrap-filtros">
+  <div class="filtros-reales">
+    <div class="filtro-box-real">
+      <label>Región</label>
+      <select id="sel-region"><option>Metropolitana</option></select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Comuna</label>
+      <select id="sel-comuna">
+        <option value="PROVIDENCIA">Providencia</option>
+        <option value="ÑUÑOA">Ñuñoa</option>
+        <option value="MAIPU">Maipú</option>
+      </select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Año</label>
+      <select id="sel-anio"></select>
+    </div>
+  </div>
+  <nav class="nav-areas-real">
+    <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html'">Volver al panel</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html'">Administración</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_salud.html'">Salud</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html'">Educación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_social.html'">Social</button>
+    <button class="btn-area-real activo" type="button">Perfil</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_dotacion.html'">Dotación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html'">Remuneraciones</button>
+    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html'">Explorador</button>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <div class="card-glass">
+    <div class="detail-hero-top">
+      <div class="detail-hero-main">
+        <h2>Perfil Comunal</h2>
+        <p class="hero-sub"><span id="hdr-comuna">PROVIDENCIA</span> · Año <span id="hdr-anio">2024</span> · Montos en miles de pesos</p>
+      </div>
+    </div>
+    <nav class="panel-quick-nav">
+      <span class="panel-quick-title">Ir a</span>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-evolucion').scrollIntoView({behavior:'smooth'})">Evolución anual de finanzas municipales</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Evolución anual por indicador</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Buscador de indicadores</button>
+    </nav>
+
+    <div class="detail-hero-metrics kpis-propios">
+      <div class="kpi-propio">
+        <div class="kn"><span id="kpi-densidad-n">—</span><span class="ku">hab/km²</span></div>
+        <div class="kt">Densidad poblacional</div>
+        <div class="kd" id="kpi-densidad-d">—</div>
+      </div>
+      <div class="kpi-propio">
+        <div class="kn" id="kpi-poblacion-n">—</div>
+        <div class="kt">Población total (INE)</div>
+        <div class="kd">Proyección de población comunal</div>
+      </div>
+      <div class="kpi-propio">
+        <div class="kn"><span id="kpi-rural-n">—</span><span class="ku">%</span></div>
+        <div class="kt">Población rural</div>
+        <div class="kd" id="kpi-rural-d">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Servicios municipales</div>
+      <div class="stat-row-propio">
+        <div class="st-label">Gasto en Servicios de Vigilancia</div>
+        <div><div class="st-num" id="seg-gasto-n">—</div><div class="st-sub">M$ · fuente Contraloría</div></div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Cámaras de vigilancia</div>
+        <div><div class="st-num" id="seg-camaras-n">—</div><div class="st-sub" id="seg-camaras-d">—</div></div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Vehículos de patrullaje</div>
+        <div><div class="st-num" id="seg-vehiculos-n">—</div><div class="st-sub" id="seg-vehiculos-d">—</div></div>
+      </div>
+      <div class="flagrow-propio">
+        <span class="fn">Consejo Comunal de Seguridad (Ley 20.965)</span>
+        <span class="badge-propio" id="seg-consejo-n">—</span>
+      </div>
+    </div>
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Cultura y recreación</div>
+      <div class="stat-row-propio">
+        <div class="st-label">Administración cultural</div>
+        <div class="st-num" style="font-size:18px;" id="cult-admin-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Personal de gestión cultural</div>
+        <div><div class="st-num" id="cult-personal-n">—</div><div class="st-sub">personas</div></div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Gasto en cultura y actividades recreativas</div>
+        <div><div class="st-num" id="cult-gasto-n">—</div><div class="st-sub" id="cult-gasto-d">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Áreas verdes y espacio público</div>
+      <div class="fin-total"><span id="av-m2-n">—</span> <span style="font-size:13px;color:var(--text-muted);font-weight:500;">m² áreas verdes / hab.</span></div>
+      <div class="stat-row-propio">
+        <div class="st-label">N° de parques urbanos</div>
+        <div class="st-num" id="av-parques-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">N° de plazas</div>
+        <div class="st-num" id="av-plazas-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Gasto en mantención de jardines</div>
+        <div><div class="st-num" id="av-gastojardin-n">—</div><div class="st-sub" id="av-gastojardin-d">—</div></div>
+      </div>
+    </div>
+    <div class="panel-propio">
+      <div class="eyebrow-propio">Vivienda y urbanismo</div>
+      <div class="stat-row-propio">
+        <div class="st-label">Cobertura de agua potable</div>
+        <div><div class="st-num" id="viv-agua-n">—</div><div class="st-sub" id="viv-agua-d">—</div></div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Permisos de edificación entregados</div>
+        <div class="st-num" id="viv-permisos-n">—</div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Con recepción definitiva</div>
+        <div><div class="st-num" id="viv-recepcion-n">—</div><div class="st-sub" id="viv-recepcion-d">—</div></div>
+      </div>
+      <div class="stat-row-propio">
+        <div class="st-label">Avalúo fiscal propiedades municipales</div>
+        <div><div class="st-num" id="viv-avaluo-n">—</div><div class="st-sub">M$</div></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card-glass" id="sec-evolucion">
+    <h3 class="section-title">¿Cómo ha evolucionado <span id="traj-nombre">Providencia</span>?</h3>
+    <p class="section-desc">Gráficos recalculados por comuna/año (versión Chart.js, en vez de las barras dibujadas a mano del original).</p>
+    <div class="dashboard-grid-2" style="margin-top:14px;">
+      <div class="panel-propio">
+        <div class="eyebrow-propio">Gasto en Servicios de Vigilancia · M$</div>
+        <div style="position:relative;width:100%;height:200px;"><canvas id="evoAV"></canvas></div>
+        <div class="traj-text-propio" id="traj-av-text">—</div>
+      </div>
+      <div class="panel-propio">
+        <div class="eyebrow-propio">Gasto en cultura y recreación · M$</div>
+        <div style="position:relative;width:100%;height:200px;"><canvas id="evoCult"></canvas></div>
+        <div class="traj-text-propio" id="traj-cult-text">—</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-glass" id="sec-indicadores">
+    <h3 class="section-title">Evolución anual por indicador · Buscador de indicadores</h3>
+    <p class="section-desc">No tengo el detalle exacto de estas dos secciones para Perfil — así que no las simulo para no inventar contenido. Mismo patrón que en las demás áreas: son del técnico, no se tocan.</p>
+  </section>
+
+</div>
+<script>
+const DATA = {"PROVIDENCIA": {"2008": {"densidad": 8751.11, "poblacion": 126016, "rural_pct": 0.21, "seguridad": {"gasto_vigilancia": 801738.813, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 0, "gasto_pct_total": 0.0}, "areas_verdes": {"m2_hab": 5.87, "parques": null, "plazas": null, "gasto_jardines": null}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 51183, "agua_pct": 86.072, "permisos": null, "recepcion_def": 396, "avaluo": null}}, "2009": {"densidad": 8780.28, "poblacion": 126436, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 926527.989, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3336023, "gasto_pct_total": 5.468}, "areas_verdes": {"m2_hab": 5.93, "parques": null, "plazas": null, "gasto_jardines": 2117969}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": null, "recepcion_def": 63, "avaluo": null}}, "2010": {"densidad": 8799.44, "poblacion": 126712, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 948205.758, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3365173, "gasto_pct_total": 5.267}, "areas_verdes": {"m2_hab": 5.91, "parques": 11, "plazas": 151, "gasto_jardines": 2075792}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": null, "recepcion_def": 34, "avaluo": 39846723}}, "2011": {"densidad": 9045.93, "poblacion": 126643, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 662758.816, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3530115, "gasto_pct_total": 5.434}, "areas_verdes": {"m2_hab": 5.84, "parques": 11, "plazas": 151, "gasto_jardines": 2112011}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": null, "recepcion_def": 24, "avaluo": 39984969}}, "2012": {"densidad": 9034.79, "poblacion": 126487, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 589994.528, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3016696, "gasto_pct_total": 4.136}, "areas_verdes": {"m2_hab": 5.84, "parques": 14, "plazas": 66, "gasto_jardines": 2195658}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 36, "recepcion_def": 20, "avaluo": 43386753}}, "2013": {"densidad": 9042.5, "poblacion": 126595, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 855202.645, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1507747, "gasto_pct_total": 1.924}, "areas_verdes": {"m2_hab": 5.8, "parques": 14, "plazas": 66, "gasto_jardines": 2286384}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": 42, "recepcion_def": 33, "avaluo": 46456293}}, "2014": {"densidad": 10419.21, "poblacion": 145869, "rural_pct": null, "seguridad": {"gasto_vigilancia": 1136658.255, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3200473, "gasto_pct_total": 3.273}, "areas_verdes": {"m2_hab": 5.15, "parques": 14, "plazas": 65, "gasto_jardines": 2226479}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": 136, "recepcion_def": 136, "avaluo": 49588754}}, "2015": {"densidad": 10538.07, "poblacion": 147533, "rural_pct": null, "seguridad": {"gasto_vigilancia": 1388055.466, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1819333, "gasto_pct_total": 1.721}, "areas_verdes": {"m2_hab": 5.15, "parques": 13, "plazas": 52, "gasto_jardines": 2880442}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": 54, "recepcion_def": 136, "avaluo": 54783178}}, "2016": {"densidad": 10654.64, "poblacion": 149165, "rural_pct": null, "seguridad": {"gasto_vigilancia": 1479650.501, "camaras": 53, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 2003105, "gasto_pct_total": 1.802}, "areas_verdes": {"m2_hab": 5.12, "parques": 13, "plazas": 53, "gasto_jardines": 3408039}, "vivienda": {"agua_conexion": 44054, "viviendas_censo": 44164, "agua_pct": 99.751, "permisos": 33, "recepcion_def": 134, "avaluo": 58400584}}, "2017": {"densidad": 10767.29, "poblacion": 150742, "rural_pct": null, "seguridad": {"gasto_vigilancia": 1056457.79, "camaras": 45, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3349283, "gasto_pct_total": 2.965}, "areas_verdes": {"m2_hab": 5.06, "parques": 13, "plazas": 53, "gasto_jardines": 3292771}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 26, "recepcion_def": 128, "avaluo": 60140299}}, "2018": {"densidad": 10876.29, "poblacion": 152268, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 757376.752, "camaras": 71, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3512872, "gasto_pct_total": 2.862}, "areas_verdes": {"m2_hab": 5.02, "parques": 13, "plazas": 53, "gasto_jardines": 3151182}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 59838, "agua_pct": 99.362, "permisos": 33, "recepcion_def": 111, "avaluo": 72400194}}, "2019": {"densidad": 11031.86, "poblacion": 154446, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 1048652.969, "camaras": 54, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 3875396, "gasto_pct_total": 2.921}, "areas_verdes": {"m2_hab": 4.95, "parques": 13, "plazas": 53, "gasto_jardines": 2995168}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 64923, "agua_pct": 91.579, "permisos": 45, "recepcion_def": 112, "avaluo": 93680554}}, "2020": {"densidad": 11267.79, "poblacion": 157749, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 354613.179, "camaras": 48, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Fundación", "personal": 27, "gasto": 1856425, "gasto_pct_total": 1.488}, "areas_verdes": {"m2_hab": 4.82, "parques": 13, "plazas": 53, "gasto_jardines": 2293770}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 64923, "agua_pct": 91.579, "permisos": 131, "recepcion_def": 85, "avaluo": 100297037}}, "2021": {"densidad": 11431.64, "poblacion": 160043, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 355856.701, "camaras": 48, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Fundación", "personal": 29, "gasto": 1954139, "gasto_pct_total": 1.499}, "areas_verdes": {"m2_hab": 4.75, "parques": 13, "plazas": 53, "gasto_jardines": 3023830}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 65151, "agua_pct": 91.259, "permisos": 182, "recepcion_def": 116, "avaluo": 98413031}}, "2022": {"densidad": 11540.57, "poblacion": 161568, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 467211.243, "camaras": 71, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Fundación", "personal": 33, "gasto": 3870648, "gasto_pct_total": 2.494}, "areas_verdes": {"m2_hab": 4.71, "parques": 19, "plazas": 72, "gasto_jardines": 4364762}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 65151, "agua_pct": 91.259, "permisos": 228, "recepcion_def": 127, "avaluo": 131099556}}, "2023": {"densidad": 11631.21, "poblacion": 162837, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 668803.576, "camaras": 247, "vehiculos": 48, "consejo": "Si"}, "cultura": {"admin": "Fundación", "personal": 38, "gasto": 4460543, "gasto_pct_total": 2.487}, "areas_verdes": {"m2_hab": 4.67, "parques": 19, "plazas": 72, "gasto_jardines": 4867999}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 65151, "agua_pct": 91.259, "permisos": 186, "recepcion_def": 105, "avaluo": 147264442}}, "2024": {"densidad": 11714.93, "poblacion": 164009, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 728206.498, "camaras": 370, "vehiculos": 56, "consejo": "Si"}, "cultura": {"admin": "Fundación", "personal": 40, "gasto": 4562144, "gasto_pct_total": 2.334}, "areas_verdes": {"m2_hab": 4.59, "parques": 19, "plazas": 72, "gasto_jardines": 5276714}, "vivienda": {"agua_conexion": 59456, "viviendas_censo": 70107, "agua_pct": 84.808, "permisos": 174, "recepcion_def": 96, "avaluo": 175359458}}, "2025": {"densidad": 11795.29, "poblacion": 165134, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 754876.357, "camaras": 64, "vehiculos": 42, "consejo": "Si"}, "cultura": {"admin": "Fundación", "personal": 39, "gasto": 5275214, "gasto_pct_total": 2.58}, "areas_verdes": {"m2_hab": 4.22, "parques": 19, "plazas": 72, "gasto_jardines": 5007319}, "vivienda": {"agua_conexion": 67215, "viviendas_censo": 70107, "agua_pct": 95.875, "permisos": 188, "recepcion_def": 122, "avaluo": 181878667}}}, "ÑUÑOA": {"2008": {"densidad": 8937.57, "poblacion": 151045, "rural_pct": 0.07, "seguridad": {"gasto_vigilancia": 2372.974, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 0, "gasto_pct_total": 0.0}, "areas_verdes": {"m2_hab": 7.28, "parques": null, "plazas": null, "gasto_jardines": null}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 54692, "agua_pct": 93.407, "permisos": null, "recepcion_def": 161, "avaluo": null}}, "2009": {"densidad": 8828.7, "poblacion": 149205, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 2591.115, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 919174, "gasto_pct_total": 4.496}, "areas_verdes": {"m2_hab": null, "parques": null, "plazas": null, "gasto_jardines": 1332712}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": null, "recepcion_def": null, "avaluo": null}}, "2010": {"densidad": 8720.71, "poblacion": 147380, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 3775.936, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 695533, "gasto_pct_total": 3.434}, "areas_verdes": {"m2_hab": 6.79, "parques": 17, "plazas": 100, "gasto_jardines": 1581888}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": null, "recepcion_def": 147, "avaluo": 17613214}}, "2011": {"densidad": 8536.24, "poblacion": 145116, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 13481.23, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 919711, "gasto_pct_total": 3.796}, "areas_verdes": {"m2_hab": 7.32, "parques": 15, "plazas": 86, "gasto_jardines": 1806084}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": null, "recepcion_def": 156, "avaluo": 13912175}}, "2012": {"densidad": 8403.35, "poblacion": 142857, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 24465.959, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 987553, "gasto_pct_total": 3.54}, "areas_verdes": {"m2_hab": 7.53, "parques": 18, "plazas": 150, "gasto_jardines": 1965930}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 376, "recepcion_def": 214, "avaluo": 15494510}}, "2013": {"densidad": 8266.53, "poblacion": 140531, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 24105.83, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1267339, "gasto_pct_total": 3.817}, "areas_verdes": {"m2_hab": 6.99, "parques": 18, "plazas": 150, "gasto_jardines": 1869171}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": 351, "recepcion_def": 191, "avaluo": 23139764}}, "2014": {"densidad": 12732.47, "poblacion": 216452, "rural_pct": null, "seguridad": {"gasto_vigilancia": 38395.35, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1260414, "gasto_pct_total": 3.115}, "areas_verdes": {"m2_hab": 4.89, "parques": 18, "plazas": 150, "gasto_jardines": 2062129}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": null, "recepcion_def": null, "avaluo": 18162872}}, "2015": {"densidad": 12987, "poblacion": 220779, "rural_pct": null, "seguridad": {"gasto_vigilancia": 48650.175, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 983119, "gasto_pct_total": 2.187}, "areas_verdes": {"m2_hab": 4.66, "parques": 7, "plazas": 150, "gasto_jardines": 2088054}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": 88, "recepcion_def": 198, "avaluo": 18970812}}, "2016": {"densidad": 13241.71, "poblacion": 225109, "rural_pct": null, "seguridad": {"gasto_vigilancia": 46417.14, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1576567, "gasto_pct_total": 3.606}, "areas_verdes": {"m2_hab": 5.06, "parques": 7, "plazas": 150, "gasto_jardines": 2454507}, "vivienda": {"agua_conexion": 51086, "viviendas_censo": 51207, "agua_pct": 99.764, "permisos": 109, "recepcion_def": 164, "avaluo": 24118679}}, "2017": {"densidad": 13496.12, "poblacion": 229434, "rural_pct": null, "seguridad": {"gasto_vigilancia": 24912.65, "camaras": 34, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1788867, "gasto_pct_total": 3.798}, "areas_verdes": {"m2_hab": 4.86, "parques": 7, "plazas": 157, "gasto_jardines": 2782185}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 143, "recepcion_def": 170, "avaluo": 31320636}}, "2018": {"densidad": 13749.35, "poblacion": 233739, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 22254.163, "camaras": 34, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1870310, "gasto_pct_total": 3.576}, "areas_verdes": {"m2_hab": 5.16, "parques": 3, "plazas": 221, "gasto_jardines": 4727179}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 80450, "agua_pct": 99.316, "permisos": 98, "recepcion_def": 125, "avaluo": 59679278}}, "2019": {"densidad": 14161.94, "poblacion": 240753, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 8460.9, "camaras": 48, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1963310, "gasto_pct_total": 3.493}, "areas_verdes": {"m2_hab": null, "parques": 7, "plazas": 193, "gasto_jardines": 4138587}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 86190, "agua_pct": 92.702, "permisos": null, "recepcion_def": null, "avaluo": 57787424}}, "2020": {"densidad": 14717.18, "poblacion": 250192, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 153, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Corporación ", "personal": 25, "gasto": 1789803, "gasto_pct_total": 3.088}, "areas_verdes": {"m2_hab": 3.28, "parques": 20, "plazas": 208, "gasto_jardines": 3572567}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 86190, "agua_pct": 92.702, "permisos": 49, "recepcion_def": 113, "avaluo": 88472197}}, "2021": {"densidad": 15048.41, "poblacion": 255823, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 153, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Corporación ", "personal": 40, "gasto": 1873903, "gasto_pct_total": 3.015}, "areas_verdes": {"m2_hab": 4.37, "parques": 4, "plazas": 108, "gasto_jardines": 3443343}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 86319, "agua_pct": 92.564, "permisos": 54, "recepcion_def": 143, "avaluo": 90394422}}, "2022": {"densidad": 15277.18, "poblacion": 259712, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 151, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Corporación ", "personal": 51, "gasto": 2571661, "gasto_pct_total": 3.485}, "areas_verdes": {"m2_hab": 4.3, "parques": 20, "plazas": 208, "gasto_jardines": 4904822}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 86319, "agua_pct": 92.564, "permisos": 20, "recepcion_def": 123, "avaluo": 131174728}}, "2023": {"densidad": 15489.35, "poblacion": 263319, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 151, "vehiculos": 41, "consejo": "Si"}, "cultura": {"admin": "Corporación ", "personal": 50, "gasto": 2713510, "gasto_pct_total": 3.396}, "areas_verdes": {"m2_hab": 4.32, "parques": 5, "plazas": 319, "gasto_jardines": 5687035}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 86319, "agua_pct": 92.564, "permisos": 16, "recepcion_def": 136, "avaluo": 139799362}}, "2024": {"densidad": 15700.35, "poblacion": 266906, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 209, "vehiculos": 44, "consejo": "Si"}, "cultura": {"admin": "Corporación ", "personal": 63, "gasto": 3066840, "gasto_pct_total": 3.672}, "areas_verdes": {"m2_hab": 4.26, "parques": 4, "plazas": 209, "gasto_jardines": 5900671}, "vivienda": {"agua_conexion": 79900, "viviendas_censo": 113378, "agua_pct": 70.472, "permisos": 23, "recepcion_def": 157, "avaluo": 145731430}}, "2025": {"densidad": 15913, "poblacion": 270521, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 0, "camaras": 200, "vehiculos": 46, "consejo": "Si"}, "cultura": {"admin": "Corporación ", "personal": 39, "gasto": 3165122, "gasto_pct_total": 3.635}, "areas_verdes": {"m2_hab": 4.26, "parques": 4, "plazas": 209, "gasto_jardines": 4950102}, "vivienda": {"agua_conexion": 105939, "viviendas_censo": 113378, "agua_pct": 93.439, "permisos": 43, "recepcion_def": 165, "avaluo": 90367228}}}, "MAIPU": {"2008": {"densidad": 5522.51, "poblacion": 734494, "rural_pct": 0.43, "seguridad": {"gasto_vigilancia": 39317.651, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 0, "gasto_pct_total": 0.0}, "areas_verdes": {"m2_hab": 3.42, "parques": null, "plazas": null, "gasto_jardines": null}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 126972, "agua_pct": 95.28, "permisos": null, "recepcion_def": 3393, "avaluo": null}}, "2009": {"densidad": 5791.65, "poblacion": 770290, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 23455.393, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 274424, "gasto_pct_total": 0.482}, "areas_verdes": {"m2_hab": 3.31, "parques": null, "plazas": null, "gasto_jardines": 2477257}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": null, "recepcion_def": 2164, "avaluo": null}}, "2010": {"densidad": 6056.41, "poblacion": 805503, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 13520.11, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 666209, "gasto_pct_total": 1.104}, "areas_verdes": {"m2_hab": 3.39, "parques": 16, "plazas": 1150, "gasto_jardines": 3654972}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": null, "recepcion_def": 2153, "avaluo": 63981938}}, "2011": {"densidad": 6368.45, "poblacion": 847004, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 23246.98, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1133603, "gasto_pct_total": 1.654}, "areas_verdes": {"m2_hab": 3.39, "parques": 11, "plazas": 887, "gasto_jardines": 4630183}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": null, "recepcion_def": 1361, "avaluo": 45573193}}, "2012": {"densidad": 6679.53, "poblacion": 888377, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 165659.316, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1836788, "gasto_pct_total": 2.383}, "areas_verdes": {"m2_hab": 3.2, "parques": 17, "plazas": 1226, "gasto_jardines": 5513992}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 2285, "recepcion_def": 1801, "avaluo": 51034703}}, "2013": {"densidad": 7001.59, "poblacion": 931211, "rural_pct": 0, "seguridad": {"gasto_vigilancia": 590148.138, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1319540, "gasto_pct_total": 1.64}, "areas_verdes": {"m2_hab": 3.24, "parques": 7, "plazas": 1237, "gasto_jardines": 6078194}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": 1123, "recepcion_def": 2122, "avaluo": 123092473}}, "2014": {"densidad": 4096.81, "poblacion": 544876, "rural_pct": null, "seguridad": {"gasto_vigilancia": 629385.355, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1910640, "gasto_pct_total": 2.014}, "areas_verdes": {"m2_hab": 5.73, "parques": 8, "plazas": 1285, "gasto_jardines": 7509323}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": 78, "recepcion_def": 1759, "avaluo": 128093836}}, "2015": {"densidad": 4133.74, "poblacion": 549788, "rural_pct": null, "seguridad": {"gasto_vigilancia": 623599.808, "camaras": null, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1411620, "gasto_pct_total": 1.345}, "areas_verdes": {"m2_hab": 5.97, "parques": 8, "plazas": 1543, "gasto_jardines": 8577941}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": 82, "recepcion_def": 727, "avaluo": 85967390}}, "2016": {"densidad": 4169.53, "poblacion": 554548, "rural_pct": null, "seguridad": {"gasto_vigilancia": 229508.852, "camaras": 44, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1318111, "gasto_pct_total": 1.125}, "areas_verdes": {"m2_hab": 5.92, "parques": 8, "plazas": 1543, "gasto_jardines": 9117711}, "vivienda": {"agua_conexion": 120979, "viviendas_censo": 121851, "agua_pct": 99.284, "permisos": 69, "recepcion_def": 774, "avaluo": 92902505}}, "2017": {"densidad": 4203.93, "poblacion": 559123, "rural_pct": null, "seguridad": {"gasto_vigilancia": 529702.289, "camaras": 48, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 933982, "gasto_pct_total": 0.83}, "areas_verdes": {"m2_hab": 5.8, "parques": 8, "plazas": 1581, "gasto_jardines": 9408552}, "vivienda": {"agua_conexion": null, "viviendas_censo": null, "agua_pct": null, "permisos": 62, "recepcion_def": 272, "avaluo": 113922093}}, "2018": {"densidad": 4236.83, "poblacion": 563499, "rural_pct": 0.66, "seguridad": {"gasto_vigilancia": 469466.846, "camaras": 60, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1379354, "gasto_pct_total": 1.136}, "areas_verdes": {"m2_hab": 5.88, "parques": 8, "plazas": 1644, "gasto_jardines": 9940635}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 152126, "agua_pct": 98.906, "permisos": 60, "recepcion_def": 286, "avaluo": 163766290}}, "2019": {"densidad": 4260.63, "poblacion": 566664, "rural_pct": 0.66, "seguridad": {"gasto_vigilancia": 163409.97, "camaras": 56, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "No Recepcionado", "personal": null, "gasto": 1419461, "gasto_pct_total": 1.069}, "areas_verdes": {"m2_hab": 5.9, "parques": 8, "plazas": 1652, "gasto_jardines": 9927552}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 156878, "agua_pct": 95.91, "permisos": 67, "recepcion_def": 282, "avaluo": 169980020}}, "2020": {"densidad": 4350.41, "poblacion": 578605, "rural_pct": 0.64, "seguridad": {"gasto_vigilancia": 35839.576, "camaras": 78, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Depto. o Dirección", "personal": 41, "gasto": 562262, "gasto_pct_total": 0.467}, "areas_verdes": {"m2_hab": 5.78, "parques": 8, "plazas": 1652, "gasto_jardines": 10005061}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 156878, "agua_pct": 95.91, "permisos": 43, "recepcion_def": 234, "avaluo": 174939218}}, "2021": {"densidad": 4391.38, "poblacion": 584053, "rural_pct": 0.63, "seguridad": {"gasto_vigilancia": 5347.009, "camaras": 50, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Depto. o Dirección", "personal": 38, "gasto": 149665, "gasto_pct_total": 0.121}, "areas_verdes": {"m2_hab": 5.72, "parques": 8, "plazas": 1652, "gasto_jardines": 11495189}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 156932, "agua_pct": 95.877, "permisos": 37, "recepcion_def": 207, "avaluo": 178206304}}, "2022": {"densidad": 4403.64, "poblacion": 585684, "rural_pct": 0.62, "seguridad": {"gasto_vigilancia": 2339.714, "camaras": 54, "vehiculos": 0, "consejo": "No Recepcionado"}, "cultura": {"admin": "Depto. o Dirección", "personal": 68, "gasto": 57973, "gasto_pct_total": 0.041}, "areas_verdes": {"m2_hab": 5.71, "parques": 8, "plazas": 1474, "gasto_jardines": 15386375}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 156932, "agua_pct": 95.877, "permisos": 45, "recepcion_def": 187, "avaluo": 288753013}}, "2023": {"densidad": 4408.55, "poblacion": 586337, "rural_pct": 0.62, "seguridad": {"gasto_vigilancia": 40697.456, "camaras": 68, "vehiculos": 57, "consejo": "Si"}, "cultura": {"admin": "Depto. o Dirección", "personal": 66, "gasto": 379201, "gasto_pct_total": 0.209}, "areas_verdes": {"m2_hab": 5.7, "parques": 8, "plazas": 1470, "gasto_jardines": 14313641}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 156932, "agua_pct": 95.877, "permisos": 35, "recepcion_def": 185, "avaluo": 325824897}}, "2024": {"densidad": 4412.12, "poblacion": 586812, "rural_pct": 0.61, "seguridad": {"gasto_vigilancia": 58076.76, "camaras": 99, "vehiculos": 62, "consejo": "Si"}, "cultura": {"admin": "Depto. o Dirección", "personal": 64, "gasto": 1304497, "gasto_pct_total": 0.65}, "areas_verdes": {"m2_hab": 5.61, "parques": 8, "plazas": 1470, "gasto_jardines": 15770481}, "vivienda": {"agua_conexion": 150462, "viviendas_censo": 165847, "agua_pct": 90.723, "permisos": 42, "recepcion_def": 116, "avaluo": 340343291}}, "2025": {"densidad": 4414.95, "poblacion": 587189, "rural_pct": 0.61, "seguridad": {"gasto_vigilancia": 327364.24, "camaras": 150, "vehiculos": 57, "consejo": "Si"}, "cultura": {"admin": "Depto. o Dirección", "personal": 107, "gasto": 1380110, "gasto_pct_total": 0.695}, "areas_verdes": {"m2_hab": 5.48, "parques": 8, "plazas": 2235, "gasto_jardines": 17190630}, "vivienda": {"agua_conexion": 161018, "viviendas_censo": 165847, "agua_pct": 97.088, "permisos": 44, "recepcion_def": 264, "avaluo": 282959706}}}};
+const NOMBRES = {"PROVIDENCIA":"Providencia","ÑUÑOA":"Ñuñoa","MAIPU":"Maipú"};
+
+function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
+function fmtPct(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec||1,maximumFractionDigits:dec||1}); }
+function fmtCLP(n){ if(n===null||n===undefined) return "Sin dato"; return "$"+Math.round(n).toLocaleString('es-CL'); }
+function fmtDec(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
+
+let charts = {};
+function destroyCharts(){ Object.values(charts).forEach(c=>c && c.destroy()); charts={}; }
+
+function render(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const anio = document.getElementById('sel-anio').value;
+  const d = DATA[comuna][anio];
+  if(!d) return;
+
+  document.getElementById('hdr-comuna').textContent = NOMBRES[comuna].toUpperCase();
+  document.getElementById('hdr-anio').textContent = anio;
+  document.getElementById('traj-nombre').textContent = NOMBRES[comuna];
+
+  document.getElementById('kpi-densidad-n').textContent = fmtInt(d.densidad);
+  document.getElementById('kpi-densidad-d').textContent = 'Habitantes por kilómetro cuadrado.';
+  document.getElementById('kpi-poblacion-n').textContent = fmtInt(d.poblacion);
+  document.getElementById('kpi-rural-n').textContent = fmtPct(d.rural_pct,1);
+  document.getElementById('kpi-rural-d').textContent = (d.rural_pct===0) ? 'Comuna 100% urbana.' : `${fmtPct(100-d.rural_pct,1)}% urbana.`;
+
+  const seg = d.seguridad;
+  document.getElementById('seg-gasto-n').textContent = fmtCLP(seg.gasto_vigilancia);
+  document.getElementById('seg-camaras-n').textContent = fmtInt(seg.camaras);
+  document.getElementById('seg-camaras-d').textContent = (seg.camaras!==null && d.poblacion) ? `${fmtDec(seg.camaras/d.poblacion*10000,1)} cada 10.000 hab.` : '';
+  document.getElementById('seg-vehiculos-n').textContent = fmtInt(seg.vehiculos);
+  document.getElementById('seg-vehiculos-d').textContent = (seg.vehiculos!==null && d.poblacion) ? `${fmtDec(seg.vehiculos/d.poblacion*10000,1)} cada 10.000 hab.` : '';
+  document.getElementById('seg-consejo-n').textContent = seg.consejo || 'Sin dato';
+
+  const cult = d.cultura;
+  document.getElementById('cult-admin-n').textContent = cult.admin || 'Sin dato';
+  document.getElementById('cult-personal-n').textContent = fmtInt(cult.personal);
+  document.getElementById('cult-gasto-n').textContent = fmtCLP(cult.gasto);
+  document.getElementById('cult-gasto-d').textContent = `M$ · ${fmtPct(cult.gasto_pct_total,2)}% del gasto total`;
+
+  const av = d.areas_verdes;
+  document.getElementById('av-m2-n').textContent = fmtDec(av.m2_hab,2);
+  document.getElementById('av-parques-n').textContent = fmtInt(av.parques);
+  document.getElementById('av-plazas-n').textContent = fmtInt(av.plazas);
+  document.getElementById('av-gastojardin-n').textContent = fmtCLP(av.gasto_jardines);
+  document.getElementById('av-gastojardin-d').textContent = `M$ · año ${anio}`;
+
+  const viv = d.vivienda;
+  document.getElementById('viv-agua-n').textContent = fmtPct(viv.agua_pct,1)+'%';
+  document.getElementById('viv-agua-d').textContent = (viv.agua_conexion!==null) ? `${fmtInt(viv.agua_conexion)} de ${fmtInt(viv.viviendas_censo)} viviendas censadas` : '';
+  document.getElementById('viv-permisos-n').textContent = fmtInt(viv.permisos);
+  document.getElementById('viv-recepcion-n').textContent = fmtInt(viv.recepcion_def);
+  document.getElementById('viv-recepcion-d').textContent = (viv.recepcion_def!==null && viv.permisos) ? `de los ${fmtInt(viv.permisos)} permisos de ${anio}` : '';
+  document.getElementById('viv-avaluo-n').textContent = fmtCLP(viv.avaluo);
+
+  destroyCharts();
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>a-b);
+  const baseOpts = (ytitle)=>({ responsive:true, maintainAspectRatio:false, spanGaps:true,
+    plugins:{legend:{display:false}},
+    scales:{ y:{title:{display:true,text:ytitle},ticks:{color:'#6B7280'},grid:{color:'rgba(13,46,107,.08)'}},
+             x:{ticks:{color:'#6B7280'},grid:{display:false}} } });
+
+  charts.av = new Chart(document.getElementById('evoAV'), {
+    type:'bar',
+    data:{ labels: years, datasets:[{ data: years.map(y=>DATA[comuna][y].seguridad.gasto_vigilancia), backgroundColor:'#1A4A9C' }] },
+    options: baseOpts('Miles de pesos ($)')
+  });
+  const avSerie = years.map(y=>DATA[comuna][y].seguridad.gasto_vigilancia).filter(v=>v!==null && v!==undefined);
+  document.getElementById('traj-av-text').textContent = avSerie.length
+    ? `Máximo histórico: ${fmtCLP(Math.max(...avSerie))}. Mínimo (con dato): ${fmtCLP(Math.min(...avSerie))}.` : 'Sin datos.';
+
+  charts.cult = new Chart(document.getElementById('evoCult'), {
+    type:'bar',
+    data:{ labels: years, datasets:[{ data: years.map(y=>DATA[comuna][y].cultura.gasto), backgroundColor:'#0D9488' }] },
+    options: baseOpts('Miles de pesos ($)')
+  });
+  const cultSerie = years.map(y=>DATA[comuna][y].cultura.gasto).filter(v=>v!==null && v!==undefined && v>0);
+  document.getElementById('traj-cult-text').textContent = cultSerie.length
+    ? `Máximo histórico: ${fmtCLP(Math.max(...cultSerie))}. Mínimo (con dato): ${fmtCLP(Math.min(...cultSerie))}.` : 'Sin datos.';
+}
+
+function populateAnio(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>b-a);
+  const selAnio = document.getElementById('sel-anio');
+  const prev = selAnio.value;
+  selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(+prev)) selAnio.value = prev;
+  else selAnio.value = years.includes(2025) ? 2025 : years[0];
+}
+
+document.getElementById('sel-comuna').addEventListener('change', ()=>{ populateAnio(); render(); });
+document.getElementById('sel-anio').addEventListener('change', render);
+
+populateAnio();
+render();
+</script>
+</body>
+</html>

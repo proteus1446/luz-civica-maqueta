@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Luz Cívica — Maqueta Salud (clases reales + datos reales)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* ============================================================
+     BLOQUE 1 — CSS calcado del sistema de diseño REAL de producción
+     (del técnico): detail-hero-top, panel-quick-nav, dashboard-grid-3,
+     chart-box, indicator-trends-section, indicator-search-panel, etc.
+     Estas clases NO se tocan — son la parte de la página que el técnico
+     controla y que se mantiene igual a producción.
+  ============================================================ */
+  :root {
+    --bg-main: radial-gradient(circle at top left, #f8fafc, #e2e8f0, #cbd5e1);
+    --card-bg: rgba(255, 255, 255, 0.54);
+    --card-bg-strong: rgba(255, 255, 255, 0.78);
+    --card-border: rgba(255, 255, 255, 0.72);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --green: #047857; --red: #991b1b; --blue: #1d4ed8; --amber: #b45309; --purple: #6d28d9; --cyan: #0891b2;
+    --shadow: 0 24px 80px rgba(15, 23, 42, .08);
+    /* paleta propia (de luz_civica_salud_3.html) — SOLO para las 3 zonas editables */
+    --royal:#0F2A5F; --royal-mid:#1A4A9C; --royal-light:#1D4ED8; --muted-soft:#9AA3B0; --line:rgba(13,46,107,.07);
+    --glass:rgba(255,255,255,.65); --glass-border:rgba(255,255,255,.90); --ink:#1D1D1F;
+    --shadow-sm:0 1px 3px rgba(13,46,107,.05),0 4px 16px rgba(13,46,107,.07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+    background: var(--bg-main); background-attachment: fixed; color: var(--text-main);
+  }
+
+  .barra-superior{
+    background: rgba(255,255,255,.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    position: sticky; top: 0; z-index: 1000; padding: 14px 40px; display:flex; align-items:center; gap:16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .titulo-logo{font-size:18px;font-weight:900;}
+  .filtro-top{margin-left:auto;display:flex;gap:10px;}
+  .filtro-top select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--text-main);}
+
+  .wrap-filtros{max-width:1160px;margin:0 auto;padding:22px 32px 0;}
+  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;}
+  .filtro-box-real{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+  .filtro-box-real label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);}
+  .filtro-box-real select{background:var(--card-bg-strong);border:1px solid var(--card-border);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--text-main);}
+  .status-linea-real{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(220,252,231,.6);color:#166534;font-weight:800;font-size:13px;border-radius:999px;padding:8px 16px;max-width:400px;margin:0 auto 18px;}
+  .dot-status{width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;}
+  .nav-areas-real{display:flex;gap:6px;background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:14px;padding:6px;overflow-x:auto;}
+  .btn-volver-real{background:#0f172a;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;}
+  .btn-area-real{background:none;border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:800;color:var(--text-muted);cursor:pointer;white-space:nowrap;}
+  .btn-area-real.activo{background:rgba(15,23,42,.08);color:var(--text-main);}
+  .btn-area-real:hover:not(.activo){background:rgba(15,23,42,.05);}
+
+  .wrap{max-width:1160px;margin:0 auto;padding:32px 32px 90px;}
+
+  .card-glass{
+    background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border); border-radius: 30px; padding: 32px; margin-bottom: 26px; box-shadow: var(--shadow);
+  }
+
+  .pill{display:inline-flex;gap:8px;align-items:center;border-radius:999px;padding:8px 14px;background:rgba(15,23,42,.06);color:var(--text-muted);font-weight:850;font-size:12px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;}
+
+  .detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;flex-wrap:wrap;}
+  .detail-hero-main h2{margin:0 0 6px;font-size:clamp(30px,3vw,42px);font-weight:950;letter-spacing:-1.45px;}
+  .detail-hero-main .hero-sub{margin:0;color:var(--text-muted);font-weight:800;font-size:15px;}
+
+  .panel-quick-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;padding-top:20px;margin-top:20px;border-top:1px solid rgba(15,23,42,.08);}
+  .panel-quick-title{color:var(--text-muted);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.055em;margin-right:4px;}
+  .panel-quick-btn{border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.09);color:#1d4ed8;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;}
+  .panel-quick-btn:hover{background:rgba(37,99,235,.15);}
+
+  .detail-hero-metrics{margin-top:26px;}
+  .dashboard-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;}
+  .dashboard-grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px;}
+  .dashboard-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;}
+
+  .chart-box{position:relative;width:100%;height:260px;}
+  .chart-box.small{height:200px;}
+
+  .grid-gastos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .gasto-box{padding:18px;border-radius:20px;text-align:center;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.5);}
+  .gasto-box span{font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
+  .gasto-box strong{display:block;font-size:17px;margin-top:6px;}
+  .porcentaje-gasto{font-size:12px;font-weight:900;margin-top:8px;padding-top:8px;border-top:1px solid rgba(15,23,42,.08);}
+
+  .data-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(15,23,42,.06);font-size:13px;font-weight:750;}
+  .data-row:last-child{border-bottom:none;}
+  .data-row strong{font-weight:950;}
+
+  .alert-box{display:flex;align-items:center;gap:16px;background:rgba(254,242,242,.7);border:1px solid rgba(153,27,27,.16);border-radius:24px;padding:22px 26px;}
+  .alert-icon{width:48px;height:48px;border-radius:14px;background:#991b1b;color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px;flex:0 0 auto;}
+  .alert-box .t{font-size:11px;font-weight:900;text-transform:uppercase;color:#991b1b;letter-spacing:.03em;}
+  .alert-box .v{font-size:28px;font-weight:950;color:#991b1b;margin:2px 0 4px;}
+  .alert-box .n{font-size:12px;color:#7f1d1d;font-weight:700;}
+  .alert-box.ok{background:rgba(220,252,231,.7);border-color:rgba(21,128,61,.16);}
+  .alert-box.ok .alert-icon{background:#15803d;}
+  .alert-box.ok .t,.alert-box.ok .v{color:#15803d;}
+  .alert-box.ok .n{color:#166534;}
+
+  .indicator-trends-section{display:grid;gap:20px;}
+  .indicator-trends-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .indicator-trend-card{padding:18px;border-radius:20px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.55);}
+  .indicator-trend-card .code{font-size:10px;font-weight:900;color:#1d4ed8;background:rgba(37,99,235,.1);padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:6px;}
+  .indicator-trend-card h4{margin:0 0 2px;font-size:13px;font-weight:900;line-height:1.3;}
+  .indicator-trend-card .cur{font-size:12px;color:var(--text-muted);font-weight:800;margin-bottom:6px;}
+
+  .indicator-search-panel{display:block;}
+  .indicator-search-input{width:min(100%,480px);min-height:46px;border:1px solid rgba(148,163,184,.4);border-radius:14px;padding:10px 16px;font-size:14px;background:rgba(255,255,255,.7);}
+  .indicator-search-count{display:inline-flex;align-items:center;min-height:32px;border-radius:999px;padding:6px 12px;background:rgba(15,23,42,.06);color:var(--text-muted);font-size:12px;font-weight:900;margin-left:10px;}
+  .indicator-row{display:flex;justify-content:space-between;align-items:center;padding:14px 6px;border-bottom:1px solid rgba(15,23,42,.06);}
+  .indicator-row:last-child{border-bottom:none;}
+  .indicator-row[hidden]{display:none;}
+  .indicator-name{font-weight:850;font-size:14px;}
+  .indicator-meta{font-size:11px;color:var(--text-muted);font-weight:750;margin-top:2px;}
+  .indicator-value{font-weight:950;font-size:16px;white-space:nowrap;}
+
+  h3.section-title{font-size:20px;font-weight:700;margin:0 0 6px;letter-spacing:-.3px;color:var(--text-main);}
+  p.section-desc{color:var(--text-muted);font-weight:500;font-size:13px;margin:0 0 18px;line-height:1.5;}
+
+  /* ============================================================
+     ZONA EDITABLE — componentes propios (rescatados de luz_civica_salud_3.html):
+     KPI narrativo (reemplaza círculos), veredicto (reemplaza cuadro rojo),
+     panel/eyebrow y stack/litem (reemplaza donut + cajas de gasto).
+  ============================================================ */
+  .kpis-propios{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .kpi-propio{background:rgba(255,255,255,.55);border:1px solid var(--card-border);border-radius:16px;padding:18px 18px;box-shadow:var(--shadow-sm,0 4px 16px rgba(13,46,107,.06));}
+  .kpi-propio .kn{font-size:30px;font-weight:800;color:var(--royal);line-height:1;margin-bottom:6px;letter-spacing:-.03em;}
+  .kpi-propio .kn .ku{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:2px;}
+  .kpi-propio .kt{font-size:12.5px;font-weight:800;color:var(--text-main);margin-bottom:4px;}
+  .kpi-propio .kd{font-size:11.5px;color:var(--text-muted);line-height:1.45;}
+
+  .panel-propio{background:rgba(255,255,255,.5);border:1px solid var(--card-border);border-radius:22px;padding:26px;}
+  .eyebrow-propio{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--royal-mid);font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:16px;}
+  .big-propio{font-size:38px;font-weight:800;color:var(--royal);line-height:1;letter-spacing:-.03em;}
+  .big-label-propio{font-size:12.5px;color:var(--text-muted);font-weight:600;margin-top:2px;}
+  .split-row-propio{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:7px;}
+  .split-row-propio .nm{color:var(--text-main);font-weight:700;}
+  .bar-track-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;display:flex;margin-bottom:14px;}
+  .bar-track-propio i{display:block;height:100%;}
+  .cov-bar-propio{height:8px;border-radius:99px;background:rgba(13,46,107,.08);overflow:hidden;margin-top:8px;margin-bottom:6px;}
+  .cov-bar-propio div{height:100%;border-radius:99px;background:linear-gradient(90deg,#059669,#10b981);}
+
+  .veredicto{background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);border-radius:24px;padding:28px 32px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:center;box-shadow:0 20px 50px -12px rgba(13,46,107,.35);}
+  .veredicto .vtext{font-size:15px;line-height:1.55;color:rgba(255,255,255,.88);max-width:52ch;}
+  .veredicto .vtext b{color:#fff;font-weight:800;}
+  .veredicto .vbadge{text-align:center;border-left:1px solid rgba(255,255,255,.18);padding-left:28px;}
+  .veredicto .vbadge .n{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em;}
+  .veredicto .vbadge .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:6px;font-weight:700;}
+  .veredicto .vbadge.pos .n{color:#4ade80;}
+  .veredicto .vbadge.neg .n{color:#f87171;}
+
+  .fin-stack{height:8px;border-radius:99px;overflow:hidden;display:flex;gap:2px;margin:14px 0 16px;}
+  .fin-stack i{height:100%;border-radius:99px;}
+  .fin-total{font-size:26px;font-weight:800;color:var(--royal);margin-bottom:4px;letter-spacing:-.02em;}
+  .litem-propio{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .litem-propio:last-child{border-bottom:none;}
+  .litem-propio .ln{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--text-main);}
+  .litem-propio .ln i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;}
+  .litem-propio .lv .a{font-weight:800;color:var(--royal);}
+  .litem-propio .lv .p{font-size:11px;color:var(--text-muted);margin-left:5px;}
+
+  @media (max-width:900px){
+    .kpis-propios{grid-template-columns:1fr;}
+    .veredicto{grid-template-columns:1fr;gap:16px;}
+    .veredicto .vbadge{text-align:left;border-left:none;padding-left:0;border-top:1px solid rgba(255,255,255,.18);padding-top:16px;}
+  }
+
+  /* Trayectorias (reemplazan el gráfico combinado índice-100 del técnico) */
+  .traj-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:4px;}
+  .traj-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:18px;padding:20px;box-shadow:var(--shadow-sm);}
+  @media (max-width:920px){ .traj-grid{grid-template-columns:1fr;} }
+  .traj-title-hl{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--royal);background:rgba(37,99,235,.12);padding:8px 14px;border-radius:10px;margin-bottom:14px;}
+  .traj-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
+  .traj-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px;}
+
+  @media (max-width:900px){
+    .dashboard-grid-3,.dashboard-grid-2{grid-template-columns:1fr;}
+    .grid-gastos{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<nav class="barra-superior">
+  <button type="button" onclick="location.href='luz_civica_portada_v2.html'" aria-label="Volver al inicio de Luz Cívica" style="display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;">
+    <svg width="40" height="24" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+      <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+        <line x1="414" y1="278" x2="414" y2="242"/>
+        <line x1="440" y1="278" x2="440" y2="213"/>
+        <line x1="466" y1="278" x2="466" y2="250"/>
+        <line x1="492" y1="278" x2="492" y2="197"/>
+      </g>
+      <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </g>
+    </svg>
+    <span style="font-size:18px;font-weight:800;letter-spacing:.01em;color:#0F2A5F;">LUZ CÍVICA</span>
+  </button>
+</nav>
+
+<div class="wrap-filtros">
+  <div class="filtros-reales">
+    <div class="filtro-box-real">
+      <label>Región</label>
+      <select id="selRegion">
+        <option>Metropolitana</option>
+        <option>Antofagasta</option>
+      </select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Comuna</label>
+      <select id="selComuna">
+        <option value="PROVIDENCIA">Providencia</option>
+        <option value="SANTIAGO">Santiago</option>
+        <option value="ANTOFAGASTA">Antofagasta</option>
+        <option value="ÑUÑOA">Ñuñoa</option>
+        <option value="MAIPÚ">Maipú</option>
+      </select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Año</label>
+      <select id="selAnio"></select>
+    </div>
+  </div>
+  <nav class="nav-areas-real">
+    <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html'">Volver al panel</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html'">Administración</button>
+    <button class="btn-area-real activo" type="button">Salud</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html'">Educación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_social.html'">Social</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_perfil.html'">Perfil</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_dotacion.html'">Dotación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html'">Remuneraciones</button>
+    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html'">Explorador</button>
+  </nav>
+</div>
+
+<div class="wrap">
+
+  <div class="card-glass">
+    <div class="detail-hero-top">
+      <div class="detail-hero-main">
+        <h2>Salud</h2>
+        <p class="hero-sub" id="subHero">PROVIDENCIA · Año 2024 · Panel gráfico</p>
+      </div>
+    </div>
+
+    <nav class="panel-quick-nav">
+      <span class="panel-quick-title">Ir a</span>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-evolucion').scrollIntoView({behavior:'smooth'})">Evolución anual de finanzas municipales</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Evolución anual por indicador</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-buscador').scrollIntoView({behavior:'smooth'})">Buscador de indicadores</button>
+    </nav>
+
+    <!-- ZONA 1 — KPIs: reemplazan los círculos-semáforo del técnico -->
+    <div class="detail-hero-metrics kpis-propios" id="kpiRow"></div>
+  </div>
+
+  <!-- ZONA 2 — Cobertura FONASA + personal clínico/administrativo -->
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio">
+      <div class="eyebrow-propio">¿Quiénes utilizan la salud municipal?</div>
+      <div class="big-propio" id="p-inscritos">—</div>
+      <div class="big-label-propio">inscritos en FONASA (HPISM)</div>
+      <div style="margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;">
+          <span style="font-weight:700;color:var(--text-main);">Cobertura de salud primaria</span>
+          <span style="font-weight:800;color:var(--royal);" id="p-cob-pct">—</span>
+        </div>
+        <div class="cov-bar-propio"><div id="p-cob-bar" style="width:0%;"></div></div>
+        <div style="font-size:11.5px;color:var(--text-muted);" id="p-cob-note">Cobertura de Salud Primaria Municipal (ISAL005)</div>
+      </div>
+    </div>
+    <div class="panel-propio">
+      <div class="eyebrow-propio">¿Con cuántos profesionales funciona?</div>
+      <div class="big-propio" id="p-personal-total">—</div>
+      <div class="big-label-propio">personas trabajando en salud (por tipo de contrato)</div>
+      <div style="margin-top:16px;">
+        <div class="split-row-propio"><span class="nm">Personal clínico</span><span style="font-weight:800;color:var(--royal);" id="p-clinico-val">—</span></div>
+        <div class="bar-track-propio"><i id="p-clinico-bar" style="background:var(--royal-mid);"></i><i id="p-admin-bar" style="background:#F5A623;"></i></div>
+        <div class="split-row-propio"><span class="nm">Resto de la dotación</span><span style="font-weight:800;color:var(--royal);" id="p-admin-val">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONA 2b — Ingresos y gasto: stack + detalle con monto y % (tu estilo) -->
+  <div class="dashboard-grid-2" style="margin-bottom:26px;">
+    <div class="panel-propio">
+      <div class="eyebrow-propio">¿De dónde provienen los recursos?</div>
+      <div class="fin-total" id="f-ing-total">—</div>
+      <div class="fin-stack" id="f-ing-stack"></div>
+      <div id="f-ing-items"></div>
+    </div>
+    <div class="panel-propio">
+      <div class="eyebrow-propio">¿En qué se utiliza el presupuesto?</div>
+      <div class="fin-total" id="f-gas-total">—</div>
+      <div class="fin-stack" id="f-gas-stack"></div>
+      <div id="f-gas-items"></div>
+    </div>
+  </div>
+
+  <!-- ZONA 3 — Veredicto: reemplaza el cuadro rojo -->
+  <div class="veredicto" id="veredictoBox" style="margin-bottom:26px;">
+    <div class="vtext" id="v-text">—</div>
+    <div class="vbadge" id="v-badge"><div class="n" id="v-num">—</div><div class="l">Resultado del período</div></div>
+  </div>
+
+  <section class="card-glass" id="sec-evolucion">
+    <h3 class="section-title">¿Cómo ha evolucionado la salud en <span id="traj-nombre">Providencia</span>?</h3>
+    <p class="section-desc">Serie real 2008–2025, comuna seleccionada — cada gráfico responde una sola pregunta, en su unidad real.</p>
+    <div class="traj-grid">
+      <div class="traj-card">
+        <div class="traj-title-hl">RESULTADO FINANCIERO (DÉFICIT / SUPERÁVIT) · M$</div>
+        <div class="chart-box" style="height:230px;"><canvas id="chartResultado"></canvas></div>
+      </div>
+      <div class="traj-card">
+        <div class="traj-title-hl">GASTO ANUAL POR PERSONA INSCRITA · M$/HAB</div>
+        <div class="traj-legend">
+          <span><i style="background:var(--royal-mid);"></i>Gasto por habitante inscrito (ISAL23)</span>
+        </div>
+        <div class="chart-box" style="height:230px;"><canvas id="chartGasto"></canvas></div>
+      </div>
+    </div>
+
+    <div class="traj-card" style="margin-top:18px;">
+      <div class="traj-title-hl">EVOLUCIÓN ANUAL DE FINANZAS MUNICIPALES (gráfico original del técnico)</div>
+      <div class="chart-box" style="height:280px;"><canvas id="lineChart"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card-glass indicator-trends-section" id="sec-indicadores">
+    <h3 class="section-title">Evolución anual por indicador</h3>
+    <p class="section-desc">Ejemplo con 4 indicadores reales — agrega o quita tarjetas según lo que definas más significativo.</p>
+    <div class="indicator-trends-grid" id="trendGrid"></div>
+  </section>
+
+  <section class="card-glass indicator-search-panel" id="sec-buscador">
+    <h3 class="section-title">Buscador de indicadores</h3>
+    <p class="section-desc">Los 34 indicadores marcados "SI" en tu diccionario (<code>NOMBRE_CUENTAS_USADAS</code>), con su código real y valor del año/comuna seleccionados.</p>
+    <div style="margin-bottom:14px;">
+      <input type="text" id="searchInput" class="indicator-search-input" placeholder="Buscar por nombre o código…" autocomplete="off">
+      <span class="indicator-search-count" id="searchCount">0 resultados</span>
+    </div>
+    <div id="indicatorList"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   BLOQUE 2 — DATOS REALES extraídos de 4-SALUD.xlsx
+   (Providencia / Santiago / Antofagasta, 2008-2025)
+   Reemplazable por fetch a Supabase cuando tengas acceso.
+============================================================ */
+const DATA = {"ÑUÑOA":{"2025": {"HPISM": 100224, "MTAS": "Corporación ", "ISAL005": 37.05, "ISAL012": 45.75, "ISAL013": 5650644, "ISAL015": 6.31, "ISAL009": 29141178, "ISAL010": 23490534, "ISAL23": 300.54, "ISAL025": 92789, "ISAL019": 21666152, "ISAL021": 8053753, "ISAL018": 30120930, "ISAL023": 0, "MAMBUL": 7, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": 4, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": 199146, "ISAL031": 6361658, "ISAL032": 2461752, "ISAL029": 12842742, "MPSCC": 243, "MPSH": 28, "MPSCDT": 55, "MPSP": 411, "MPSOC": 48, "MTFCE": 67, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 29, "MTFMATRO": 24, "MTFCM": 86, "MTFNUTRI": 16, "MTFODON": 48, "MTFPSICO": 45, "MTFPSIQ": 9, "MTFTECENF": 128, "MTFTECMED": 8}, "2024": {"HPISM": 92967, "MTAS": "Corporación ", "ISAL005": 34.83, "ISAL012": 43.1, "ISAL013": 5409488, "ISAL015": 6.4, "ISAL009": 26928304, "ISAL010": 21518816, "ISAL23": 309.51, "ISAL025": 67031, "ISAL019": 20555009, "ISAL021": 6225847, "ISAL018": 28774231, "ISAL023": 0, "MAMBUL": 7, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": 4, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": 202538, "ISAL031": 4899952, "ISAL032": 2964135, "ISAL029": 12690922, "MPSCC": 349, "MPSH": 31, "MPSCDT": 79, "MPSP": 519, "MPSOC": 31, "MTFCE": 73, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 34, "MTFMATRO": 25, "MTFCM": 116, "MTFNUTRI": 23, "MTFODON": 99, "MTFPSICO": 70, "MTFPSIQ": 12, "MTFTECENF": 188, "MTFTECMED": 9}, "2023": {"HPISM": null, "MTAS": "Corporación ", "ISAL005": null, "ISAL012": 39.67, "ISAL013": 6387159, "ISAL015": 8.22, "ISAL009": 24430644, "ISAL010": 18043485, "ISAL23": null, "ISAL025": 40212, "ISAL019": 18652830, "ISAL021": 6225647, "ISAL018": 26376255, "ISAL023": 0, "MAMBUL": 4, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 3, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": null, "ISAL031": 6126437, "ISAL032": 1852223, "ISAL029": 10198005, "MPSCC": 263, "MPSH": 33, "MPSCDT": 74, "MPSP": 365, "MPSOC": 49, "MTFCE": 67, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 27, "MTFMATRO": 28, "MTFCM": 81, "MTFNUTRI": 16, "MTFODON": 37, "MTFPSICO": 50, "MTFPSIQ": 11, "MTFTECENF": 142, "MTFTECMED": 9}, "2022": {"HPISM": 78382, "MTAS": "Corporación ", "ISAL005": 30.18, "ISAL012": 33.87, "ISAL013": 6960517, "ISAL015": 9.7, "ISAL009": 23733732, "ISAL010": 16773215, "ISAL23": 317.4, "ISAL025": 33645, "ISAL019": 15877266, "ISAL021": 7220038, "ISAL018": 24878074, "ISAL023": 0, "MAMBUL": 4, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 3, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": 139054, "ISAL031": 5051584, "ISAL032": 1905384, "ISAL029": 8920298, "MPSCC": 295, "MPSH": 0, "MPSCDT": 41, "MPSP": 342, "MPSOC": 0, "MTFCE": 67, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 26, "MTFMATRO": 23, "MTFCM": 84, "MTFNUTRI": 18, "MTFODON": 39, "MTFPSICO": 56, "MTFPSIQ": 11, "MTFTECENF": 142, "MTFTECMED": 8}, "2021": {"HPISM": 73948, "MTAS": "Corporación ", "ISAL005": 28.91, "ISAL012": 48.4, "ISAL013": 5611420, "ISAL015": 8.69, "ISAL009": 21641859, "ISAL010": 16030439, "ISAL23": 306.71, "ISAL025": 15541, "ISAL019": 15682621, "ISAL021": 6596266, "ISAL018": 22680700, "ISAL023": 0, "MAMBUL": 5, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 4, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": 124975, "ISAL031": 9108769, "ISAL032": 1149611, "ISAL029": 5424241, "MPSCC": 458, "MPSH": 0, "MPSCDT": 50, "MPSP": 256, "MPSOC": 0, "MTFCE": 74, "MTFFOND": 1, "MTFGER": 0, "MTFKINE": 26, "MTFMATRO": 23, "MTFCM": 100, "MTFNUTRI": 16, "MTFODON": 42, "MTFPSICO": 57, "MTFPSIQ": 10, "MTFTECENF": 139, "MTFTECMED": 7}, "2020": {"HPISM": 73100, "MTAS": "Corporación ", "ISAL005": 29.22, "ISAL012": 61.88, "ISAL013": 0, "ISAL015": 0, "ISAL009": 17770039, "ISAL010": 17770039, "ISAL23": 287.53, "ISAL025": 56732, "ISAL019": 13460546, "ISAL021": 7296645, "ISAL018": 21018653, "ISAL023": 17682, "MAMBUL": null, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": 3, "MNPR": 0, "MSOPT": 0, "MSAPU": 2, "GTCM": 92949, "ISAL031": 6256461, "ISAL032": 681391, "ISAL029": 6522694, "MPSCC": 460, "MPSH": 6, "MPSCDT": 109, "MPSP": 265, "MPSOC": 0, "MTFCE": 65, "MTFFOND": 1, "MTFGER": 0, "MTFKINE": 28, "MTFMATRO": 22, "MTFCM": 104, "MTFNUTRI": 15, "MTFODON": 47, "MTFPSICO": 48, "MTFPSIQ": 10, "MTFTECENF": 139, "MTFTECMED": 6}, "2019": {"HPISM": 74180, "MTAS": "Corporación ", "ISAL005": 30.81, "ISAL012": 66.45, "ISAL013": 4000000, "ISAL015": 6.55, "ISAL009": 15492822, "ISAL010": 11492822, "ISAL23": 194.45, "ISAL025": 35263, "ISAL019": 10230873, "ISAL021": 4129766, "ISAL018": 14424473, "ISAL023": 3143, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": null, "MNCGU": null, "MCOSAM": null, "MSFARM": null, "MNPR": null, "MSOPT": null, "MSAPU": null, "GTCM": null, "ISAL031": 4410482, "ISAL032": 383901, "ISAL029": 5436490, "MPSCC": null, "MPSH": null, "MPSCDT": null, "MPSP": null, "MPSOC": null, "MTFCE": null, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": null, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2018": {"HPISM": 69924, "MTAS": "Corporación ", "ISAL005": 29.92, "ISAL012": 51.3, "ISAL013": 3947994, "ISAL015": 7.37, "ISAL009": 13388931, "ISAL010": 9440937, "ISAL23": 187.57, "ISAL025": 32230, "ISAL019": 9347983, "ISAL021": 3635931, "ISAL018": 13115890, "ISAL023": 26971, "MAMBUL": 7, "MCECOF": 5, "MCESFAM": 2, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 2, "GTCM": 161596, "ISAL031": 2713100, "ISAL032": 1600610, "ISAL029": 5034273, "MPSCC": 298, "MPSH": 2, "MPSCDT": 98, "MPSP": 223, "MPSOC": 0, "MTFCE": 47, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 54, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2017": {"HPISM": 70045, "MTAS": "Corporación ", "ISAL005": 30.53, "ISAL012": 0, "ISAL013": 11116775, "ISAL015": 24.16, "ISAL009": 11949822, "ISAL010": 833047, "ISAL23": 170.6, "ISAL025": 0, "ISAL019": 7829298, "ISAL021": 3181281, "ISAL018": 11949822, "ISAL023": 0, "MAMBUL": 6, "MCECOF": 2, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 2, "GTCM": 95614, "ISAL031": 2165114, "ISAL032": 898748, "ISAL029": 4765436, "MPSCC": 262, "MPSH": 4, "MPSCDT": 92, "MPSP": 231, "MPSOC": 17, "MTFCE": 48, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 66, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2016": {"HPISM": 70179, "MTAS": "Corporación ", "ISAL005": 31.18, "ISAL012": 71.08, "ISAL013": 3297417, "ISAL015": 7.71, "ISAL009": 9798988, "ISAL010": 6501571, "ISAL23": 139.63, "ISAL025": 0, "ISAL019": 8061351, "ISAL021": 3012311, "ISAL018": 9798988, "ISAL023": 25620, "MAMBUL": 3, "MCECOF": 4, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 2, "GTCM": 167183, "ISAL031": 2556880, "ISAL032": 2082721, "ISAL029": 3421750, "MPSCC": 275, "MPSH": 40, "MPSCDT": 65, "MPSP": 203, "MPSOC": 0, "MTFCE": 40, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 45, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2015": {"HPISM": 73004, "MTAS": "Corporación ", "ISAL005": 33.07, "ISAL012": 70.34, "ISAL013": 1705084, "ISAL015": 4.04, "ISAL009": 9551211, "ISAL010": 7846127, "ISAL23": 130.83, "ISAL025": 0, "ISAL019": 4099738, "ISAL021": 2705166, "ISAL018": 9551211, "ISAL023": 13149, "MAMBUL": 6, "MCECOF": 0, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 166684, "ISAL031": 0, "ISAL032": 1229922, "ISAL029": 2869816, "MPSCC": 251, "MPSH": 15, "MPSCDT": 62, "MPSP": 228, "MPSOC": 0, "MTFCE": 31, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 52, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2014": {"HPISM": 75018, "MTAS": "Corporación ", "ISAL005": 34.66, "ISAL012": 65.63, "ISAL013": 2915827, "ISAL015": 6.99, "ISAL009": 8369266, "ISAL010": 5453439, "ISAL23": 113.32, "ISAL025": 0, "ISAL019": 4765760, "ISAL021": 2439078, "ISAL018": 8500906, "ISAL023": 0, "MAMBUL": 10, "MCECOF": 4, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 2, "GTCM": 167202, "ISAL031": 1602822, "ISAL032": 754186, "ISAL029": 2408752, "MPSCC": 241, "MPSH": 15, "MPSCDT": 57, "MPSP": 236, "MPSOC": 0, "MTFCE": 33, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 45, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2013": {"HPISM": 78733, "MTAS": "Corporación ", "ISAL005": 56.03, "ISAL012": 0, "ISAL013": 7261583, "ISAL015": 21.85, "ISAL009": 7515970, "ISAL010": 254387, "ISAL23": 95.46, "ISAL025": 0, "ISAL019": 4130543, "ISAL021": 2397967, "ISAL018": 7515970, "ISAL023": 0, "MAMBUL": 4, "MCECOF": 0, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 2, "GTCM": 179366, "ISAL031": 1182835, "ISAL032": 517593, "ISAL029": 2430115, "MPSCC": 165, "MPSH": 12, "MPSCDT": 215, "MPSP": 112, "MPSOC": 5, "MTFCE": 43, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 54, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2012": {"HPISM": 78175, "MTAS": "Corporación ", "ISAL005": 54.72, "ISAL012": 0, "ISAL013": 6332563, "ISAL015": 20.62, "ISAL009": 6840711, "ISAL010": 508148, "ISAL23": 87.51, "ISAL025": 0, "ISAL019": 3642706, "ISAL021": 525625, "ISAL018": 6840711, "ISAL023": 5420, "MAMBUL": 4, "MCECOF": 0, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 1, "MSOPT": null, "MSAPU": 2, "GTCM": 181860, "ISAL031": 1211830, "ISAL032": 8762, "ISAL029": 2422114, "MPSCC": 151, "MPSH": 10, "MPSCDT": 212, "MPSP": 108, "MPSOC": 0, "MTFCE": 37, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 54, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2011": {"HPISM": 78158, "MTAS": "Corporación ", "ISAL005": 53.86, "ISAL012": 67.04, "ISAL013": 1459100, "ISAL015": 5.49, "ISAL009": 5921086, "ISAL010": 4461986, "ISAL23": 73.13, "ISAL025": 0, "ISAL019": 4140773, "ISAL021": 1319756, "ISAL018": 5715869, "ISAL023": 32455, "MAMBUL": null, "MCECOF": 1, "MCESFAM": 2, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 88599, "ISAL031": 1035193, "ISAL032": 0, "ISAL029": 3105580, "MPSCC": 81, "MPSH": 0, "MPSCDT": null, "MPSP": 415, "MPSOC": null, "MTFCE": 24, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 54, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2010": {"HPISM": 77508, "MTAS": "Corporación ", "ISAL005": 52.59, "ISAL012": 70.72, "ISAL013": 1211061, "ISAL015": 5.54, "ISAL009": 5452018, "ISAL010": 4240957, "ISAL23": 73.02, "ISAL025": 0, "ISAL019": 3979804, "ISAL021": 474874, "ISAL018": 5659899, "ISAL023": 955341, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 88599, "ISAL031": 377285, "ISAL032": 0, "ISAL029": 3602519, "MPSCC": 84, "MPSH": 0, "MPSCDT": null, "MPSP": 323, "MPSOC": null, "MTFCE": 18, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 47, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2009": {"HPISM": 75721, "MTAS": "Corporación ", "ISAL005": 50.75, "ISAL012": 66.42, "ISAL013": 1327844, "ISAL015": 6.84, "ISAL009": 5202396, "ISAL010": 3874552, "ISAL23": 69.06, "ISAL025": 0, "ISAL019": 3970219, "ISAL021": 436973, "ISAL018": 5229438, "ISAL023": 822246, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 87120, "ISAL031": 376377, "ISAL032": 0, "ISAL029": 3593842, "MPSCC": null, "MPSH": null, "MPSCDT": null, "MPSP": null, "MPSOC": null, "MTFCE": null, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": null, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2008": {"HPISM": 76337, "MTAS": "Corporación ", "ISAL005": 50.54, "ISAL012": 61.75, "ISAL013": 1110640, "ISAL015": 5.08, "ISAL009": 4552598, "ISAL010": 3441958, "ISAL23": 59.64, "ISAL025": 0, "ISAL019": 3429398, "ISAL021": 895910, "ISAL018": 4552598, "ISAL023": 0, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 2, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 92676, "ISAL031": 0, "ISAL032": 0, "ISAL029": 3429398, "MPSCC": null, "MPSH": null, "MPSCDT": null, "MPSP": null, "MPSOC": null, "MTFCE": 19, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 38, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}},"MAIPÚ":{"2025": {"HPISM": 220321, "MTAS": "Depto. o Dirección", "ISAL005": 37.52, "ISAL012": 83.35, "ISAL013": 2828810, "ISAL015": 1.56, "ISAL009": 42054036, "ISAL010": 39225226, "ISAL23": 195.5, "ISAL025": 95763, "ISAL019": 31414402, "ISAL021": 8079255, "ISAL018": 43072871, "ISAL023": 0, "MAMBUL": 7, "MCECOF": 6, "MCESFAM": 9, "MDENTAL": 4, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 2, "MSFARM": 3, "MNPR": 0, "MSOPT": 0, "MSAPU": 3, "GTCM": 465909, "ISAL031": 6850909, "ISAL032": 6830251, "ISAL029": 17733242, "MPSCC": 241, "MPSH": 291, "MPSCDT": 0, "MPSP": 425, "MPSOC": 249, "MTFCE": 90, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 40, "MTFMATRO": 53, "MTFCM": 85, "MTFNUTRI": 33, "MTFODON": 52, "MTFPSICO": 46, "MTFPSIQ": 3, "MTFTECENF": 140, "MTFTECMED": 2}, "2024": {"HPISM": 203502, "MTAS": "Depto. o Dirección", "ISAL005": 34.68, "ISAL012": 85.81, "ISAL013": 2204100, "ISAL015": 1.26, "ISAL009": 37919181, "ISAL010": 35715081, "ISAL23": 197.82, "ISAL025": 83406, "ISAL019": 26920925, "ISAL021": 8381506, "ISAL018": 40256926, "ISAL023": 601996, "MAMBUL": 7, "MCECOF": 7, "MCESFAM": 9, "MDENTAL": 2, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 3, "MNPR": 1, "MSOPT": 0, "MSAPU": 2, "GTCM": 472949, "ISAL031": 4620611, "ISAL032": 5181922, "ISAL029": 17118392, "MPSCC": 225, "MPSH": 425, "MPSCDT": 0, "MPSP": 437, "MPSOC": 189, "MTFCE": 70, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 27, "MTFMATRO": 36, "MTFCM": 69, "MTFNUTRI": 22, "MTFODON": 42, "MTFPSICO": 23, "MTFPSIQ": 1, "MTFTECENF": 107, "MTFTECMED": 1}, "2023": {"HPISM": null, "MTAS": "Depto. o Dirección", "ISAL005": null, "ISAL012": 80.34, "ISAL013": 2204100, "ISAL015": 1.33, "ISAL009": 31002955, "ISAL010": 28798855, "ISAL23": null, "ISAL025": 139501, "ISAL019": 23648659, "ISAL021": 5872903, "ISAL018": 32185456, "ISAL023": 498203, "MAMBUL": 9, "MCECOF": 4, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 2, "MNPR": 0, "MSOPT": 0, "MSAPU": 1, "GTCM": null, "ISAL031": 4484691, "ISAL032": 3977663, "ISAL029": 15186305, "MPSCC": 173, "MPSH": 263, "MPSCDT": 0, "MPSP": 426, "MPSOC": 122, "MTFCE": 57, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 24, "MTFMATRO": 33, "MTFCM": 65, "MTFNUTRI": 20, "MTFODON": 37, "MTFPSICO": 21, "MTFPSIQ": 2, "MTFTECENF": 163, "MTFTECMED": 1}, "2022": {"HPISM": 171014, "MTAS": "Depto. o Dirección", "ISAL005": 29.2, "ISAL012": 79.55, "ISAL013": 2251500, "ISAL015": 1.53, "ISAL009": 28226202, "ISAL010": 25974702, "ISAL23": 175.38, "ISAL025": 96446, "ISAL019": 20101008, "ISAL021": 5339691, "ISAL018": 29992132, "ISAL023": 0, "MAMBUL": 8, "MCECOF": 5, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 1, "MNPR": 0, "MSOPT": 0, "MSAPU": 1, "GTCM": 415063, "ISAL031": 3230543, "ISAL032": 3485540, "ISAL029": 13384925, "MPSCC": 137, "MPSH": 39, "MPSCDT": 0, "MPSP": 438, "MPSOC": 176, "MTFCE": 53, "MTFFOND": 0, "MTFGER": 0, "MTFKINE": 22, "MTFMATRO": 34, "MTFCM": 61, "MTFNUTRI": 20, "MTFODON": 39, "MTFPSICO": 21, "MTFPSIQ": 1, "MTFTECENF": 89, "MTFTECMED": 1}, "2021": {"HPISM": 157785, "MTAS": "Depto. o Dirección", "ISAL005": 27.02, "ISAL012": 78.7, "ISAL013": 2370000, "ISAL015": 1.82, "ISAL009": 25792353, "ISAL010": 23422353, "ISAL23": 157.68, "ISAL025": 160351, "ISAL019": 18503088, "ISAL021": 4746048, "ISAL018": 24880268, "ISAL023": 0, "MAMBUL": 10, "MCECOF": 5, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 1, "MNPR": 0, "MSOPT": 0, "MSAPU": 1, "GTCM": 338291, "ISAL031": 6346897, "ISAL032": 3311033, "ISAL029": 8845158, "MPSCC": 272, "MPSH": 21, "MPSCDT": 0, "MPSP": 301, "MPSOC": 234, "MTFCE": 101, "MTFFOND": 7, "MTFGER": 0, "MTFKINE": 42, "MTFMATRO": 35, "MTFCM": 71, "MTFNUTRI": 26, "MTFODON": 43, "MTFPSICO": 30, "MTFPSIQ": 0, "MTFTECENF": 224, "MTFTECMED": 4}, "2020": {"HPISM": 156811, "MTAS": "Depto. o Dirección", "ISAL005": 27.1, "ISAL012": 83.42, "ISAL013": 1670000, "ISAL015": 1.45, "ISAL009": 21403670, "ISAL010": 19733670, "ISAL23": 141.81, "ISAL025": 302751, "ISAL019": 15850672, "ISAL021": 4176678, "ISAL018": 22238056, "ISAL023": 0, "MAMBUL": 9, "MCECOF": 5, "MCESFAM": 5, "MDENTAL": 2, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": 1, "MNPR": 0, "MSOPT": 0, "MSAPU": 1, "GTCM": 270952, "ISAL031": 5353008, "ISAL032": 2158134, "ISAL029": 8339530, "MPSCC": 253, "MPSH": 38, "MPSCDT": 0, "MPSP": 307, "MPSOC": 120, "MTFCE": 86, "MTFFOND": 3, "MTFGER": 0, "MTFKINE": 28, "MTFMATRO": 35, "MTFCM": 102, "MTFNUTRI": 22, "MTFODON": 51, "MTFPSICO": 29, "MTFPSIQ": 0, "MTFTECENF": 194, "MTFTECMED": 4}, "2019": {"HPISM": 155194, "MTAS": "Depto. o Dirección", "ISAL005": 27.39, "ISAL012": 75.73, "ISAL013": 2146633, "ISAL015": 1.73, "ISAL009": 19046085, "ISAL010": 16899452, "ISAL23": 129.93, "ISAL025": 221857, "ISAL019": 14336900, "ISAL021": 4395221, "ISAL018": 20163613, "ISAL023": 0, "MAMBUL": 7, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": null, "ISAL031": 4716894, "ISAL032": 1669929, "ISAL029": 7950077, "MPSCC": 233, "MPSH": 75, "MPSCDT": 0, "MPSP": 315, "MPSOC": 190, "MTFCE": 46, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 59, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2018": {"HPISM": 148266, "MTAS": "Depto. o Dirección", "ISAL005": 26.31, "ISAL012": 80.66, "ISAL013": 1503000, "ISAL015": 1.33, "ISAL009": 17248480, "ISAL010": 15745480, "ISAL23": 114.09, "ISAL025": 96479, "ISAL019": 13310840, "ISAL021": 2913589, "ISAL018": 16916162, "ISAL023": 0, "MAMBUL": 5, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 402986, "ISAL031": 3910055, "ISAL032": 1663297, "ISAL029": 7737488, "MPSCC": 197, "MPSH": 97, "MPSCDT": 0, "MPSP": 323, "MPSOC": 168, "MTFCE": 44, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 57, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2017": {"HPISM": 150624, "MTAS": "Depto. o Dirección", "ISAL005": 26.94, "ISAL012": 78.66, "ISAL013": 1400000, "ISAL015": 1.32, "ISAL009": 15143857, "ISAL010": 13743857, "ISAL23": 107.32, "ISAL025": 119892, "ISAL019": 12093156, "ISAL021": 3502842, "ISAL018": 16164742, "ISAL023": 0, "MAMBUL": 5, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 182574, "ISAL031": 3283949, "ISAL032": 1381216, "ISAL029": 7427991, "MPSCC": 174, "MPSH": 55, "MPSCDT": 0, "MPSP": 327, "MPSOC": 177, "MTFCE": 41, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 56, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2016": {"HPISM": 148162, "MTAS": "Depto. o Dirección", "ISAL005": 26.72, "ISAL012": 80.47, "ISAL013": 1014424, "ISAL015": 1, "ISAL009": 13903197, "ISAL010": 12888773, "ISAL23": 89.78, "ISAL025": 57721, "ISAL019": 10380013, "ISAL021": 2707746, "ISAL018": 13301665, "ISAL023": 0, "MAMBUL": 5, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 1, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 170821, "ISAL031": 2741670, "ISAL032": 1093607, "ISAL029": 6544736, "MPSCC": 165, "MPSH": 17, "MPSCDT": 0, "MPSP": 320, "MPSOC": 35, "MTFCE": 38, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 54, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2015": {"HPISM": 153520, "MTAS": "Depto. o Dirección", "ISAL005": 27.92, "ISAL012": 87.54, "ISAL013": 711385, "ISAL015": 0.74, "ISAL009": 11752706, "ISAL010": 11041321, "ISAL23": 78.77, "ISAL025": 31526, "ISAL019": 8992870, "ISAL021": 2465518, "ISAL018": 12093090, "ISAL023": 0, "MAMBUL": 6, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 169604, "ISAL031": 2293055, "ISAL032": 1010314, "ISAL029": 5689501, "MPSCC": 148, "MPSH": 18, "MPSCDT": 0, "MPSP": 331, "MPSOC": 70, "MTFCE": 35, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 60, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2014": {"HPISM": 133460, "MTAS": "Depto. o Dirección", "ISAL005": 24.49, "ISAL012": 81.67, "ISAL013": 500000, "ISAL015": 0.45, "ISAL009": 10436497, "ISAL010": 9936497, "ISAL23": 77.81, "ISAL025": 26253, "ISAL019": 7481420, "ISAL021": 2204686, "ISAL018": 10384983, "ISAL023": 0, "MAMBUL": 4, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 167132, "ISAL031": 2210767, "ISAL032": 718470, "ISAL029": 4552183, "MPSCC": 133, "MPSH": 12, "MPSCDT": 0, "MPSP": 310, "MPSOC": 177, "MTFCE": 30, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 51, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2013": {"HPISM": 262009, "MTAS": "Depto. o Dirección", "ISAL005": 28.14, "ISAL012": 86.43, "ISAL013": 0, "ISAL015": 0, "ISAL009": 8246989, "ISAL010": 8246989, "ISAL23": 30.73, "ISAL025": 59205, "ISAL019": 5801084, "ISAL021": 1981223, "ISAL018": 8051125, "ISAL023": 0, "MAMBUL": 3, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 148519, "ISAL031": 1186696, "ISAL032": 544540, "ISAL029": 4030586, "MPSCC": 115, "MPSH": 30, "MPSCDT": 0, "MPSP": 278, "MPSOC": 0, "MTFCE": 32, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 48, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2012": {"HPISM": 264531, "MTAS": "Depto. o Dirección", "ISAL005": 29.78, "ISAL012": 84.57, "ISAL013": 0, "ISAL015": 0, "ISAL009": 7400298, "ISAL010": 7400298, "ISAL23": 27.73, "ISAL025": 48698, "ISAL019": 5084881, "ISAL021": 1697806, "ISAL018": 7335894, "ISAL023": 24237, "MAMBUL": 3, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 1, "GTCM": 145738, "ISAL031": 2022393, "ISAL032": 77440, "ISAL029": 2538893, "MPSCC": 89, "MPSH": 35, "MPSCDT": 0, "MPSP": 299, "MPSOC": 64, "MTFCE": 25, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 46, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2011": {"HPISM": 264503, "MTAS": "Depto. o Dirección", "ISAL005": 31.23, "ISAL012": 68.51, "ISAL013": 68005, "ISAL015": 0.09, "ISAL009": 5861852, "ISAL010": 5793847, "ISAL23": 21.45, "ISAL025": 51058, "ISAL019": 3748188, "ISAL021": 1502112, "ISAL018": 5674399, "ISAL023": 22047, "MAMBUL": null, "MCECOF": 3, "MCESFAM": 5, "MDENTAL": 0, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 0, "GTCM": 243663, "ISAL031": 1684891, "ISAL032": 57471, "ISAL029": 1810530, "MPSCC": 193, "MPSH": 36, "MPSCDT": null, "MPSP": 143, "MPSOC": null, "MTFCE": 23, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 29, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2010": {"HPISM": 276390, "MTAS": "Depto. o Dirección", "ISAL005": 34.31, "ISAL012": 79.73, "ISAL013": 10364, "ISAL015": 0.02, "ISAL009": 5130306, "ISAL010": 5119942, "ISAL23": 14.11, "ISAL025": 33057, "ISAL019": 2867050, "ISAL021": 881538, "ISAL018": 3900017, "ISAL023": 0, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 3, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 0, "GTCM": 243663, "ISAL031": 798838, "ISAL032": 58076, "ISAL029": 1847150, "MPSCC": 79, "MPSH": 18, "MPSCDT": null, "MPSP": 156, "MPSOC": null, "MTFCE": 17, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 36, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2009": {"HPISM": 81235, "MTAS": "Depto. o Dirección", "ISAL005": 10.55, "ISAL012": 86.17, "ISAL013": 0, "ISAL015": 0, "ISAL009": 3648748, "ISAL010": 3648748, "ISAL23": 36.6, "ISAL025": 47291, "ISAL019": 2110430, "ISAL021": 692158, "ISAL018": 2973132, "ISAL023": 0, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 3, "MCOSAM": 1, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 0, "GTCM": 264389, "ISAL031": 440804, "ISAL032": 178853, "ISAL029": 1357430, "MPSCC": 56, "MPSH": 0, "MPSCDT": null, "MPSP": 163, "MPSOC": null, "MTFCE": 1, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": 9, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}, "2008": {"HPISM": 67670, "MTAS": "Sin Servicio", "ISAL005": 9.21, "ISAL012": 72.56, "ISAL013": 0, "ISAL015": 0, "ISAL009": 3890651, "ISAL010": 3890651, "ISAL23": 33.46, "ISAL025": 7114, "ISAL019": 1377070, "ISAL021": 605312, "ISAL018": 2264502, "ISAL023": 0, "MAMBUL": null, "MCECOF": null, "MCESFAM": null, "MDENTAL": null, "MNCGR": 0, "MNCGU": 0, "MCOSAM": 0, "MSFARM": null, "MNPR": 0, "MSOPT": null, "MSAPU": 0, "GTCM": 232484, "ISAL031": 1069804, "ISAL032": 108135, "ISAL029": 107614, "MPSCC": null, "MPSH": null, "MPSCDT": null, "MPSP": null, "MPSOC": null, "MTFCE": null, "MTFFOND": null, "MTFGER": null, "MTFKINE": null, "MTFMATRO": null, "MTFCM": null, "MTFNUTRI": null, "MTFODON": null, "MTFPSICO": null, "MTFPSIQ": null, "MTFTECENF": null, "MTFTECMED": null}},"ANTOFAGASTA":{"2025":{"HPISM":305742,"MTAS":"Corporación ","ISAL005":68.36,"ISAL012":67.14,"ISAL013":8664387,"ISAL015":4.5,"ISAL009":67983966,"ISAL010":59319579,"ISAL23":222.36,"ISAL025":719202,"ISAL019":52610370,"ISAL021":14988723,"ISAL018":67983966,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":3,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":7,"GTCM":526042,"ISAL031":878008,"ISAL032":6258162,"ISAL029":45474200,"MPSCC":606,"MPSH":314,"MPSCDT":0,"MPSP":706,"MPSOC":0,"MTFCE":201,"MTFFOND":13,"MTFGER":0,"MTFKINE":93,"MTFMATRO":72,"MTFCM":134,"MTFNUTRI":47,"MTFODON":82,"MTFPSICO":62,"MTFPSIQ":2,"MTFTECENF":394,"MTFTECMED":29},"2024":{"HPISM":295287,"MTAS":"Corporación ","ISAL005":66.46,"ISAL012":67.81,"ISAL013":4332812,"ISAL015":2.45,"ISAL009":56412212,"ISAL010":52079400,"ISAL23":191.04,"ISAL025":92733,"ISAL019":45513181,"ISAL021":9768256,"ISAL018":56412212,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":0,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":1,"MNPR":1,"MSOPT":0,"MSAPU":6,"GTCM":476242,"ISAL031":916087,"ISAL032":5763859,"ISAL029":38833235,"MPSCC":464,"MPSH":120,"MPSCDT":2,"MPSP":725,"MPSOC":430,"MTFCE":245,"MTFFOND":11,"MTFGER":0,"MTFKINE":92,"MTFMATRO":75,"MTFCM":191,"MTFNUTRI":45,"MTFODON":85,"MTFPSICO":64,"MTFPSIQ":2,"MTFTECENF":339,"MTFTECMED":30},"2023":{"HPISM":null,"MTAS":"Corporación ","ISAL005":null,"ISAL012":72.37,"ISAL013":3882502,"ISAL015":2.55,"ISAL009":51419400,"ISAL010":47536898,"ISAL23":null,"ISAL025":228841,"ISAL019":39450167,"ISAL021":10190120,"ISAL018":51419400,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":6,"GTCM":null,"ISAL031":979028,"ISAL032":5033301,"ISAL029":33437838,"MPSCC":257,"MPSH":125,"MPSCDT":9,"MPSP":676,"MPSOC":463,"MTFCE":194,"MTFFOND":12,"MTFGER":0,"MTFKINE":81,"MTFMATRO":60,"MTFCM":175,"MTFNUTRI":39,"MTFODON":78,"MTFPSICO":48,"MTFPSIQ":2,"MTFTECENF":298,"MTFTECMED":29},"2022":{"HPISM":267408,"MTAS":"Corporación ","ISAL005":61.07,"ISAL012":69.84,"ISAL013":3970304,"ISAL015":3.13,"ISAL009":44116961,"ISAL010":40146657,"ISAL23":164.98,"ISAL025":73394,"ISAL019":34487704,"ISAL021":8627495,"ISAL018":44116961,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":6,"GTCM":370994,"ISAL031":697328,"ISAL032":5620999,"ISAL029":28169377,"MPSCC":401,"MPSH":660,"MPSCDT":7,"MPSP":637,"MPSOC":0,"MTFCE":165,"MTFFOND":7,"MTFGER":0,"MTFKINE":84,"MTFMATRO":53,"MTFCM":137,"MTFNUTRI":37,"MTFODON":67,"MTFPSICO":38,"MTFPSIQ":2,"MTFTECENF":285,"MTFTECMED":20},"2021":{"HPISM":253957,"MTAS":"Corporación ","ISAL005":58.55,"ISAL012":63.91,"ISAL013":4391656,"ISAL015":3.84,"ISAL009":37914440,"ISAL010":33522784,"ISAL23":149.29,"ISAL025":2640,"ISAL019":31245815,"ISAL021":6164031,"ISAL018":37914440,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":6,"GTCM":257222,"ISAL031":617883,"ISAL032":6255149,"ISAL029":24372783,"MPSCC":430,"MPSH":504,"MPSCDT":3,"MPSP":395,"MPSOC":1203,"MTFCE":138,"MTFFOND":7,"MTFGER":0,"MTFKINE":100,"MTFMATRO":51,"MTFCM":89,"MTFNUTRI":57,"MTFODON":56,"MTFPSICO":38,"MTFPSIQ":2,"MTFTECENF":250,"MTFTECMED":22},"2020":{"HPISM":248067,"MTAS":"Corporación ","ISAL005":58.27,"ISAL012":71.26,"ISAL013":3194440,"ISAL015":3.17,"ISAL009":32657938,"ISAL010":29463498,"ISAL23":131.65,"ISAL025":2367,"ISAL019":25823452,"ISAL021":5150643,"ISAL018":32657938,"ISAL023":0,"MAMBUL":0,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":0,"MNPR":0,"MSOPT":0,"MSAPU":6,"GTCM":179225,"ISAL031":486746,"ISAL032":3828549,"ISAL029":21508157,"MPSCC":370,"MPSH":791,"MPSCDT":11,"MPSP":406,"MPSOC":0,"MTFCE":82,"MTFFOND":1,"MTFGER":0,"MTFKINE":40,"MTFMATRO":37,"MTFCM":78,"MTFNUTRI":27,"MTFODON":37,"MTFPSICO":20,"MTFPSIQ":2,"MTFTECENF":194,"MTFTECMED":17},"2019":{"HPISM":245691,"MTAS":"Corporación ","ISAL005":59.83,"ISAL012":73.32,"ISAL013":2990083,"ISAL015":2.99,"ISAL009":28329831,"ISAL010":25339748,"ISAL23":115.31,"ISAL025":91416,"ISAL019":23341353,"ISAL021":3943608,"ISAL018":28329831,"ISAL023":0,"MAMBUL":9,"MCECOF":2,"MCESFAM":8,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":null,"MSOPT":null,"MSAPU":6,"GTCM":null,"ISAL031":439107,"ISAL032":3043066,"ISAL029":19859180,"MPSCC":401,"MPSH":0,"MPSCDT":11,"MPSP":414,"MPSOC":0,"MTFCE":68,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":78,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2018":{"HPISM":220557,"MTAS":"Corporación ","ISAL005":55.77,"ISAL012":56.17,"ISAL013":2656882,"ISAL015":2.82,"ISAL009":30301178,"ISAL010":27644296,"ISAL23":137.38,"ISAL025":60323,"ISAL019":22796802,"ISAL021":6097210,"ISAL018":30301178,"ISAL023":546394,"MAMBUL":8,"MCECOF":1,"MCESFAM":8,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":291461,"ISAL031":529619,"ISAL032":3410565,"ISAL029":18856618,"MPSCC":379,"MPSH":0,"MPSCDT":9,"MPSP":435,"MPSOC":101,"MTFCE":70,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":69,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2017":{"HPISM":221311,"MTAS":"Corporación ","ISAL005":56.77,"ISAL012":62.64,"ISAL013":2890344,"ISAL015":3.19,"ISAL009":26214297,"ISAL010":23323953,"ISAL23":118.45,"ISAL025":88282,"ISAL019":21112717,"ISAL021":4266716,"ISAL018":26214298,"ISAL023":0,"MAMBUL":7,"MCECOF":1,"MCESFAM":7,"MDENTAL":4,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":319947,"ISAL031":0,"ISAL032":3490276,"ISAL029":17622441,"MPSCC":303,"MPSH":100,"MPSCDT":9,"MPSP":448,"MPSOC":0,"MTFCE":44,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":63,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2016":{"HPISM":220475,"MTAS":"Corporación ","ISAL005":57.41,"ISAL012":0,"ISAL013":21050812,"ISAL015":25.87,"ISAL009":25827297,"ISAL010":4776485,"ISAL23":117.14,"ISAL025":90682,"ISAL019":19167153,"ISAL021":4017989,"ISAL018":25827297,"ISAL023":0,"MAMBUL":10,"MCECOF":1,"MCESFAM":7,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":292521,"ISAL031":0,"ISAL032":4331910,"ISAL029":14835243,"MPSCC":319,"MPSH":0,"MPSCDT":10,"MPSP":454,"MPSOC":456,"MTFCE":72,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":64,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2015":{"HPISM":216871,"MTAS":"Corporación ","ISAL005":57.34,"ISAL012":0,"ISAL013":19588358,"ISAL015":25.2,"ISAL009":22379377,"ISAL010":2791019,"ISAL23":103.19,"ISAL025":42988,"ISAL019":14863072,"ISAL021":3994175,"ISAL018":22379376,"ISAL023":0,"MAMBUL":10,"MCECOF":1,"MCESFAM":7,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":267441,"ISAL031":0,"ISAL032":2173315,"ISAL029":12689757,"MPSCC":0,"MPSH":431,"MPSCDT":8,"MPSP":669,"MPSOC":0,"MTFCE":59,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":65,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2014":{"HPISM":205656,"MTAS":"Corporación ","ISAL005":55.24,"ISAL012":0,"ISAL013":16265036,"ISAL015":23.96,"ISAL009":18474873,"ISAL010":2209837,"ISAL23":89.83,"ISAL025":75165,"ISAL019":13335919,"ISAL021":2789967,"ISAL018":18474873,"ISAL023":0,"MAMBUL":11,"MCECOF":1,"MCESFAM":6,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":253921,"ISAL031":0,"ISAL032":1743169,"ISAL029":11592750,"MPSCC":286,"MPSH":4,"MPSCDT":7,"MPSP":369,"MPSOC":352,"MTFCE":57,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":68,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2013":{"HPISM":210472,"MTAS":"Corporación ","ISAL005":54.68,"ISAL012":0,"ISAL013":15649987,"ISAL015":19.98,"ISAL009":16417363,"ISAL010":767376,"ISAL23":78,"ISAL025":114222,"ISAL019":11367629,"ISAL021":2703657,"ISAL018":16417363,"ISAL023":0,"MAMBUL":7,"MCECOF":1,"MCESFAM":6,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":264037,"ISAL031":0,"ISAL032":1939505,"ISAL029":9428124,"MPSCC":208,"MPSH":0,"MPSCDT":25,"MPSP":390,"MPSOC":337,"MTFCE":53,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":53,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2012":{"HPISM":210020,"MTAS":"Corporación ","ISAL005":55.43,"ISAL012":0,"ISAL013":13374106,"ISAL015":18.42,"ISAL009":13736213,"ISAL010":362107,"ISAL23":65.4,"ISAL025":143017,"ISAL019":11017888,"ISAL021":3531476,"ISAL018":13736213,"ISAL023":0,"MAMBUL":7,"MCECOF":1,"MCESFAM":6,"MDENTAL":2,"MNCGR":0,"MNCGU":0,"MCOSAM":2,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":6,"GTCM":283574,"ISAL031":0,"ISAL032":2284833,"ISAL029":8733055,"MPSCC":234,"MPSH":316,"MPSCDT":69,"MPSP":404,"MPSOC":null,"MTFCE":56,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":60,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2011":{"HPISM":209991,"MTAS":"Corporación ","ISAL005":56.3,"ISAL012":39.89,"ISAL013":3678327,"ISAL015":7.09,"ISAL009":12613585,"ISAL010":8935258,"ISAL23":60.07,"ISAL025":143368,"ISAL019":8079620,"ISAL021":3452329,"ISAL018":12613585,"ISAL023":189083,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":null,"MNCGU":null,"MCOSAM":null,"MSFARM":null,"MNPR":null,"MSOPT":null,"MSAPU":null,"GTCM":114574,"ISAL031":0,"ISAL032":1574306,"ISAL029":6505314,"MPSCC":306,"MPSH":627,"MPSCDT":null,"MPSP":321,"MPSOC":null,"MTFCE":55,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":60,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2010":{"HPISM":198227,"MTAS":"Corporación ","ISAL005":54.01,"ISAL012":54.41,"ISAL013":1392511,"ISAL015":3.25,"ISAL009":10813723,"ISAL010":9421212,"ISAL23":54.55,"ISAL025":106379,"ISAL019":6890764,"ISAL021":2122550,"ISAL018":10813723,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":6,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":5,"GTCM":114574,"ISAL031":0,"ISAL032":1193613,"ISAL029":5697151,"MPSCC":0,"MPSH":253,"MPSCDT":null,"MPSP":466,"MPSOC":null,"MTFCE":44,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":38,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2009":{"HPISM":187696,"MTAS":"Corporación ","ISAL005":52.03,"ISAL012":55.36,"ISAL013":657300,"ISAL015":1.49,"ISAL009":9166524,"ISAL010":8509224,"ISAL23":48.84,"ISAL025":50768,"ISAL019":5942676,"ISAL021":2137584,"ISAL018":9166524,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":6,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":4,"GTCM":128891,"ISAL031":0,"ISAL032":1018178,"ISAL029":4924498,"MPSCC":201,"MPSH":37,"MPSCDT":null,"MPSP":256,"MPSOC":null,"MTFCE":41,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":36,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2008":{"HPISM":164991,"MTAS":"Corporación ","ISAL005":46.55,"ISAL012":67.55,"ISAL013":657300,"ISAL015":1.7,"ISAL009":7332601,"ISAL010":6675301,"ISAL23":42.04,"ISAL025":44974,"ISAL019":4528732,"ISAL021":1246458,"ISAL018":6936557,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":1,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":4,"GTCM":150278,"ISAL031":0,"ISAL032":466859,"ISAL029":4057704,"MPSCC":0,"MPSH":20,"MPSCDT":null,"MPSP":429,"MPSOC":null,"MTFCE":41,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":34,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null}},"SANTIAGO":{"2025":{"HPISM":201003,"MTAS":"Depto. o Dirección","ISAL005":36.4,"ISAL012":91.45,"ISAL013":1000000,"ISAL015":0.45,"ISAL009":37905292,"ISAL010":36905292,"ISAL23":173.66,"ISAL025":143028,"ISAL019":26865232,"ISAL021":6828670,"ISAL018":34906720,"ISAL023":0,"MAMBUL":3,"MCECOF":0,"MCESFAM":5,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":1,"MSAPU":1,"GTCM":229710,"ISAL031":8553457,"ISAL032":1751113,"ISAL029":16560662,"MPSCC":351,"MPSH":0,"MPSCDT":0,"MPSP":402,"MPSOC":122,"MTFCE":95,"MTFFOND":5,"MTFGER":1,"MTFKINE":33,"MTFMATRO":42,"MTFCM":88,"MTFNUTRI":26,"MTFODON":43,"MTFPSICO":57,"MTFPSIQ":3,"MTFTECENF":138,"MTFTECMED":5},"2024":{"HPISM":192299,"MTAS":"Depto. o Dirección","ISAL005":35.32,"ISAL012":90.89,"ISAL013":1000000,"ISAL015":0.47,"ISAL009":34499288,"ISAL010":33499288,"ISAL23":166.24,"ISAL025":190352,"ISAL019":24042759,"ISAL021":6348559,"ISAL018":31967599,"ISAL023":10750,"MAMBUL":4,"MCECOF":0,"MCESFAM":4,"MDENTAL":3,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":218849,"ISAL031":6261645,"ISAL032":1770309,"ISAL029":16010805,"MPSCC":278,"MPSH":0,"MPSCDT":0,"MPSP":421,"MPSOC":109,"MTFCE":86,"MTFFOND":3,"MTFGER":1,"MTFKINE":30,"MTFMATRO":45,"MTFCM":93,"MTFNUTRI":24,"MTFODON":42,"MTFPSICO":42,"MTFPSIQ":6,"MTFTECENF":130,"MTFTECMED":6},"2023":{"HPISM":null,"MTAS":"Depto. o Dirección","ISAL005":null,"ISAL012":89.53,"ISAL013":1000000,"ISAL015":0.5,"ISAL009":29942676,"ISAL010":28942676,"ISAL23":null,"ISAL025":54539,"ISAL019":20476684,"ISAL021":5782865,"ISAL018":27939412,"ISAL023":8063,"MAMBUL":4,"MCECOF":0,"MCESFAM":4,"MDENTAL":2,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":null,"ISAL031":4960381,"ISAL032":1352796,"ISAL029":14163507,"MPSCC":176,"MPSH":0,"MPSCDT":0,"MPSP":447,"MPSOC":109,"MTFCE":84,"MTFFOND":3,"MTFGER":1,"MTFKINE":28,"MTFMATRO":35,"MTFCM":76,"MTFNUTRI":23,"MTFODON":39,"MTFPSICO":42,"MTFPSIQ":7,"MTFTECENF":129,"MTFTECMED":5},"2022":{"HPISM":163156,"MTAS":"Depto. o Dirección","ISAL005":30.96,"ISAL012":87.57,"ISAL013":1100000,"ISAL015":0.58,"ISAL009":26576896,"ISAL010":25476896,"ISAL23":150.92,"ISAL025":133528,"ISAL019":17908827,"ISAL021":5163346,"ISAL018":24622879,"ISAL023":0,"MAMBUL":6,"MCECOF":0,"MCESFAM":4,"MDENTAL":2,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":199329,"ISAL031":4515214,"ISAL032":1619475,"ISAL029":11774138,"MPSCC":199,"MPSH":0,"MPSCDT":0,"MPSP":371,"MPSOC":118,"MTFCE":78,"MTFFOND":3,"MTFGER":1,"MTFKINE":27,"MTFMATRO":31,"MTFCM":42,"MTFNUTRI":22,"MTFODON":38,"MTFPSICO":37,"MTFPSIQ":9,"MTFTECENF":126,"MTFTECMED":4},"2021":{"HPISM":151985,"MTAS":"Depto. o Dirección","ISAL005":29.38,"ISAL012":88.48,"ISAL013":1000000,"ISAL015":0.59,"ISAL009":24148541,"ISAL010":23148541,"ISAL23":141.31,"ISAL025":66234,"ISAL019":15663626,"ISAL021":4425914,"ISAL018":21476802,"ISAL023":8063,"MAMBUL":4,"MCECOF":0,"MCESFAM":4,"MDENTAL":3,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":164623,"ISAL031":5647351,"ISAL032":1550171,"ISAL029":8466104,"MPSCC":159,"MPSH":136,"MPSCDT":0,"MPSP":392,"MPSOC":0,"MTFCE":80,"MTFFOND":3,"MTFGER":1,"MTFKINE":25,"MTFMATRO":34,"MTFCM":124,"MTFNUTRI":21,"MTFODON":33,"MTFPSICO":36,"MTFPSIQ":8,"MTFTECENF":95,"MTFTECMED":4},"2020":{"HPISM":147211,"MTAS":"Depto. o Dirección","ISAL005":29.26,"ISAL012":87.35,"ISAL013":1225000,"ISAL015":0.77,"ISAL009":20191829,"ISAL010":18966829,"ISAL23":123.02,"ISAL025":165552,"ISAL019":13260146,"ISAL021":4240641,"ISAL018":18109767,"ISAL023":54175,"MAMBUL":4,"MCECOF":0,"MCESFAM":4,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":0,"MSAPU":0,"GTCM":140266,"ISAL031":5975504,"ISAL032":773455,"ISAL029":6511187,"MPSCC":277,"MPSH":64,"MPSCDT":0,"MPSP":221,"MPSOC":0,"MTFCE":57,"MTFFOND":1,"MTFGER":1,"MTFKINE":18,"MTFMATRO":26,"MTFCM":78,"MTFNUTRI":19,"MTFODON":30,"MTFPSICO":28,"MTFPSIQ":8,"MTFTECENF":141,"MTFTECMED":2},"2019":{"HPISM":146056,"MTAS":"Depto. o Dirección","ISAL005":30,"ISAL012":81.35,"ISAL013":1875000,"ISAL015":1.1,"ISAL009":17410648,"ISAL010":15535648,"ISAL23":117.67,"ISAL025":112665,"ISAL019":12589755,"ISAL021":3807049,"ISAL018":17185954,"ISAL023":90344,"MAMBUL":3,"MCECOF":0,"MCESFAM":4,"MDENTAL":3,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":null,"ISAL031":5494796,"ISAL032":893314,"ISAL029":6201645,"MPSCC":284,"MPSH":0,"MPSCDT":0,"MPSP":223,"MPSOC":67,"MTFCE":54,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":74,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2018":{"HPISM":117178,"MTAS":"Depto. o Dirección","ISAL005":29.23,"ISAL012":79.06,"ISAL013":2292500,"ISAL015":1.46,"ISAL009":15426168,"ISAL010":13133668,"ISAL23":135.3,"ISAL025":101348,"ISAL019":11238739,"ISAL021":3633538,"ISAL018":15853626,"ISAL023":36182,"MAMBUL":3,"MCECOF":0,"MCESFAM":4,"MDENTAL":5,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":232920,"ISAL031":4011394,"ISAL032":892149,"ISAL029":6335196,"MPSCC":234,"MPSH":0,"MPSCDT":0,"MPSP":248,"MPSOC":86,"MTFCE":52,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":90,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2017":{"HPISM":111750,"MTAS":"Depto. o Dirección","ISAL005":28.92,"ISAL012":77.56,"ISAL013":2669588,"ISAL015":1.57,"ISAL009":13819009,"ISAL010":11149421,"ISAL23":116.87,"ISAL025":146452,"ISAL019":9974946,"ISAL021":2845325,"ISAL018":13060640,"ISAL023":11059,"MAMBUL":3,"MCECOF":0,"MCESFAM":4,"MDENTAL":2,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":94411,"ISAL031":2974522,"ISAL032":592499,"ISAL029":6407925,"MPSCC":173,"MPSH":0,"MPSCDT":0,"MPSP":266,"MPSOC":104,"MTFCE":39,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":83,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2016":{"HPISM":110686,"MTAS":"Depto. o Dirección","ISAL005":29.73,"ISAL012":75.2,"ISAL013":2600000,"ISAL015":1.79,"ISAL009":12574798,"ISAL010":9974798,"ISAL23":115.09,"ISAL025":0,"ISAL019":9262715,"ISAL021":3124921,"ISAL018":12738378,"ISAL023":60799,"MAMBUL":3,"MCECOF":0,"MCESFAM":4,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":80740,"ISAL031":2381618,"ISAL032":583315,"ISAL029":6297782,"MPSCC":149,"MPSH":0,"MPSCDT":0,"MPSP":270,"MPSOC":63,"MTFCE":43,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":77,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2015":{"HPISM":104340,"MTAS":"Depto. o Dirección","ISAL005":29.12,"ISAL012":73.11,"ISAL013":2400000,"ISAL015":1.75,"ISAL009":10458005,"ISAL010":8058005,"ISAL23":111.66,"ISAL025":29068,"ISAL019":8218151,"ISAL021":2615168,"ISAL018":11650747,"ISAL023":243378,"MAMBUL":3,"MCECOF":0,"MCESFAM":4,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":71524,"ISAL031":3215524,"ISAL032":404493,"ISAL029":4598134,"MPSCC":130,"MPSH":0,"MPSCDT":0,"MPSP":281,"MPSOC":42,"MTFCE":37,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":49,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2014":{"HPISM":78834,"MTAS":"Depto. o Dirección","ISAL005":22.87,"ISAL012":57.25,"ISAL013":2002000,"ISAL015":1.48,"ISAL009":11529349,"ISAL010":9527349,"ISAL23":124.68,"ISAL025":32435,"ISAL019":7165316,"ISAL021":2016840,"ISAL018":9828674,"ISAL023":0,"MAMBUL":3,"MCECOF":0,"MCESFAM":2,"MDENTAL":1,"MNCGR":0,"MNCGU":2,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":78047,"ISAL031":2792903,"ISAL032":243697,"ISAL029":4128716,"MPSCC":176,"MPSH":30,"MPSCDT":0,"MPSP":196,"MPSOC":0,"MTFCE":32,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":46,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2013":{"HPISM":173305,"MTAS":"Depto. o Dirección","ISAL005":null,"ISAL012":55.25,"ISAL013":2600000,"ISAL015":2.13,"ISAL009":10910357,"ISAL010":8310357,"ISAL23":49.15,"ISAL025":61310,"ISAL019":6252661,"ISAL021":2034167,"ISAL018":8517844,"ISAL023":0,"MAMBUL":3,"MCECOF":0,"MCESFAM":2,"MDENTAL":0,"MNCGR":0,"MNCGU":2,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":80192,"ISAL031":2479891,"ISAL032":183471,"ISAL029":3589299,"MPSCC":163,"MPSH":26,"MPSCDT":0,"MPSP":202,"MPSOC":0,"MTFCE":33,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":48,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2012":{"HPISM":185492,"MTAS":"Depto. o Dirección","ISAL005":null,"ISAL012":56.58,"ISAL013":1802308,"ISAL015":1.58,"ISAL009":9858151,"ISAL010":8055843,"ISAL23":42.46,"ISAL025":39404,"ISAL019":5494522,"ISAL021":1529703,"ISAL018":7875227,"ISAL023":643619,"MAMBUL":3,"MCECOF":0,"MCESFAM":1,"MDENTAL":0,"MNCGR":0,"MNCGU":3,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":79393,"ISAL031":2076674,"ISAL032":69237,"ISAL029":3348611,"MPSCC":145,"MPSH":17,"MPSCDT":0,"MPSP":186,"MPSOC":0,"MTFCE":30,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":41,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2011":{"HPISM":185225,"MTAS":"Depto. o Dirección","ISAL005":null,"ISAL012":56.27,"ISAL013":2203421,"ISAL015":1.94,"ISAL009":8972884,"ISAL010":6769463,"ISAL23":36.37,"ISAL025":42909,"ISAL019":4763716,"ISAL021":1548952,"ISAL018":6737339,"ISAL023":57029,"MAMBUL":null,"MCECOF":0,"MCESFAM":1,"MDENTAL":0,"MNCGR":0,"MNCGU":3,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":167310,"ISAL031":1853909,"ISAL032":6622,"ISAL029":2903185,"MPSCC":136,"MPSH":0,"MPSCDT":null,"MPSP":196,"MPSOC":null,"MTFCE":29,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":48,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2010":{"HPISM":195421,"MTAS":"Depto. o Dirección","ISAL005":null,"ISAL012":47,"ISAL013":2738160,"ISAL015":2.76,"ISAL009":7204951,"ISAL010":4466791,"ISAL23":29.61,"ISAL025":40231,"ISAL019":4004195,"ISAL021":1521923,"ISAL018":5786702,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":4,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":167310,"ISAL031":1048083,"ISAL032":158479,"ISAL029":2797633,"MPSCC":117,"MPSH":1,"MPSCDT":null,"MPSP":181,"MPSOC":null,"MTFCE":30,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":46,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2009":{"HPISM":96438,"MTAS":"Depto. o Dirección","ISAL005":56.19,"ISAL012":55.54,"ISAL013":2412235,"ISAL015":2.56,"ISAL009":5950988,"ISAL010":3538753,"ISAL23":53.12,"ISAL025":47730,"ISAL019":3101156,"ISAL021":1865846,"ISAL018":5122416,"ISAL023":146,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":4,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":168921,"ISAL031":300585,"ISAL032":1945599,"ISAL029":854972,"MPSCC":44,"MPSH":0,"MPSCDT":null,"MPSP":186,"MPSOC":null,"MTFCE":29,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":44,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2008":{"HPISM":88574,"MTAS":"Depto. o Dirección","ISAL005":50.55,"ISAL012":54.81,"ISAL013":1667133,"ISAL015":1.86,"ISAL009":4479046,"ISAL010":2811913,"ISAL23":49.05,"ISAL025":19507,"ISAL019":2603016,"ISAL021":1553564,"ISAL018":4344830,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":4,"MCOSAM":0,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":153099,"ISAL031":7,"ISAL032":2272368,"ISAL029":330641,"MPSCC":null,"MPSH":null,"MPSCDT":null,"MPSP":null,"MPSOC":null,"MTFCE":5,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":12,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null}},"PROVIDENCIA":{"2025":{"HPISM":73768,"MTAS":"Corporación ","ISAL005":44.67,"ISAL012":50.38,"ISAL013":2139586,"ISAL015":1.05,"ISAL009":20837311,"ISAL010":18697725,"ISAL23":281.49,"ISAL025":104640,"ISAL019":15363552,"ISAL021":5214534,"ISAL018":20764844,"ISAL023":21687,"MAMBUL":4,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":2,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":75830,"ISAL031":6596731,"ISAL032":1241713,"ISAL029":7525108,"MPSCC":294,"MPSH":19,"MPSCDT":39,"MPSP":277,"MPSOC":8,"MTFCE":57,"MTFFOND":1,"MTFGER":0,"MTFKINE":25,"MTFMATRO":23,"MTFCM":63,"MTFNUTRI":14,"MTFODON":36,"MTFPSICO":28,"MTFPSIQ":6,"MTFTECENF":131,"MTFTECMED":0},"2024":{"HPISM":70929,"MTAS":"Corporación ","ISAL005":43.25,"ISAL012":46.02,"ISAL013":2549353,"ISAL015":1.32,"ISAL009":20713257,"ISAL010":18163904,"ISAL23":295.85,"ISAL025":132467,"ISAL019":14637603,"ISAL021":5237295,"ISAL018":20984096,"ISAL023":70407,"MAMBUL":4,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":77083,"ISAL031":5934566,"ISAL032":1182652,"ISAL029":7520385,"MPSCC":311,"MPSH":1,"MPSCDT":40,"MPSP":292,"MPSOC":12,"MTFCE":59,"MTFFOND":1,"MTFGER":0,"MTFKINE":27,"MTFMATRO":26,"MTFCM":63,"MTFNUTRI":16,"MTFODON":33,"MTFPSICO":31,"MTFPSIQ":6,"MTFTECENF":129,"MTFTECMED":0},"2023":{"HPISM":null,"MTAS":"Corporación ","ISAL005":null,"ISAL012":42.29,"ISAL013":3542579,"ISAL015":2.02,"ISAL009":19754132,"ISAL010":16211553,"ISAL23":null,"ISAL025":98261,"ISAL019":13354160,"ISAL021":5416834,"ISAL018":19022909,"ISAL023":34728,"MAMBUL":5,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":null,"ISAL031":5930685,"ISAL032":1176155,"ISAL029":6247320,"MPSCC":303,"MPSH":9,"MPSCDT":41,"MPSP":264,"MPSOC":16,"MTFCE":55,"MTFFOND":1,"MTFGER":0,"MTFKINE":27,"MTFMATRO":24,"MTFCM":63,"MTFNUTRI":16,"MTFODON":34,"MTFPSICO":31,"MTFPSIQ":6,"MTFTECENF":138,"MTFTECMED":0},"2022":{"HPISM":65100,"MTAS":"Corporación ","ISAL005":40.29,"ISAL012":39.44,"ISAL013":3373870,"ISAL015":2.18,"ISAL009":17562776,"ISAL010":14188906,"ISAL23":255.43,"ISAL025":58846,"ISAL019":11732569,"ISAL021":4234513,"ISAL018":16628281,"ISAL023":145861,"MAMBUL":5,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":78802,"ISAL031":5349697,"ISAL032":1094162,"ISAL029":5288710,"MPSCC":316,"MPSH":0,"MPSCDT":44,"MPSP":243,"MPSOC":0,"MTFCE":56,"MTFFOND":0,"MTFGER":0,"MTFKINE":29,"MTFMATRO":18,"MTFCM":64,"MTFNUTRI":18,"MTFODON":31,"MTFPSICO":46,"MTFPSIQ":6,"MTFTECENF":85,"MTFTECMED":0},"2021":{"HPISM":62400,"MTAS":"Corporación ","ISAL005":38.99,"ISAL012":33.98,"ISAL013":3366112,"ISAL015":2.49,"ISAL009":17609943,"ISAL010":14243831,"ISAL23":258.42,"ISAL025":185974,"ISAL019":10969295,"ISAL021":4466917,"ISAL018":16125517,"ISAL023":135185,"MAMBUL":5,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":65206,"ISAL031":6826139,"ISAL032":1056902,"ISAL029":3086254,"MPSCC":414,"MPSH":0,"MPSCDT":48,"MPSP":151,"MPSOC":0,"MTFCE":56,"MTFFOND":0,"MTFGER":0,"MTFKINE":26,"MTFMATRO":23,"MTFCM":61,"MTFNUTRI":15,"MTFODON":36,"MTFPSICO":25,"MTFPSIQ":0,"MTFTECENF":103,"MTFTECMED":111},"2020":{"HPISM":60565,"MTAS":"Corporación ","ISAL005":38.39,"ISAL012":36.73,"ISAL013":3479948,"ISAL015":2.73,"ISAL009":14196213,"ISAL010":10716265,"ISAL23":230.06,"ISAL025":138357,"ISAL019":9418881,"ISAL021":3716291,"ISAL018":13933849,"ISAL023":90697,"MAMBUL":5,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":1,"MNPR":0,"MSOPT":0,"MSAPU":1,"GTCM":49144,"ISAL031":5261098,"ISAL032":1011842,"ISAL029":3145941,"MPSCC":341,"MPSH":0,"MPSCDT":51,"MPSP":161,"MPSOC":0,"MTFCE":42,"MTFFOND":0,"MTFGER":0,"MTFKINE":22,"MTFMATRO":18,"MTFCM":55,"MTFNUTRI":13,"MTFODON":31,"MTFPSICO":27,"MTFPSIQ":0,"MTFTECENF":85,"MTFTECMED":79},"2019":{"HPISM":59908,"MTAS":"Corporación ","ISAL005":38.79,"ISAL012":36.52,"ISAL013":3076768,"ISAL015":2.36,"ISAL009":12009384,"ISAL010":8932616,"ISAL23":197.74,"ISAL025":48980,"ISAL019":8444282,"ISAL021":2980781,"ISAL018":11846182,"ISAL023":26755,"MAMBUL":4,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":null,"ISAL031":4270878,"ISAL032":1039884,"ISAL029":3133520,"MPSCC":266,"MPSH":0,"MPSCDT":54,"MPSP":168,"MPSOC":2,"MTFCE":39,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":51,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2018":{"HPISM":53189,"MTAS":"Corporación ","ISAL005":34.93,"ISAL012":36,"ISAL013":2722629,"ISAL015":2.15,"ISAL009":11138376,"ISAL010":8415747,"ISAL23":209.12,"ISAL025":52977,"ISAL019":7461928,"ISAL021":2935256,"ISAL018":11123048,"ISAL023":73255,"MAMBUL":4,"MCECOF":2,"MCESFAM":3,"MDENTAL":1,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":62430,"ISAL031":3394173,"ISAL032":737817,"ISAL029":3329938,"MPSCC":242,"MPSH":0,"MPSCDT":60,"MPSP":177,"MPSOC":4,"MTFCE":33,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":49,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2017":{"HPISM":51906,"MTAS":"Corporación ","ISAL005":34.43,"ISAL012":44.89,"ISAL013":3283522,"ISAL015":2.76,"ISAL009":10559101,"ISAL010":7275579,"ISAL23":197.77,"ISAL025":29685,"ISAL019":7601252,"ISAL021":2406489,"ISAL018":10265355,"ISAL023":43696,"MAMBUL":2,"MCECOF":2,"MCESFAM":3,"MDENTAL":2,"MNCGR":2,"MNCGU":2,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":55853,"ISAL031":2596634,"ISAL032":1728529,"ISAL029":3276089,"MPSCC":205,"MPSH":0,"MPSCDT":70,"MPSP":188,"MPSOC":97,"MTFCE":29,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":46,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2016":{"HPISM":50699,"MTAS":"Corporación ","ISAL005":33.99,"ISAL012":48.54,"ISAL013":3125092,"ISAL015":2.85,"ISAL009":9203096,"ISAL010":6078004,"ISAL23":191.97,"ISAL025":38990,"ISAL019":7483454,"ISAL021":2159300,"ISAL018":9732779,"ISAL023":50,"MAMBUL":2,"MCECOF":2,"MCESFAM":3,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":47660,"ISAL031":2602698,"ISAL032":1797778,"ISAL029":3082978,"MPSCC":257,"MPSH":36,"MPSCDT":75,"MPSP":191,"MPSOC":12,"MTFCE":null,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":37,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2015":{"HPISM":49864,"MTAS":"Corporación ","ISAL005":33.8,"ISAL012":37.18,"ISAL013":2625578,"ISAL015":2.52,"ISAL009":8075882,"ISAL010":5450304,"ISAL23":175.16,"ISAL025":47765,"ISAL019":6362672,"ISAL021":2134332,"ISAL018":8734269,"ISAL023":null,"MAMBUL":2,"MCECOF":1,"MCESFAM":3,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":44142,"ISAL031":2322874,"ISAL032":1581584,"ISAL029":2458214,"MPSCC":138,"MPSH":30,"MPSCDT":69,"MPSP":198,"MPSOC":0,"MTFCE":32,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":38,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2014":{"HPISM":48630,"MTAS":"Corporación ","ISAL005":33.34,"ISAL012":35,"ISAL013":0,"ISAL015":0,"ISAL009":6582196,"ISAL010":6582196,"ISAL23":143.81,"ISAL025":45969,"ISAL019":4903365,"ISAL021":1943887,"ISAL018":6993312,"ISAL023":0,"MAMBUL":2,"MCECOF":1,"MCESFAM":2,"MDENTAL":0,"MNCGR":0,"MNCGU":1,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":1,"GTCM":34053,"ISAL031":1666345,"ISAL032":966465,"ISAL029":2270555,"MPSCC":149,"MPSH":43,"MPSCDT":59,"MPSP":132,"MPSOC":5,"MTFCE":26,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":42,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2013":{"HPISM":44720,"MTAS":"Corporación ","ISAL005":35.33,"ISAL012":35.51,"ISAL013":1676592,"ISAL015":1.79,"ISAL009":5565535,"ISAL010":3888943,"ISAL23":120.81,"ISAL025":62254,"ISAL019":2905929,"ISAL021":2232862,"ISAL018":5402835,"ISAL023":0,"MAMBUL":2,"MCECOF":1,"MCESFAM":2,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":32644,"ISAL031":1078144,"ISAL032":78872,"ISAL029":1748913,"MPSCC":112,"MPSH":13,"MPSCDT":59,"MPSP":132,"MPSOC":8,"MTFCE":14,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":22,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2012":{"HPISM":47335,"MTAS":"Corporación ","ISAL005":37.42,"ISAL012":35.83,"ISAL013":1556122,"ISAL015":1.81,"ISAL009":4844188,"ISAL010":3288066,"ISAL23":101.98,"ISAL025":6720,"ISAL019":2949303,"ISAL021":1705966,"ISAL018":4827017,"ISAL023":0,"MAMBUL":2,"MCECOF":0,"MCESFAM":2,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":36855,"ISAL031":759006,"ISAL032":456925,"ISAL029":1733372,"MPSCC":118,"MPSH":5,"MPSCDT":50,"MPSP":182,"MPSOC":0,"MTFCE":15,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":25,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2011":{"HPISM":47328,"MTAS":"Corporación ","ISAL005":37.37,"ISAL012":55.95,"ISAL013":1326284,"ISAL015":1.79,"ISAL009":4135552,"ISAL010":2809268,"ISAL23":90.89,"ISAL025":35055,"ISAL019":2711857,"ISAL021":1387228,"ISAL018":4301553,"ISAL023":0,"MAMBUL":null,"MCECOF":0,"MCESFAM":2,"MDENTAL":0,"MNCGR":0,"MNCGU":0,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":39494,"ISAL031":343535,"ISAL032":56595,"ISAL029":2311727,"MPSCC":83,"MPSH":4,"MPSCDT":null,"MPSP":151,"MPSOC":null,"MTFCE":13,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":19,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2010":{"HPISM":47237,"MTAS":"Corporación ","ISAL005":37.28,"ISAL012":52.33,"ISAL013":1313678,"ISAL015":1.95,"ISAL009":3712160,"ISAL010":2398482,"ISAL23":76.11,"ISAL025":19282,"ISAL019":2942003,"ISAL021":564216,"ISAL018":3594999,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":2,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":39494,"ISAL031":251689,"ISAL032":100265,"ISAL029":2590049,"MPSCC":76,"MPSH":5,"MPSCDT":null,"MPSP":157,"MPSOC":null,"MTFCE":11,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":25,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2009":{"HPISM":46787,"MTAS":"Corporación ","ISAL005":37,"ISAL012":42.62,"ISAL013":1263404,"ISAL015":1.9,"ISAL009":4208229,"ISAL010":2944825,"ISAL23":89.68,"ISAL025":36835,"ISAL019":2578600,"ISAL021":1575275,"ISAL018":4195898,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":3,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":39747,"ISAL031":247415,"ISAL032":308393,"ISAL029":2022792,"MPSCC":62,"MPSH":5,"MPSCDT":null,"MPSP":204,"MPSOC":null,"MTFCE":13,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":64,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null},"2008":{"HPISM":45745,"MTAS":"Corporación ","ISAL005":36.3,"ISAL012":40.94,"ISAL013":1309302,"ISAL015":2.01,"ISAL009":3655160,"ISAL010":2345858,"ISAL23":76.93,"ISAL025":39988,"ISAL019":2659280,"ISAL021":747295,"ISAL018":3519354,"ISAL023":0,"MAMBUL":null,"MCECOF":null,"MCESFAM":null,"MDENTAL":null,"MNCGR":0,"MNCGU":3,"MCOSAM":1,"MSFARM":null,"MNPR":0,"MSOPT":null,"MSAPU":0,"GTCM":38102,"ISAL031":0,"ISAL032":38828,"ISAL029":2620452,"MPSCC":60,"MPSH":6,"MPSCDT":null,"MPSP":154,"MPSOC":null,"MTFCE":11,"MTFFOND":null,"MTFGER":null,"MTFKINE":null,"MTFMATRO":null,"MTFCM":33,"MTFNUTRI":null,"MTFODON":null,"MTFPSICO":null,"MTFPSIQ":null,"MTFTECENF":null,"MTFTECMED":null}}};
+
+/* ============================================================
+   BLOQUE 3 — Diccionario editorial (de Nombre_columnas_pagina_web_1_.xlsx,
+   hoja NOMBRE_CUENTAS_USADAS, filas SALUD MUNICIPAL marcadas "SI")
+============================================================ */
+const INDICATOR_META = [
+  ['HPISM','Población Validada FONASA','N°'],
+  ['MTAS','Administrado por','TEXT'],
+  ['ISAL005','Cobertura de Salud Primaria Municipal','%'],
+  ['ISAL012','Aporte MINSAL per cápita / Ingreso Total Salud','%'],
+  ['ISAL013','Aporte Municipal al Sector Salud','M$'],
+  ['ISAL015','Aporte Municipal respecto al ingreso municipal','%'],
+  ['ISAL009','Ingresos en Salud','M$'],
+  ['ISAL23','Gasto por inscrito (costo por persona validada)','M$/pers'],
+  ['ISAL019','Gasto en personal','M$'],
+  ['ISAL021','Gasto operacional','M$'],
+  ['ISAL018','Gasto del sector salud','M$'],
+  ['ISAL023','Inversión del sector salud','M$'],
+  ['GTCM','Consultas Médicas realizadas en APS','N°'],
+  ['MAMBUL','Ambulancias','N°'],
+  ['MCECOF','CECOF','N°'],
+  ['MCESFAM','CESFAM','N°'],
+  ['MDENTAL','Clínica Dental Móvil','N°'],
+  ['MNCGR','Consultorios General Rural','N°'],
+  ['MNCGU','Consultorios General Urbanos','N°'],
+  ['MCOSAM','COSAM','N°'],
+  ['MSFARM','Farmacias municipales','N°'],
+  ['MNPR','Posta de Salud Rural (PSR)','N°'],
+  ['MSOPT','Ópticas Municipales','N°'],
+  ['MSAPU','SAPU','N°'],
+  ['ISAL031','Gasto Contrata (Dotación)','M$'],
+  ['ISAL032','Gasto Honorarios (Dotación)','M$'],
+  ['ISAL029','Gasto Planta (Dotación)','M$'],
+  ['MPSCC','Personal a Contrata','N°'],
+  ['MPSH','Personal a Honorarios','N°'],
+  ['MPSCDT','Personal Código del Trabajo','N°'],
+  ['MPSP','Personal de Planta','N°'],
+  ['MPSOC','Personal Otro tipo de contrato','N°']
+];
+
+const YEARS = Array.from({length:18}, (_,i)=>String(2008+i));
+let state = { comuna:'PROVIDENCIA', anio:'2025' };
+
+function fmtM(v){ if(v==null) return '—'; return '$' + Math.round(v).toLocaleString('es-CL') + 'M'; }
+function fmtN(v){ if(v==null) return '—'; return Math.round(v).toLocaleString('es-CL'); }
+function fmtPct(v){ if(v==null) return '—'; return v.toFixed(1).replace('.',',') + '%'; }
+function fmtK(v){ if(v==null) return '—'; return '$' + Math.round(v*1000).toLocaleString('es-CL').slice(0,-3) + 'K'; }
+
+function rec(comuna, anio){ return (DATA[comuna] && DATA[comuna][anio]) || {}; }
+
+// Stack delgado + lista de detalle con monto y % del total (tu estilo, litem)
+function renderStackYDetalle(stackId, itemsId, items, totalOverride){
+  const total = totalOverride != null ? totalOverride : items.reduce(function(s,it){ return s + (it[1]||0); }, 0);
+  const stackHtml = items.map(function(it){
+    const pct = total ? Math.max(0, (it[1]||0) / total * 100) : 0;
+    return '<i style="width:' + pct.toFixed(2) + '%;background:' + it[2] + '"></i>';
+  }).join('');
+  const itemsHtml = items.map(function(it){
+    const pct = total ? ((it[1]||0) / total * 100) : 0;
+    return '<div class="litem-propio"><span class="ln"><i style="background:' + it[2] + '"></i>' + it[0] + '</span>' +
+      '<span class="lv"><span class="a">' + fmtM(it[1]) + '</span><span class="p">' + pct.toFixed(1).replace('.',',') + '%</span></span></div>';
+  }).join('');
+  document.getElementById(stackId).innerHTML = stackHtml;
+  document.getElementById(itemsId).innerHTML = itemsHtml;
+}
+
+function populateAnioSelect(){
+  const sel = document.getElementById('selAnio');
+  sel.innerHTML = '';
+  YEARS.slice().reverse().forEach(function(y){
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    if (y === state.anio) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function render(){
+  const d = rec(state.comuna, state.anio);
+  document.getElementById('subHero').textContent = state.comuna + ' · Año ' + state.anio + ' · Montos en miles de pesos · ' + (d.MTAS ? d.MTAS.trim() : 'Sin dato de administración');
+
+  // ============ ZONA 1 — KPIs propios (sin círculos, sin semáforo) ============
+  // Indicadores de cómo opera la comuna: financiamiento, personal, gasto por persona.
+  const brechaFin = (d.ISAL018 && d.ISAL009!=null) ? ((d.ISAL018 - d.ISAL009) / d.ISAL018 * 100) : null;
+  const medicosPer1000 = (d.MTFCM!=null && d.HPISM) ? (d.MTFCM / d.HPISM * 1000) : null;
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi-propio"><div class="kn">${brechaFin!=null?fmtPct(brechaFin):'—'}</div><div class="kt">Brecha de financiamiento</div><div class="kd">Parte del gasto en salud que no cubren los ingresos propios del área (ISAL018 vs ISAL009)</div></div>
+    <div class="kpi-propio"><div class="kn">${medicosPer1000!=null?medicosPer1000.toFixed(2).replace('.',','):'—'}</div><div class="kt">Médicos por 1.000 inscritos</div><div class="kd">MTFCM / HPISM × 1.000</div></div>
+    <div class="kpi-propio"><div class="kn">${fmtK(d.ISAL23)}</div><div class="kt">Gasto por habitante inscrito</div><div class="kd">ISAL23 — ${state.comuna} gasta ${fmtK(d.ISAL23)} por persona inscrita</div></div>
+  `;
+
+  // ============ ZONA 2 — Cobertura FONASA + Personal clínico/administrativo ============
+  document.getElementById('p-inscritos').textContent = fmtN(d.HPISM);
+  document.getElementById('p-cob-pct').textContent = fmtPct(d.ISAL005);
+  document.getElementById('p-cob-bar').style.width = (d.ISAL005!=null ? Math.min(100, d.ISAL005) : 0) + '%';
+
+  const CLINICO_CODES = ['MTFCE','MTFCM','MTFKINE','MTFMATRO','MTFNUTRI','MTFODON','MTFPSICO','MTFPSIQ','MTFTECENF','MTFTECMED','MTFFOND','MTFGER'];
+  const personalClinico = CLINICO_CODES.reduce(function(s,c){ return s + (d[c]||0); }, 0);
+  const personalTotal = ['MPSCC','MPSH','MPSCDT','MPSP','MPSOC'].reduce(function(s,c){ return s + (d[c]||0); }, 0);
+  const personalResto = Math.max(0, personalTotal - personalClinico);
+  document.getElementById('p-personal-total').textContent = fmtN(personalTotal);
+  document.getElementById('p-clinico-val').textContent = fmtN(personalClinico);
+  document.getElementById('p-admin-val').textContent = fmtN(personalResto);
+  const clinPct = personalTotal ? (personalClinico/personalTotal*100) : 0;
+  document.getElementById('p-clinico-bar').style.width = clinPct + '%';
+  document.getElementById('p-admin-bar').style.width = (100-clinPct) + '%';
+
+  // ============ ZONA 2b — Ingresos y gasto: stack + detalle (monto + % del total) ============
+  document.getElementById('f-ing-total').textContent = fmtM(d.ISAL009);
+  const otrosIng = (d.ISAL009!=null && d.ISAL013!=null) ? Math.max(0, d.ISAL009 - d.ISAL013) : null;
+  renderStackYDetalle('f-ing-stack','f-ing-items',[
+    ['Aporte municipal (ISAL013)', d.ISAL013, 'var(--royal)'],
+    ['Otros ingresos / MINSAL (ISAL010)', d.ISAL010, '#F5A623']
+  ], d.ISAL009);
+
+  document.getElementById('f-gas-total').textContent = fmtM(d.ISAL018);
+  const otrosGasto = (d.ISAL018!=null) ? Math.max(0, d.ISAL018 - (d.ISAL019||0) - (d.ISAL021||0) - (d.ISAL023||0)) : null;
+  renderStackYDetalle('f-gas-stack','f-gas-items',[
+    ['Personal (ISAL019)', d.ISAL019, 'var(--royal)'],
+    ['Operacional (ISAL021)', d.ISAL021, '#F5A623'],
+    ['Inversión (ISAL023)', d.ISAL023, '#16a34a'],
+    ['Otros', otrosGasto, '#9AA3B0']
+  ], d.ISAL018);
+
+  // ============ ZONA 3 — Veredicto (reemplaza el cuadro rojo del técnico) ============
+  const balance = (d.ISAL009!=null && d.ISAL018!=null) ? (d.ISAL009 - d.ISAL018) : null;
+  const vBadge = document.getElementById('v-badge');
+  const nombreComuna = state.comuna.charAt(0) + state.comuna.slice(1).toLowerCase();
+  if (balance == null) {
+    document.getElementById('v-text').innerHTML = 'No hay datos comparables de ingresos y gastos de salud para <b>' + nombreComuna + '</b> en ' + state.anio + '.';
+    document.getElementById('v-num').textContent = 'Sin dato';
+    vBadge.className = 'vbadge';
+  } else if (balance < 0) {
+    document.getElementById('v-text').innerHTML = 'En ' + state.anio + ', el gasto en salud de <b>' + nombreComuna + '</b> superó los ingresos propios del área en <b>' + fmtM(Math.abs(balance)) + '</b> — la diferencia la cubre el resto del presupuesto municipal.';
+    document.getElementById('v-num').textContent = fmtM(Math.abs(balance));
+    vBadge.className = 'vbadge neg';
+  } else {
+    document.getElementById('v-text').innerHTML = 'En ' + state.anio + ', los ingresos del área de salud de <b>' + nombreComuna + '</b> superaron el gasto en <b>' + fmtM(balance) + '</b>.';
+    document.getElementById('v-num').textContent = fmtM(balance);
+    vBadge.className = 'vbadge pos';
+  }
+
+  // pill count
+  // pill de conteo eliminado a pedido — ya no se actualiza
+
+  renderTrayectorias();
+  renderTrendCards();
+  renderIndicatorList(document.getElementById('searchInput').value);
+}
+
+function seriesFor(comuna, code){
+  return YEARS.map(function(y){
+    const d = rec(comuna, y);
+    return d[code] != null ? d[code] : null;
+  });
+}
+function baseIndex100(arr){
+  const first = arr.find(function(v){ return v!=null; });
+  if (!first) return arr.map(function(){ return null; });
+  return arr.map(function(v){ return v==null ? null : Math.round((v/first)*100); });
+}
+
+function renderLineChart(){
+  if (window._line) window._line.destroy();
+  const codes = [['ISAL018','Gasto total','#2563eb'],['ISAL009','Ingresos','#16a34a'],['ISAL013','Aporte municipal','#d97706'],['ISAL23','Gasto por beneficiario','#7c3aed']];
+  const datasets = codes.map(function(c){
+    return { label:c[1], data: baseIndex100(seriesFor(state.comuna, c[0])), borderColor:c[2], backgroundColor:'transparent', tension:.3, pointRadius:2, spanGaps:true };
+  });
+  window._line = new Chart(document.getElementById('lineChart').getContext('2d'), {
+    type:'line', data:{ labels:YEARS, datasets:datasets },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{title:{display:true,text:'Índice base 100'}}} }
+  });
+}
+
+function fmtEje(v){
+  const abs = Math.abs(v), sign = v < 0 ? '-' : '';
+  if (abs >= 1e6) return sign + '$' + (abs/1e6).toFixed(1).replace('.',',') + 'MM';
+  if (abs >= 1e3) return sign + '$' + Math.round(abs/1e3) + 'k';
+  return sign + '$' + Math.round(abs);
+}
+
+function renderResultadoChart(){
+  const finSerie = YEARS.map(function(y){ const r=rec(state.comuna,y); return (r.ISAL009!=null && r.ISAL018!=null) ? (r.ISAL009 - r.ISAL018) : null; });
+  const colors = finSerie.map(function(v){ return v==null ? 'transparent' : (v>=0 ? '#16a34a' : '#dc2626'); });
+  if (window._resultado) window._resultado.destroy();
+  window._resultado = new Chart(document.getElementById('chartResultado').getContext('2d'), {
+    type: 'bar',
+    data: { labels: YEARS, datasets: [{ data: finSerie, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { callback: function(v, i){ return (i % 2 === 0) ? YEARS[i] : ''; }, font: { size: 10 } } },
+        y: { grid: { color: 'rgba(13,46,107,.06)' }, ticks: { callback: function(v){ return fmtEje(v); }, font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function renderGastoChart(){
+  const gastoSerie = YEARS.map(function(y){ const r=rec(state.comuna,y); return r.ISAL23!=null ? r.ISAL23 : null; });
+  if (window._gasto) window._gasto.destroy();
+  window._gasto = new Chart(document.getElementById('chartGasto').getContext('2d'), {
+    type: 'bar',
+    data: { labels: YEARS, datasets: [{ data: gastoSerie, backgroundColor: '#1A4A9C', borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { callback: function(v, i){ return (i % 2 === 0) ? YEARS[i] : ''; }, font: { size: 10 } } },
+        y: { grid: { color: 'rgba(13,46,107,.06)' }, ticks: { callback: function(v){ return fmtEje(v); }, font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function renderTrayectorias(){
+  document.getElementById('traj-nombre').textContent = state.comuna.charAt(0) + state.comuna.slice(1).toLowerCase();
+
+  renderResultadoChart();
+  renderGastoChart();
+  renderLineChart();
+}
+
+function renderTrendCards(){
+  const grid = document.getElementById('trendGrid');
+  grid.innerHTML = '';
+  const picks = [
+    ['ISAL018','Gasto del sector salud','M$'],
+    ['ISAL009','Ingresos en Salud','M$'],
+    ['ISAL013','Aporte Municipal al Sector Salud','M$'],
+    ['HPISM','Población Validada FONASA','N°']
+  ];
+  picks.forEach(function(p, idx){
+    const code = p[0];
+    const d = rec(state.comuna, state.anio);
+    const card = document.createElement('div');
+    card.className = 'indicator-trend-card';
+    const curVal = p[2]==='M$' ? fmtM(d[code]) : fmtN(d[code]);
+    card.innerHTML = `<span class="code">${code}</span><h4>${p[1]}</h4><div class="cur">${state.anio}: ${curVal}</div><div class="chart-box small" style="height:130px;"><canvas id="tc${idx}"></canvas></div>`;
+    grid.appendChild(card);
+  });
+  picks.forEach(function(p, idx){
+    const arr = seriesFor(state.comuna, p[0]);
+    new Chart(document.getElementById('tc'+idx).getContext('2d'), {
+      type:'line',
+      data:{ labels:YEARS, datasets:[{ data:arr, borderColor:'#0369a1', backgroundColor:'rgba(3,105,161,.12)', fill:true, tension:.35, pointRadius:0, spanGaps:true }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} }
+    });
+  });
+}
+
+function renderIndicatorList(filter){
+  const q = (filter||'').toLowerCase();
+  const host = document.getElementById('indicatorList');
+  host.innerHTML = '';
+  const d = rec(state.comuna, state.anio);
+  let visible = 0;
+  INDICATOR_META.forEach(function(m){
+    const code=m[0], name=m[1], unit=m[2];
+    const hay = (name+' '+code).toLowerCase();
+    const match = !q || hay.indexOf(q) !== -1;
+    if (match) visible++;
+    const row = document.createElement('div');
+    row.className = 'indicator-row';
+    row.hidden = !match;
+    let val = d[code];
+    let display;
+    if (typeof val === 'string') display = val;
+    else if (unit === '%') display = fmtPct(val);
+    else if (unit === 'M$') display = fmtM(val);
+    else if (unit === 'M$/pers') display = fmtK(val);
+    else display = fmtN(val);
+    row.innerHTML = `<div><div class="indicator-name">${name}</div><div class="indicator-meta"><span style="color:#1d4ed8;">${code}</span> · ${unit}</div></div><div class="indicator-value">${display}</div>`;
+    host.appendChild(row);
+  });
+  document.getElementById('searchCount').textContent = visible + ' resultado' + (visible===1?'':'s');
+}
+
+// eventos
+document.getElementById('selComuna').addEventListener('change', function(e){ state.comuna = e.target.value; render(); });
+document.getElementById('selAnio').addEventListener('change', function(e){ state.anio = e.target.value; render(); });
+document.getElementById('searchInput').addEventListener('input', function(e){ renderIndicatorList(e.target.value); });
+
+populateAnioSelect();
+render();
+
+})();
+</script>
+</body>
+</html>

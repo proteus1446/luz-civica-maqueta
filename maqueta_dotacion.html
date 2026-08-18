@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Luz Cívica — Maqueta Dotación (Recursos Humanos, datos verificados)</title>
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/tabler-icons.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --royal:#0F2A5F;--royal-mid:#1A4A9C;--royal-light:#1D4ED8;
+    --ink:#1D1D1F;--muted:#6B7280;--muted-soft:#9AA3B0;
+    --green:#166534;--amber:#92400E;--red:#991B1B;
+    --amber-bg:rgba(254,243,199,.82);--amber-border:rgba(252,211,77,.45);
+    --red-bg:rgba(254,226,226,.82);--red-border:rgba(252,165,165,.45);
+    --glass:rgba(255,255,255,.65);--glass-border:rgba(255,255,255,.90);
+    --line:rgba(13,46,107,.07);
+    --shadow-sm:0 1px 3px rgba(13,46,107,.05),0 4px 16px rgba(13,46,107,.07);
+    --shadow-md:0 4px 16px rgba(13,46,107,.10),0 16px 40px rgba(13,46,107,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    background:linear-gradient(150deg,#E4EEF9 0%,#EBF2FC 40%,#E8F3F1 100%);
+    background-attachment:fixed;min-height:100vh;color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  .wrap{max-width:1160px;margin:0 auto;padding:0 32px}
+  .top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.55);
+    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    border-bottom:1px solid var(--glass-border)}
+  .top-inner{max-width:1160px;margin:0 auto;padding:0 32px;
+    display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;
+    color:#000;letter-spacing:-.02em;text-decoration:none}
+  .lamp{width:20px;height:20px;border-radius:50%;
+    background:radial-gradient(circle at 50% 38%,#FFF3B0,#F5A623 70%);
+    box-shadow:0 0 0 3px rgba(245,166,35,.18),0 0 14px rgba(245,166,35,.45)}
+  .top nav{display:flex;gap:2px}
+  .top nav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;
+    padding:5px 12px;border-radius:8px;transition:background .15s,color .15s}
+  .top nav a:hover{background:rgba(13,46,107,.06);color:var(--royal)}
+  .top nav a.active{background:rgba(13,46,107,.10);color:var(--royal);font-weight:600}
+
+  .selectors{display:flex;gap:10px;flex-wrap:wrap;padding:20px 0 4px;align-items:flex-end}
+  .sel-group{display:flex;flex-direction:column;gap:4px}
+  .sel-group label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-soft);font-weight:700}
+  .sel-group select{
+    background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--glass-border);border-radius:10px;padding:8px 32px 8px 14px;
+    cursor:pointer;box-shadow:var(--shadow-sm);font-size:14px;font-weight:600;
+    color:var(--ink);appearance:none;min-width:150px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;
+    background-color:var(--glass);
+  }
+
+  .head{padding:20px 0 4px}
+  .page-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--royal-mid);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .page-eyebrow::before{content:'';width:14px;height:2px;background:var(--royal-mid);
+    border-radius:2px;display:inline-block}
+  .head h1{font-size:clamp(26px,4vw,42px);font-weight:700;color:var(--royal);
+    letter-spacing:-.03em;line-height:1.08}
+  .head h1 .c{color:var(--royal-light)}
+  .head .sub{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;
+    color:var(--muted);font-size:13.5px}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;
+    font-weight:600;padding:4px 10px;border-radius:6px}
+  .pill.admin{background:var(--royal);color:#fff}
+  .pill.year{background:rgba(13,46,107,.08);color:var(--royal)}
+
+  .verdict{margin-top:22px;
+    background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);
+    border-radius:20px;padding:28px 34px;color:#fff;
+    display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;
+    box-shadow:0 20px 60px -12px rgba(13,46,107,.38)}
+  .verdict .vtext{font-size:clamp(16px,2vw,21px);font-weight:400;line-height:1.5;
+    max-width:50ch;color:rgba(255,255,255,.85)}
+  .verdict .vtext b{color:#fff;font-weight:600}
+  .verdict .vbadge{text-align:center;border-left:1px solid rgba(255,255,255,.15);padding-left:32px}
+  .verdict .vbadge .n{font-size:34px;font-weight:700;line-height:1;letter-spacing:-.03em;color:#4ade80}
+  .verdict .vbadge .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(255,255,255,.45);margin-top:8px;font-weight:600}
+  .v-explain{margin-top:12px;text-align:center}
+  .v-explain summary{list-style:none;cursor:pointer;font-size:11px;font-weight:600;
+    color:#fff;display:inline-flex;align-items:center;gap:5px;user-select:none}
+  .v-explain summary::-webkit-details-marker{display:none}
+  .v-explain summary .ti-help-circle{font-size:14px;opacity:.85}
+  .v-explain summary .lbl{text-decoration:underline;text-decoration-style:dotted;
+    text-underline-offset:3px}
+  .v-explain summary i.ti-chevron-down{font-size:11px;transition:transform .2s;opacity:.75}
+  .v-explain[open] summary i.ti-chevron-down{transform:rotate(180deg)}
+  .v-explain summary:hover{opacity:.85}
+  .v-explain-text{font-size:11.5px;line-height:1.6;color:rgba(255,255,255,.8);
+    margin-top:8px;max-width:34ch;text-align:left;margin-left:auto;margin-right:auto}
+
+  /* KPI TEMÁTICOS FUSIONADOS (número + comparación en una sola tarjeta) */
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px}
+  .card-glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:28px;padding:32px;box-shadow:var(--shadow-md);margin-top:22px}
+  .kpi-card{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid var(--glass-border);border-radius:18px;padding:22px 24px;
+    box-shadow:var(--shadow-sm)}
+  .kpi-card .kt-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .kpi-card .kt-row i{font-size:15px;color:var(--royal-mid)}
+  .kpi-card .kt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--royal-mid)}
+  .kpi-card .kd{font-size:13.5px;color:var(--ink);line-height:1.5;margin-bottom:14px;
+    padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .kpi-card .kd b{color:var(--royal);font-weight:700}
+  .kpi-card .kn{font-size:36px;font-weight:700;color:var(--royal);line-height:1;
+    letter-spacing:-.03em;margin-bottom:14px}
+  .kpi-card .kn .ku{font-size:14px;font-weight:500;color:var(--muted);margin-left:2px}
+  .comp-bars{display:flex;flex-direction:column;gap:6px}
+  .comp-bar-item{display:flex;align-items:center;gap:8px}
+  .comp-bar-item .cbl{font-size:10px;color:var(--muted);width:88px;flex:none;text-align:right}
+  .comp-bar-track{flex:1;height:8px;border-radius:99px;background:rgba(13,46,107,.06);overflow:hidden}
+  .comp-bar-track i{display:block;height:100%;border-radius:99px}
+  .comp-bar-item .cbv{font-size:11.5px;font-weight:700;color:var(--royal);width:64px;flex:none}
+  @media(max-width:920px){.kpis{grid-template-columns:1fr}}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .panel{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--glass-border);border-radius:18px;padding:24px;box-shadow:var(--shadow-sm)}
+  .eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--royal-mid);
+    font-weight:700;display:flex;align-items:center;gap:7px;margin-bottom:18px}
+  .eyebrow i{font-size:14px;color:var(--royal-mid)}
+  .panel-sub{font-size:12px;color:var(--muted);margin-top:-10px;margin-bottom:14px;line-height:1.5}
+  .evo-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink);margin-bottom:12px}
+  .evo-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px}
+  @media(max-width:920px){.grid2{grid-template-columns:1fr}.grid2>div[style*="border-right"]{border-right:none!important;border-bottom:1px solid var(--line);padding-right:0!important;padding-bottom:20px;margin-bottom:20px;}}
+
+  /* INGRESOS / GASTOS */
+  .fin-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .fin-head .ft{font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.08em;color:var(--royal-mid);margin-bottom:4px}
+  .fin-head .fs{font-size:11px;color:var(--muted);margin-top:1px}
+  .fin-total{font-size:32px;font-weight:700;color:var(--royal);margin:8px 0 2px;
+    letter-spacing:-.03em}
+  .fin-var{font-size:11.5px;color:var(--muted-soft);font-weight:600}
+  .fin-per-hab{text-align:right;flex-shrink:0}
+  .fin-per-hab .v{font-size:15px;font-weight:800;color:var(--royal)}
+  .fin-per-hab .l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted-soft);margin-top:2px}
+  .stack{height:7px;border-radius:99px;overflow:hidden;display:flex;gap:2px;margin:14px 0 18px}
+  .stack i{height:100%;border-radius:99px}
+  .litem{display:flex;justify-content:space-between;align-items:baseline;
+    padding:9px 0;border-bottom:1px solid var(--line)}
+  .litem:last-child{border-bottom:0}
+  .litem .ln{font-size:13px;color:var(--ink);font-weight:500;
+    display:flex;align-items:center;gap:9px}
+  .litem .ln::before{content:'';width:7px;height:7px;border-radius:50%;flex:none;
+    display:inline-block;background:var(--c)}
+  .litem .lv{text-align:right}
+  .litem .lv .a{font-size:13px;font-weight:700;color:var(--royal);font-variant-numeric:tabular-nums}
+  .litem .lv .p{font-size:11px;color:var(--muted);margin-left:5px}
+  #lim-items .lv{display:flex;align-items:baseline;justify-content:flex-end;width:150px;}
+  #lim-items .lv .a{display:inline-block;width:64px;text-align:right;margin-left:0;}
+  #lim-items .lv .p{display:inline-block;width:64px;text-align:left;margin-left:6px;}
+  .fin-summary{display:flex;justify-content:space-between;align-items:center;
+    margin-top:8px;padding-top:14px;border-top:1px solid var(--line)}
+  .fin-summary .fn{font-size:12.5px;font-weight:600;color:var(--ink)}
+  .fin-summary .fv{text-align:right}
+  .fin-summary .fv .a{font-size:16px;font-weight:700;color:var(--royal)}
+  .fin-summary .fv .p{font-size:11px;color:var(--muted);margin-left:5px}
+  .fin-percapita{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .fin-percapita .fpc-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin-bottom:4px}
+  .fin-percapita .fpc-value{font-size:22px;font-weight:800;color:var(--royal);letter-spacing:-.02em}
+  .fin-percapita .fpc-value .fpc-unit{font-size:12px;font-weight:600;color:var(--muted)}
+  .fin-percapita .fpc-formula{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+  /* CUENTAS DE INTERÉS PÚBLICO */
+  .fact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .fact-card{background:rgba(255,255,255,.55);border:1px solid var(--glass-border);
+    border-radius:16px;padding:16px;box-shadow:var(--shadow-sm)}
+  .fact-card.span2{grid-column:span 2}
+  .fact-name{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:3px}
+  .fact-desc{font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:12px}
+  .fact-amount{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--royal)}
+  .fact-card.notable .fact-amount{color:var(--red)}
+  .fact-sub{font-size:11px;color:var(--muted-soft);margin-top:5px;font-weight:600}
+  @media(max-width:560px){.fact-grid{grid-template-columns:1fr}.fact-card.span2{grid-column:span 1}}
+
+  .note{font-size:11px;color:var(--muted-soft);margin-top:10px;
+    padding:8px 12px;background:rgba(13,46,107,.04);border-radius:8px;line-height:1.5}
+
+  .fact-more{margin-top:12px}
+  .fact-more summary{list-style:none;cursor:pointer;font-size:12px;font-weight:700;
+    color:var(--royal-mid);display:inline-flex;align-items:center;gap:5px;
+    padding:6px 2px;user-select:none}
+  .fact-more summary::-webkit-details-marker{display:none}
+  .fact-more summary i{font-size:13px;transition:transform .2s}
+  .fact-more[open] summary i{transform:rotate(180deg)}
+  .fact-more summary:hover{color:var(--royal)}
+
+  .footer-box{margin-top:20px;padding:16px 18px;
+    background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid var(--glass-border);border-radius:10px}
+  .footer-note{font-size:11px;color:var(--muted-soft);line-height:1.5;
+    padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+  .footer-source{font-size:11.5px;color:var(--muted-soft);
+    display:flex;align-items:center;gap:7px}
+  .footer-source i{font-size:13px;color:var(--royal-mid)}
+
+  /* EVOLUCIÓN */
+  .traj-section{margin-top:36px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:28px;padding:32px;box-shadow:var(--shadow-md);}
+  .traj-eyebrow{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-soft);font-weight:700;margin-bottom:4px}
+  .traj-title{font-size:19px;font-weight:700;color:var(--royal);letter-spacing:-.02em;margin-bottom:4px}
+  .traj-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .traj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+  .traj-row-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--royal-mid);margin:16px 0 8px;padding-left:2px}
+  .traj-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--glass-border);border-radius:18px;padding:20px;
+    box-shadow:var(--shadow-sm);margin-bottom:0}
+  .traj-card-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--royal-mid);font-weight:700;margin-bottom:4px}
+  .traj-legend{display:flex;gap:14px;font-size:10.5px;color:var(--muted);margin-bottom:12px}
+  .traj-legend span{display:flex;align-items:center;gap:5px}
+  .traj-legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+  .traj-chart{display:flex;gap:8px}
+  .traj-y{display:flex;flex-direction:column;justify-content:space-between;
+    align-items:flex-end;min-width:58px}
+  .traj-y span{font-size:9px;color:var(--muted-soft);font-weight:600;white-space:nowrap}
+  .traj-bars{display:flex;align-items:flex-end;gap:3px;height:120px;flex:1}
+  .traj-bars i{flex:1;border-radius:3px 3px 0 0}
+  .traj-bars .gap{background:transparent;border-bottom:1px dashed var(--line)}
+  .traj-bars .dbar{flex:1;display:flex;align-items:flex-end;gap:1px;height:100%}
+  .traj-bars .dbar i{flex:1;border-radius:2px 2px 0 0}
+  .traj-axis{display:flex;gap:3px;margin-top:6px;padding-left:66px}
+  .traj-axis span{flex:1;text-align:center;font-size:8.5px;color:var(--muted-soft);font-weight:600}
+  .traj-text{font-size:12px;color:var(--ink);line-height:1.6;
+    border-top:1px solid var(--line);padding-top:10px;margin-top:12px}
+  .traj-text b{color:var(--royal)}
+  @media(max-width:920px){.traj-grid{grid-template-columns:1fr}}
+
+  @media(prefers-reduced-motion:no-preference){
+    .verdict{animation:rise .5s cubic-bezier(.22,.68,0,1.2) both}
+    .kpi-card{animation:fadeup .4s ease both}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .puente-nota{margin-top:16px;padding:12px 16px;background:rgba(13,46,107,.05);border:1px dashed rgba(13,46,107,.18);border-radius:12px;font-size:11.5px;color:var(--muted);line-height:1.55;text-align:center;}
+
+  /* Barra superior + selectores + nav de áreas — calcado exacto de Salud */
+  .barra-superior{background:rgba(255,255,255,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:sticky;top:0;z-index:1000;padding:14px 40px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--glass-border);}
+  .titulo-logo{font-size:18px;font-weight:900;color:var(--ink);}
+  .wrap-filtros{max-width:1160px;margin:0 auto;padding:22px 32px 0;}
+  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;}
+  .filtro-box-real{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+  .filtro-box-real label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+  .filtro-box-real select{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--ink);}
+  .nav-areas-real{display:flex;gap:6px;background:rgba(255,255,255,.5);border:1px solid var(--glass-border);border-radius:14px;padding:6px;overflow-x:auto;}
+  .btn-volver-real{background:var(--royal);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;}
+  .btn-area-real{background:none;border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;white-space:nowrap;}
+  .btn-area-real.activo{background:rgba(13,46,107,.08);color:var(--ink);}
+  .btn-area-real:hover:not(.activo){background:rgba(13,46,107,.05);}
+  .panel-quick-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;margin-top:18px;padding-top:18px;border-top:1px solid var(--line);}
+  .panel-quick-title{color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
+  .panel-quick-btn{border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.09);color:#1d4ed8;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
+  .panel-quick-btn:hover{background:rgba(37,99,235,.15);}
+  /* KPI simples — mismo formato que Salud/Educación/Social: número, título, descripción corta. Sin ícono, sin barras de comparación. */
+  .kpis-simple{grid-template-columns:repeat(3,1fr);}
+  .kpi-simple{padding:20px;}
+  .kpi-simple .kn{font-size:28px;margin-bottom:8px;}
+  .kpi-simple .kt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--royal-mid);margin-bottom:6px;}
+  .kpi-simple .kd-simple{font-size:12px;color:var(--muted);line-height:1.5;}
+  @media(max-width:920px){.kpis-simple{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:560px){.kpis-simple{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<nav class="barra-superior">
+  <button type="button" onclick="location.href='luz_civica_portada_v2.html'" aria-label="Volver al inicio de Luz Cívica" style="display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;padding:0;font-family:inherit;">
+    <svg width="40" height="24" viewBox="55 100 480 285" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="300,240 520,120 520,360" fill="#F5B912"/>
+      <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+        <line x1="414" y1="278" x2="414" y2="242"/>
+        <line x1="440" y1="278" x2="440" y2="213"/>
+        <line x1="466" y1="278" x2="466" y2="250"/>
+        <line x1="492" y1="278" x2="492" y2="197"/>
+      </g>
+      <g transform="translate(70,150) scale(9.2)" fill="#0F2A5F">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </g>
+    </svg>
+    <span style="font-size:18px;font-weight:800;letter-spacing:.01em;color:#0F2A5F;">LUZ CÍVICA</span>
+  </button>
+</nav>
+
+<div class="wrap-filtros">
+  <div class="filtros-reales">
+    <div class="filtro-box-real">
+      <label>Región</label>
+      <select id="sel-region"><option>Metropolitana</option></select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Comuna</label>
+      <select id="sel-comuna">
+        <option value="PROVIDENCIA">Providencia</option>
+        <option value="ÑUÑOA">Ñuñoa</option>
+        <option value="MAIPU">Maipú</option>
+      </select>
+    </div>
+    <div class="filtro-box-real">
+      <label>Año</label>
+      <select id="sel-anio"></select>
+    </div>
+  </div>
+  <nav class="nav-areas-real">
+    <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html'">Volver al panel</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html'">Administración</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_salud.html'">Salud</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html'">Educación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_social.html'">Social</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_perfil.html'">Perfil</button>
+    <button class="btn-area-real activo" type="button">Dotación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html'">Remuneraciones</button>
+    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html'">Explorador</button>
+  </nav>
+</div>
+
+<div class="wrap">
+<div class="card-glass">
+<div class="head" style="padding:0;">
+<h2 style="font-size:clamp(30px,3vw,42px);font-weight:800;color:var(--royal);letter-spacing:-.02em;">Dotación Municipal</h2>
+<p class="hero-sub" style="color:var(--muted);font-weight:600;margin-top:6px;"><span id="hdr-comuna">PROVIDENCIA</span> · Año <span id="hdr-anio">2024</span> · Montos totales en miles de pesos (M$)</p>
+<nav class="panel-quick-nav">
+<span class="panel-quick-title">Ir a</span>
+<button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-evolucion').scrollIntoView({behavior:'smooth'})">Evolución anual de finanzas municipales</button>
+<button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Evolución anual por indicador</button>
+<button class="panel-quick-btn" type="button" onclick="document.getElementById('sec-indicadores').scrollIntoView({behavior:'smooth'})">Buscador de indicadores</button>
+</nav>
+</div>
+<!-- ── KPI TEMÁTICOS ── -->
+<div class="kpis kpis-simple">
+<div class="kpi-card kpi-simple">
+<div class="kn"><span id="kpi-func-n">—</span><span class="ku">func./1.000 hab.</span></div>
+<div class="kt">Funcionarios por 1.000 habitantes</div>
+<div class="kd-simple" id="kpi-func-d">—</div>
+</div>
+<div class="kpi-card kpi-simple">
+<div class="kn"><span id="kpi-mujer-n">—</span><span class="ku">%</span></div>
+<div class="kt">Mujeres en la dotación municipal</div>
+<div class="kd-simple" id="kpi-mujer-d">—</div>
+</div>
+<div class="kpi-card kpi-simple">
+<div class="kn"><span id="kpi-prof-n">—</span><span class="ku">%</span></div>
+<div class="kt">Nivel de profesionalización (Municipal)</div>
+<div class="kd-simple" id="kpi-prof-d">—</div>
+</div>
+</div>
+</div>
+<!-- ── BARRA LARGA: DOTACIÓN POR ÁREA ── -->
+<div class="panel" style="margin-top:26px;margin-bottom:26px;">
+<div class="fin-head">
+<div>
+<div class="ft">¿Cómo se reparte el personal entre áreas?</div>
+<div class="fs" id="area-bar-sub">—</div>
+</div>
+</div>
+<div class="stack" id="area-bar-stack" style="height:22px;border-radius:8px;"></div>
+<div class="traj-legend" id="area-bar-legend" style="margin-top:10px;"></div>
+</div>
+
+<!-- ── COMPOSICIÓN DE LA DOTACIÓN + LÍMITES LEGALES (un mismo tema) ── -->
+<div class="panel" style="margin-bottom:26px;">
+<div class="fin-head">
+<div>
+<div class="ft">¿Cómo se compone la dotación?</div>
+<div class="fs">Municipal + Educación + Salud — totales por tipo de contrato</div>
+</div>
+</div>
+<div class="grid2" style="margin-top:18px;gap:32px;">
+<div style="padding-right:24px;border-right:1px solid var(--line);">
+<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin-bottom:8px;">N° de personas</div>
+<div class="fin-total" id="dot-total" style="font-size:20px;">—</div>
+<div class="stack" id="dot-stack"></div>
+<div id="dot-litems"></div>
+</div>
+<div>
+<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin-bottom:8px;">Gasto en M$</div>
+<div class="fin-total" id="gas-dot-total" style="font-size:20px;">—</div>
+<div class="stack" id="gas-dot-stack"></div>
+<div id="gas-dot-litems"></div>
+<div class="note">Honorarios incluye al personal a Código del Trabajo — ambos se reportan bajo el mismo Subtítulo 21.03 en el gasto.</div>
+</div>
+</div>
+
+<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line);">
+<div class="fin-head">
+<div>
+<div class="ft" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">¿Respeta los límites legales de gasto en personal?<span style="background:rgba(13,46,107,.10);color:var(--royal);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:6px;">Solo Personal Municipal</span></div>
+<div class="fs">Topes de la Ley de Rentas Municipales — no incluye Educación ni Salud</div>
+</div>
+</div>
+<div id="lim-items" style="margin-top:14px;"></div>
+<div class="note" id="lim-note">—</div>
+</div>
+</div>
+
+<!-- ── EVOLUCIÓN HISTÓRICA (gráficos reales, Chart.js) ── -->
+<div class="panel" id="sec-evolucion" style="margin-bottom:26px;">
+<div class="traj-title">¿Cómo ha evolucionado <span id="traj-nombre">Providencia</span>?</div>
+<div class="traj-sub">Trayectorias del gasto en personal y de la dotación.</div>
+
+<div class="eyebrow"><i class="ti ti-chart-line"></i>Evolución del gasto en personal por área</div>
+<div class="panel-sub">Montos de cada año en miles de millones de pesos. Fuente: SINIM Administración/Educación/Salud, serie 2008–2025 según disponibilidad.</div>
+<div class="evo-legend"><span><i style="background:#1A4A9C"></i>Municipal</span><span><i style="background:#2a78d6"></i>Educación</span><span><i style="background:#d98200"></i>Salud</span></div>
+<div style="position:relative;width:100%;height:260px;"><canvas id="evoArea"></canvas></div>
+
+<div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--line);">
+<div class="eyebrow"><i class="ti ti-chart-line"></i>Evolución de la dotación consolidada por tipo de contrato</div>
+<div class="panel-sub">N° de personas, Municipal + Educación + Salud sumadas.</div>
+<div class="evo-legend"><span><i style="background:#0F2A5F"></i>Planta</span><span><i style="background:#2563EB"></i>Contrata</span><span><i style="background:#9AA3B0"></i>Código del Trabajo</span><span><i style="background:#F5A623"></i>Comunitarios</span><span><i style="background:#7C3AED"></i>Honorarios</span></div>
+<div style="position:relative;width:100%;height:280px;"><canvas id="evoDotacion"></canvas></div>
+<div class="note">El N° de personas en programas comunitarios se registra en SINIM solo desde 2019 (todas las comunas). Los años sin dato para una categoría se dejan como huecos en la línea, nunca como cero.</div>
+</div>
+</div>
+<div class="panel" id="sec-indicadores" style="margin-top:16px;">
+<div class="eyebrow"><i class="ti ti-chart-bar"></i> Evolución anual por indicador · Buscador de indicadores</div>
+<div style="font-size:12.5px;color:var(--muted);line-height:1.55;">No tengo el detalle exacto de estas dos secciones para Dotación (no subiste el equivalente a la captura del técnico para esta parte) — así que no las simulo para no inventar contenido. Siguen el mismo patrón que en las demás áreas: son del técnico, no se tocan.</div>
+</div>
+
+<div class="footer-box">
+<div class="footer-source">
+<i class="ti ti-info-circle"></i>
+      Fuente: SINIM (Administración, Recursos Humanos, Educación, Salud, Género) · Población INE
+      <span id="src-year" style="margin-left:auto">Año 2024</span>
+</div>
+</div>
+<div style="height:50px"></div>
+</div>
+<script>
+const DATA = {"PROVIDENCIA": {"2008": {"poblacion": 126016, "profesionalizacion_pct": 0.25, "participacion_femenina_pct": 0.45, "municipal_total": 783, "educacion_total": 477, "salud_total": 220, "consolidado_total": 1480, "consolidado": {"planta": 1056, "contrata": 355, "cdt": 0, "honorarios": 69, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 17034216, "contrata": 2711116, "honorarios": 1051117, "comunitarios": 1376668, "total": 22218587}, "limites": {"lim42": 74.48, "lim40": 82.02, "lim10": 86.43}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2009": {"poblacion": 126436, "profesionalizacion_pct": 0.27, "participacion_femenina_pct": 0.43, "municipal_total": 850, "educacion_total": 828, "salud_total": 271, "consolidado_total": 1949, "consolidado": {"planta": 1390, "contrata": 430, "cdt": 0, "honorarios": 129, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 15907460, "contrata": 3381240, "honorarios": 1426340, "comunitarios": 1469818, "total": 22232206}, "limites": {"lim42": 74.48, "lim40": 100.74, "lim10": 92.05}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2010": {"poblacion": 126712, "profesionalizacion_pct": 0.28, "participacion_femenina_pct": 0.44, "municipal_total": 814, "educacion_total": 829, "salud_total": 238, "consolidado_total": 1881, "consolidado": {"planta": 1261, "contrata": 492, "cdt": 0, "honorarios": 128, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16739827, "contrata": 4286558, "honorarios": 1333892, "comunitarios": 1506863, "total": 23915665}, "limites": {"lim42": 81.94, "lim40": 121.62, "lim10": 87.72}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2011": {"poblacion": 126643, "profesionalizacion_pct": 0.28, "participacion_femenina_pct": 0.44, "municipal_total": 847, "educacion_total": 910, "salud_total": 238, "consolidado_total": 1995, "consolidado": {"planta": 1202, "contrata": 578, "cdt": 75, "honorarios": 140, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16927901, "contrata": 4814600, "honorarios": 1131390, "comunitarios": 1689489, "total": 24608739}, "limites": {"lim42": 70.78, "lim40": 138.98, "lim10": 73.83}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2012": {"poblacion": 126487, "profesionalizacion_pct": 0.29, "participacion_femenina_pct": 0.45, "municipal_total": 899, "educacion_total": 824, "salud_total": 355, "consolidado_total": 2078, "consolidado": {"planta": 1222, "contrata": 666, "cdt": 138, "honorarios": 52, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16226963, "contrata": 6578880, "honorarios": 1740272, "comunitarios": 1815948, "total": 26408124}, "limites": {"lim42": 75.08, "lim40": 146.1, "lim10": 56.59}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2013": {"poblacion": 126595, "profesionalizacion_pct": 0.31, "participacion_femenina_pct": 0.45, "municipal_total": 926, "educacion_total": 912, "salud_total": 324, "consolidado_total": 2162, "consolidado": {"planta": 1183, "contrata": 733, "cdt": 170, "honorarios": 68, "comunitarios": 8}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16415056, "contrata": 9022531, "honorarios": 1316951, "comunitarios": 2050096, "total": 28853170}, "limites": {"lim42": 84.54, "lim40": 157.05, "lim10": 65.7}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2014": {"poblacion": 145869, "profesionalizacion_pct": 0.3, "participacion_femenina_pct": 0.45, "municipal_total": 970, "educacion_total": 921, "salud_total": 388, "consolidado_total": 2279, "consolidado": {"planta": 1158, "contrata": 945, "cdt": 70, "honorarios": 101, "comunitarios": 5}, "municipal_honorarios_sindato": false, "gasto": {"planta": 20271578, "contrata": 11994551, "honorarios": 2296362, "comunitarios": 2385084, "total": 37010553}, "limites": {"lim42": 90.46, "lim40": 168.92, "lim10": 61.48}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2015": {"poblacion": 147533, "profesionalizacion_pct": 0.33, "participacion_femenina_pct": 0.46, "municipal_total": 999, "educacion_total": 697, "salud_total": 435, "consolidado_total": 2131, "consolidado": {"planta": 1013, "contrata": 883, "cdt": 136, "honorarios": 99, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 18260015, "contrata": 15322640, "honorarios": 6636414, "comunitarios": 2549216, "total": 42837914}, "limites": {"lim42": 91.43, "lim40": 190.01, "lim10": 61.41}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2016": {"poblacion": 149165, "profesionalizacion_pct": 0.32, "participacion_femenina_pct": 0.46, "municipal_total": 999, "educacion_total": 994, "salud_total": 571, "consolidado_total": 2564, "consolidado": {"planta": 980, "contrata": 1019, "cdt": 433, "honorarios": 120, "comunitarios": 12}, "municipal_honorarios_sindato": false, "gasto": {"planta": 20708851, "contrata": 17034165, "honorarios": 7949092, "comunitarios": 2835761, "total": 48599159}, "limites": {"lim42": 96.76, "lim40": 188.41, "lim10": 55.44}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2017": {"poblacion": 150742, "profesionalizacion_pct": 0.32, "participacion_femenina_pct": 0.42, "municipal_total": 1350, "educacion_total": 1096, "salud_total": 560, "consolidado_total": 3006, "consolidado": {"planta": 964, "contrata": 1091, "cdt": 505, "honorarios": 349, "comunitarios": 97}, "municipal_honorarios_sindato": false, "gasto": {"planta": 21808293, "contrata": 18148662, "honorarios": 7890465, "comunitarios": 2384959, "total": 50322532}, "limites": {"lim42": 91.74, "lim40": 197.05, "lim10": 54.89}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2018": {"poblacion": 152268, "profesionalizacion_pct": 0.36, "participacion_femenina_pct": 0.45, "municipal_total": 1044, "educacion_total": 1076, "salud_total": 483, "consolidado_total": 2603, "consolidado": {"planta": 965, "contrata": 1081, "cdt": 486, "honorarios": 67, "comunitarios": 4}, "municipal_honorarios_sindato": false, "gasto": {"planta": 22973016, "contrata": 20001842, "honorarios": 7091511, "comunitarios": 2257453, "total": 52412676}, "limites": {"lim42": 86.61, "lim40": 209.98, "lim10": 52.83}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2019": {"poblacion": 154446, "profesionalizacion_pct": 0.33, "participacion_femenina_pct": 0.46, "municipal_total": 1099, "educacion_total": 1097, "salud_total": 490, "consolidado_total": 2686, "consolidado": {"planta": 1262, "contrata": 826, "cdt": 484, "honorarios": 112, "comunitarios": 2}, "municipal_honorarios_sindato": false, "gasto": {"planta": 29922544, "contrata": 15500084, "honorarios": 7646819, "comunitarios": 2524386, "total": 55699140}, "limites": {"lim42": 90.82, "lim40": 82.25, "lim10": 56.78}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2020": {"poblacion": 157749, "profesionalizacion_pct": 0.38, "participacion_femenina_pct": 0.47, "municipal_total": 1383, "educacion_total": 1045, "salud_total": 553, "consolidado_total": 2981, "consolidado": {"planta": 1253, "contrata": 814, "cdt": 473, "honorarios": 94, "comunitarios": 347}, "municipal_honorarios_sindato": false, "gasto": {"planta": 31392505, "contrata": 14415453, "honorarios": 7443390, "comunitarios": 1926546, "total": 55276473}, "limites": {"lim42": 94.9, "lim40": 74.4, "lim10": 55.87}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2021": {"poblacion": 160043, "profesionalizacion_pct": 0.37, "participacion_femenina_pct": 0.46, "municipal_total": 1297, "educacion_total": 1105, "salud_total": 613, "consolidado_total": 3015, "consolidado": {"planta": 1162, "contrata": 978, "cdt": 498, "honorarios": 121, "comunitarios": 256}, "municipal_honorarios_sindato": false, "gasto": {"planta": 32489531, "contrata": 16516453, "honorarios": 8217848, "comunitarios": 1949193, "total": 59267731}, "limites": {"lim42": 90.28, "lim40": 71.36, "lim10": 52.59}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2022": {"poblacion": 161568, "profesionalizacion_pct": 0.39, "participacion_femenina_pct": 0.46, "municipal_total": 1471, "educacion_total": 1133, "salud_total": 603, "consolidado_total": 3207, "consolidado": {"planta": 1324, "contrata": 860, "cdt": 510, "honorarios": 108, "comunitarios": 405}, "municipal_honorarios_sindato": false, "gasto": {"planta": 36315067, "contrata": 15699561, "honorarios": 9147877, "comunitarios": 2710050, "total": 63986289}, "limites": {"lim42": 88.08, "lim40": 85.66, "lim10": 64.05}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2023": {"poblacion": 162837, "profesionalizacion_pct": 0.61, "participacion_femenina_pct": 0.37, "municipal_total": 1210, "educacion_total": 1180, "salud_total": 633, "consolidado_total": 3023, "consolidado": {"planta": 1142, "contrata": 899, "cdt": 529, "honorarios": 74, "comunitarios": 379}, "municipal_honorarios_sindato": true, "gasto": {"planta": 39730882, "contrata": 19333311, "honorarios": 9767166, "comunitarios": 3214111, "total": 72168715}, "limites": {"lim42": 88.2, "lim40": 102.19, "lim10": 54.18}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2024": {"poblacion": 164009, "profesionalizacion_pct": 42.58, "participacion_femenina_pct": 45.02, "municipal_total": 1285, "educacion_total": 1079, "salud_total": 656, "consolidado_total": 3020, "consolidado": {"planta": 1322, "contrata": 909, "cdt": 490, "honorarios": 26, "comunitarios": 273}, "municipal_honorarios_sindato": true, "gasto": {"planta": 42063930, "contrata": 21094124, "honorarios": 9890675, "comunitarios": 3459818, "total": 76634175}, "limites": {"lim42": 86.16, "lim40": 112.67, "lim10": 46.46}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2025": {"poblacion": 165134, "profesionalizacion_pct": 44.16, "participacion_femenina_pct": 45.44, "municipal_total": 1368, "educacion_total": 1182, "salud_total": 637, "consolidado_total": 3187, "consolidado": {"planta": 1244, "contrata": 990, "cdt": 526, "honorarios": 70, "comunitarios": 357}, "municipal_honorarios_sindato": true, "gasto": {"planta": 42617018, "contrata": 23934216, "honorarios": 11189857, "comunitarios": 3765995, "total": 81640159}, "limites": {"lim42": 86.74, "lim40": 119.24, "lim10": 57.3}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}}, "ÑUÑOA": {"2008": {"poblacion": 151045, "profesionalizacion_pct": 0.21, "participacion_femenina_pct": 0.38, "municipal_total": 366, "educacion_total": 942, "salud_total": 0, "consolidado_total": 1308, "consolidado": {"planta": 968, "contrata": 330, "cdt": 0, "honorarios": 10, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 12343198, "contrata": 769399, "honorarios": 200974, "comunitarios": 61917, "total": 13426947}, "limites": {"lim42": 64.25, "lim40": 71.75, "lim10": 53.39}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2009": {"poblacion": 149205, "profesionalizacion_pct": "No Recepcionado", "participacion_femenina_pct": "No Recepcionado", "municipal_total": 0, "educacion_total": 942, "salud_total": 0, "consolidado_total": 942, "consolidado": {"planta": 725, "contrata": 217, "cdt": 0, "honorarios": null, "comunitarios": 0}, "municipal_honorarios_sindato": true, "gasto": {"planta": 12768567, "contrata": 2228637, "honorarios": 175877, "comunitarios": 77650, "total": 15295039}, "limites": {"lim42": 56.71, "lim40": 74.44, "lim10": 45.52}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2010": {"poblacion": 147380, "profesionalizacion_pct": 0.15, "participacion_femenina_pct": 0.39, "municipal_total": 357, "educacion_total": 831, "salud_total": 407, "consolidado_total": 1595, "consolidado": {"planta": 1176, "contrata": 406, "cdt": 0, "honorarios": 13, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 13208507, "contrata": 2296745, "honorarios": 166469, "comunitarios": 74388, "total": 15791058}, "limites": {"lim42": 54.18, "lim40": 73.06, "lim10": 41.9}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2011": {"poblacion": 145116, "profesionalizacion_pct": 0.2, "participacion_femenina_pct": 0.4, "municipal_total": 388, "educacion_total": 1010, "salud_total": 496, "consolidado_total": 1894, "consolidado": {"planta": 1400, "contrata": 468, "cdt": 0, "honorarios": 26, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 12227582, "contrata": 4066114, "honorarios": 188005, "comunitarios": 40800, "total": 16579606}, "limites": {"lim42": 53.22, "lim40": 82.47, "lim10": 46.48}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2012": {"poblacion": 142857, "profesionalizacion_pct": 0.22, "participacion_femenina_pct": 0.37, "municipal_total": 343, "educacion_total": 1030, "salud_total": 481, "consolidado_total": 1854, "consolidado": {"planta": 923, "contrata": 368, "cdt": 498, "honorarios": 65, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 10520082, "contrata": 4220399, "honorarios": 385685, "comunitarios": 43852, "total": 15246888}, "limites": {"lim42": 55.27, "lim40": 82.91, "lim10": 62.05}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2013": {"poblacion": 140531, "profesionalizacion_pct": 0.4, "participacion_femenina_pct": 0.4, "municipal_total": 393, "educacion_total": 1084, "salud_total": 509, "consolidado_total": 1986, "consolidado": {"planta": 1041, "contrata": 382, "cdt": 510, "honorarios": 48, "comunitarios": 5}, "municipal_honorarios_sindato": false, "gasto": {"planta": 10245770, "contrata": 3882110, "honorarios": 1991324, "comunitarios": 68757, "total": 16259447}, "limites": {"lim42": 49.97, "lim40": 78.36, "lim10": 69.54}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2014": {"poblacion": 216452, "profesionalizacion_pct": 0.38, "participacion_femenina_pct": 0.42, "municipal_total": 391, "educacion_total": 1139, "salud_total": 549, "consolidado_total": 2079, "consolidado": {"planta": 896, "contrata": 655, "cdt": 485, "honorarios": 43, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 10731674, "contrata": 5729744, "honorarios": 1911182, "comunitarios": 88549, "total": 18552845}, "limites": {"lim42": 60.46, "lim40": 66.1, "lim10": 62.26}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2015": {"poblacion": 220779, "profesionalizacion_pct": 0.34, "participacion_femenina_pct": 0.43, "municipal_total": 403, "educacion_total": 1168, "salud_total": 556, "consolidado_total": 2127, "consolidado": {"planta": 861, "contrata": 699, "cdt": 522, "honorarios": 45, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 11281354, "contrata": 3601638, "honorarios": 3318897, "comunitarios": 211532, "total": 18539732}, "limites": {"lim42": 59.88, "lim40": 60.66, "lim10": 58.9}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2016": {"poblacion": 225109, "profesionalizacion_pct": 0.46, "participacion_femenina_pct": 0.39, "municipal_total": 479, "educacion_total": 1062, "salud_total": 583, "consolidado_total": 2124, "consolidado": {"planta": 790, "contrata": 722, "cdt": 514, "honorarios": 98, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 14503619, "contrata": 8000440, "honorarios": 6417118, "comunitarios": 149354, "total": 29165426}, "limites": {"lim42": 71.42, "lim40": 63.5, "lim10": 75.61}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2017": {"poblacion": 229434, "profesionalizacion_pct": 0.3, "participacion_femenina_pct": 0.41, "municipal_total": 555, "educacion_total": 1156, "salud_total": 606, "consolidado_total": 2317, "consolidado": {"planta": 845, "contrata": 752, "cdt": 583, "honorarios": 120, "comunitarios": 17}, "municipal_honorarios_sindato": false, "gasto": {"planta": 18185795, "contrata": 8161068, "honorarios": 4220419, "comunitarios": 130017, "total": 30797103}, "limites": {"lim42": 75.89, "lim40": 90.59, "lim10": 64.71}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2018": {"poblacion": 233739, "profesionalizacion_pct": 0.36, "participacion_femenina_pct": 0.41, "municipal_total": 511, "educacion_total": 1389, "salud_total": 621, "consolidado_total": 2521, "consolidado": {"planta": 850, "contrata": 942, "cdt": 657, "honorarios": 72, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16034804, "contrata": 13578088, "honorarios": 6778978, "comunitarios": 124451, "total": 36614242}, "limites": {"lim42": 74.86, "lim40": 109.93, "lim10": 57.52}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2019": {"poblacion": 240753, "profesionalizacion_pct": 0.35, "participacion_femenina_pct": 0.42, "municipal_total": 645, "educacion_total": 0, "salud_total": 0, "consolidado_total": 645, "consolidado": {"planta": 404, "contrata": 148, "cdt": 0, "honorarios": 51, "comunitarios": 42}, "municipal_honorarios_sindato": false, "gasto": {"planta": 23713536, "contrata": 15048728, "honorarios": 1672274, "comunitarios": 162082, "total": 40694893}, "limites": {"lim42": 73.64, "lim40": 83.33, "lim10": 61.12}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2020": {"poblacion": 250192, "profesionalizacion_pct": 0.34, "participacion_femenina_pct": 0.41, "municipal_total": 823, "educacion_total": 1443, "salud_total": 840, "consolidado_total": 3106, "consolidado": {"planta": 1598, "contrata": 1107, "cdt": 142, "honorarios": 82, "comunitarios": 177}, "municipal_honorarios_sindato": false, "gasto": {"planta": 28993272, "contrata": 15437006, "honorarios": 1809076, "comunitarios": 251887, "total": 46592498}, "limites": {"lim42": 85.04, "lim40": 67.51, "lim10": 47.31}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2021": {"poblacion": 255823, "profesionalizacion_pct": 0.37, "participacion_femenina_pct": 0.42, "municipal_total": 745, "educacion_total": 2381, "salud_total": 764, "consolidado_total": 3890, "consolidado": {"planta": 1915, "contrata": 1566, "cdt": 255, "honorarios": 86, "comunitarios": 68}, "municipal_honorarios_sindato": false, "gasto": {"planta": 30097641, "contrata": 18414378, "honorarios": 2826867, "comunitarios": 254524, "total": 51699843}, "limites": {"lim42": 80.93, "lim40": 73.14, "lim10": 62.66}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2022": {"poblacion": 259712, "profesionalizacion_pct": 0.39, "participacion_femenina_pct": 0.44, "municipal_total": 866, "educacion_total": 1649, "salud_total": 678, "consolidado_total": 3193, "consolidado": {"planta": 1326, "contrata": 870, "cdt": 720, "honorarios": 98, "comunitarios": 179}, "municipal_honorarios_sindato": false, "gasto": {"planta": 31611113, "contrata": 14790780, "honorarios": 10927104, "comunitarios": 567424, "total": 58061114}, "limites": {"lim42": 90.36, "lim40": 103.88, "lim10": 74.47}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2023": {"poblacion": 263319, "profesionalizacion_pct": 0.42, "participacion_femenina_pct": 0.43, "municipal_total": 750, "educacion_total": 0, "salud_total": 784, "consolidado_total": 1534, "consolidado": {"planta": 769, "contrata": 423, "cdt": 74, "honorarios": 75, "comunitarios": 193}, "municipal_honorarios_sindato": false, "gasto": {"planta": 34462076, "contrata": 17362142, "honorarios": 12060697, "comunitarios": 630059, "total": 65251326}, "limites": {"lim42": 84.22, "lim40": 99.71, "lim10": 61.16}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2024": {"poblacion": 266906, "profesionalizacion_pct": 42.69, "participacion_femenina_pct": 42.35, "municipal_total": 755, "educacion_total": 1953, "salud_total": 1009, "consolidado_total": 3717, "consolidado": {"planta": 1433, "contrata": 1008, "cdt": 859, "honorarios": 272, "comunitarios": 145}, "municipal_honorarios_sindato": false, "gasto": {"planta": 37316117, "contrata": 17195804, "honorarios": 13952732, "comunitarios": 627365, "total": 69212904}, "limites": {"lim42": 81.9, "lim40": 89.51, "lim10": 46.15}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2025": {"poblacion": 270521, "profesionalizacion_pct": 44.39, "participacion_femenina_pct": 42.86, "municipal_total": 729, "educacion_total": 2554, "salud_total": 785, "consolidado_total": 4068, "consolidado": {"planta": 1783, "contrata": 1155, "cdt": 804, "honorarios": 198, "comunitarios": 128}, "municipal_honorarios_sindato": false, "gasto": {"planta": 38680816, "contrata": 21710602, "honorarios": 14656148, "comunitarios": 741990, "total": 75938334}, "limites": {"lim42": 85.73, "lim40": 103.96, "lim10": 61.37}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}}, "MAIPU": {"2008": {"poblacion": 734494, "profesionalizacion_pct": 0.12, "participacion_femenina_pct": 0.34, "municipal_total": 2552, "educacion_total": 1531, "salud_total": 0, "consolidado_total": 4083, "consolidado": {"planta": 1619, "contrata": 540, "cdt": 0, "honorarios": 1924, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 11761694, "contrata": 5072251, "honorarios": 9872832, "comunitarios": 2151233, "total": 28991799}, "limites": {"lim42": 126.94, "lim40": 48.03, "lim10": 435.22}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2009": {"poblacion": 770290, "profesionalizacion_pct": 0.08, "participacion_femenina_pct": 0.62, "municipal_total": 628, "educacion_total": 1439, "salud_total": 219, "consolidado_total": 2286, "consolidado": {"planta": 1234, "contrata": 680, "cdt": 0, "honorarios": 372, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 13436228, "contrata": 4917273, "honorarios": 10793502, "comunitarios": 2064657, "total": 31410065}, "limites": {"lim42": 117.04, "lim40": 42.07, "lim10": 443.81}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2010": {"poblacion": 805503, "profesionalizacion_pct": 0.09, "participacion_femenina_pct": 0.35, "municipal_total": 611, "educacion_total": 1477, "salud_total": 253, "consolidado_total": 2341, "consolidado": {"planta": 1194, "contrata": 657, "cdt": 0, "honorarios": 490, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 14734733, "contrata": 5530102, "honorarios": 5123182, "comunitarios": 7568185, "total": 33177218}, "limites": {"lim42": 103.12, "lim40": 41.65, "lim10": 32.95}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2011": {"poblacion": 847004, "profesionalizacion_pct": 0.1, "participacion_femenina_pct": 0.35, "municipal_total": 606, "educacion_total": 1696, "salud_total": 372, "consolidado_total": 2674, "consolidado": {"planta": 1124, "contrata": 850, "cdt": 0, "honorarios": 700, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 14964122, "contrata": 6967794, "honorarios": 5924907, "comunitarios": 8123215, "total": 36238888}, "limites": {"lim42": 90.7, "lim40": 41.35, "lim10": 42.94}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2012": {"poblacion": 888377, "profesionalizacion_pct": 0.16, "participacion_femenina_pct": 0.36, "municipal_total": 687, "educacion_total": 137, "salud_total": 487, "consolidado_total": 1311, "consolidado": {"planta": 850, "contrata": 212, "cdt": 108, "honorarios": 77, "comunitarios": 64}, "municipal_honorarios_sindato": false, "gasto": {"planta": 16463399, "contrata": 8420838, "honorarios": 7508866, "comunitarios": 9956694, "total": 42853845}, "limites": {"lim42": 96.13, "lim40": 45.93, "lim10": 33.6}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2013": {"poblacion": 931211, "profesionalizacion_pct": 0.13, "participacion_femenina_pct": 0.36, "municipal_total": 666, "educacion_total": 2212, "salud_total": 423, "consolidado_total": 3301, "consolidado": {"planta": 1246, "contrata": 878, "cdt": 1087, "honorarios": 90, "comunitarios": 0}, "municipal_honorarios_sindato": false, "gasto": {"planta": 19015450, "contrata": 8567017, "honorarios": 8373978, "comunitarios": 11285460, "total": 47343017}, "limites": {"lim42": 100.46, "lim40": 44.81, "lim10": 24.47}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2014": {"poblacion": 544876, "profesionalizacion_pct": 0.13, "participacion_femenina_pct": 0.36, "municipal_total": 2714, "educacion_total": 2254, "salud_total": 632, "consolidado_total": 5600, "consolidado": {"planta": 1232, "contrata": 971, "cdt": 1110, "honorarios": 2110, "comunitarios": 177}, "municipal_honorarios_sindato": false, "gasto": {"planta": 20134205, "contrata": 11047007, "honorarios": 11222728, "comunitarios": 14647296, "total": 57133132}, "limites": {"lim42": 114.18, "lim40": 48.12, "lim10": 22.96}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2015": {"poblacion": 549788, "profesionalizacion_pct": 0.14, "participacion_femenina_pct": 0.35, "municipal_total": 3416, "educacion_total": 2400, "salud_total": 567, "consolidado_total": 6383, "consolidado": {"planta": 1493, "contrata": 832, "cdt": 1188, "honorarios": 2800, "comunitarios": 70}, "municipal_honorarios_sindato": false, "gasto": {"planta": 24534070, "contrata": 10827995, "honorarios": 12290377, "comunitarios": 18228578, "total": 65967843}, "limites": {"lim42": 120.19, "lim40": 56.11, "lim10": 19.27}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2016": {"poblacion": 554548, "profesionalizacion_pct": 0.17, "participacion_femenina_pct": 0.36, "municipal_total": 3813, "educacion_total": 2539, "salud_total": 537, "consolidado_total": 6889, "consolidado": {"planta": 1452, "contrata": 929, "cdt": 1326, "honorarios": 3147, "comunitarios": 35}, "municipal_honorarios_sindato": false, "gasto": {"planta": 27912832, "contrata": 12005408, "honorarios": 13115421, "comunitarios": 22933166, "total": 76052354}, "limites": {"lim42": 137.89, "lim40": 64.13, "lim10": 14.86}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2017": {"poblacion": 559123, "profesionalizacion_pct": 0.14, "participacion_femenina_pct": 0.36, "municipal_total": 3823, "educacion_total": 2592, "salud_total": 733, "consolidado_total": 7148, "consolidado": {"planta": 1438, "contrata": 998, "cdt": 1363, "honorarios": 3172, "comunitarios": 177}, "municipal_honorarios_sindato": false, "gasto": {"planta": 29520834, "contrata": 15145553, "honorarios": 14858181, "comunitarios": 23423687, "total": 83044550}, "limites": {"lim42": 137.16, "lim40": 87.18, "lim10": 14.72}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2018": {"poblacion": 563499, "profesionalizacion_pct": 0.19, "participacion_femenina_pct": 0.35, "municipal_total": 792, "educacion_total": 2614, "salud_total": 785, "consolidado_total": 4191, "consolidado": {"planta": 1415, "contrata": 1075, "cdt": 1358, "honorarios": 175, "comunitarios": 168}, "municipal_honorarios_sindato": false, "gasto": {"planta": 30855851, "contrata": 17583359, "honorarios": 16392526, "comunitarios": 26180365, "total": 91110095}, "limites": {"lim42": 140.25, "lim40": 90.5, "lim10": 17.34}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2019": {"poblacion": 566664, "profesionalizacion_pct": 0.2, "participacion_femenina_pct": 0.34, "municipal_total": 3919, "educacion_total": 2749, "salud_total": 813, "consolidado_total": 7481, "consolidado": {"planta": 1650, "contrata": 947, "cdt": 1409, "honorarios": 169, "comunitarios": 3306}, "municipal_honorarios_sindato": false, "gasto": {"planta": 32326846, "contrata": 19562269, "honorarios": 18081646, "comunitarios": 30338617, "total": 100404412}, "limites": {"lim42": 147.51, "lim40": 100.8, "lim10": 15.73}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2020": {"poblacion": 578605, "profesionalizacion_pct": 0.15, "participacion_femenina_pct": 0.33, "municipal_total": 3900, "educacion_total": 2687, "salud_total": 718, "consolidado_total": 7305, "consolidado": {"planta": 1696, "contrata": 849, "cdt": 1340, "honorarios": 179, "comunitarios": 3241}, "municipal_honorarios_sindato": false, "gasto": {"planta": 38156434, "contrata": 15670082, "honorarios": 18201366, "comunitarios": 31735637, "total": 103856739}, "limites": {"lim42": 156.42, "lim40": 76.09, "lim10": 15.31}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2021": {"poblacion": 584053, "profesionalizacion_pct": 0.2, "participacion_femenina_pct": 0.35, "municipal_total": 3543, "educacion_total": 2610, "salud_total": 828, "consolidado_total": 6981, "consolidado": {"planta": 1850, "contrata": 981, "cdt": 1222, "honorarios": 178, "comunitarios": 2750}, "municipal_honorarios_sindato": false, "gasto": {"planta": 38459817, "contrata": 17325197, "honorarios": 20863086, "comunitarios": 28008448, "total": 104783727}, "limites": {"lim42": 126.76, "lim40": 75.82, "lim10": 17.53}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2022": {"poblacion": 585684, "profesionalizacion_pct": 0.23, "participacion_femenina_pct": 0.35, "municipal_total": 3223, "educacion_total": 2800, "salud_total": 790, "consolidado_total": 6813, "consolidado": {"planta": 1888, "contrata": 749, "cdt": 1432, "honorarios": 216, "comunitarios": 2528}, "municipal_honorarios_sindato": false, "gasto": {"planta": 47574765, "contrata": 14702596, "honorarios": 23583565, "comunitarios": 24718521, "total": 110693282}, "limites": {"lim42": 115.09, "lim40": 107.35, "lim10": 25.64}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2023": {"poblacion": 586337, "profesionalizacion_pct": 0.22, "participacion_femenina_pct": 0.33, "municipal_total": 3281, "educacion_total": 2828, "salud_total": 984, "consolidado_total": 7093, "consolidado": {"planta": 1797, "contrata": 833, "cdt": 1448, "honorarios": 459, "comunitarios": 2556}, "municipal_honorarios_sindato": false, "gasto": {"planta": 51929582, "contrata": 18227021, "honorarios": 26879217, "comunitarios": 28922682, "total": 126088998}, "limites": {"lim42": 117.95, "lim40": 135.28, "lim10": 31.01}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2024": {"poblacion": 586812, "profesionalizacion_pct": 21.38, "participacion_femenina_pct": 33.29, "municipal_total": 2137, "educacion_total": 2624, "salud_total": 1276, "consolidado_total": 6037, "consolidado": {"planta": 1759, "contrata": 911, "cdt": 1301, "honorarios": 604, "comunitarios": 1462}, "municipal_honorarios_sindato": false, "gasto": {"planta": 54175164, "contrata": 19364967, "honorarios": 31276397, "comunitarios": 30942564, "total": 135895779}, "limites": {"lim42": 116.67, "lim40": 130.01, "lim10": 54.11}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}, "2025": {"poblacion": 587189, "profesionalizacion_pct": 25.96, "participacion_femenina_pct": 35.65, "municipal_total": 3110, "educacion_total": 0, "salud_total": 1206, "consolidado_total": 4316, "consolidado": {"planta": 1007, "contrata": 495, "cdt": 0, "honorarios": 341, "comunitarios": 2473}, "municipal_honorarios_sindato": false, "gasto": {"planta": 33399962, "contrata": 14077650, "honorarios": 11486104, "comunitarios": 31264820, "total": 90367910}, "limites": {"lim42": 112.85, "lim40": 115.07, "lim10": 68.37}, "areas_activas": {"municipal": true, "educacion": true, "salud": true}}}};
+const NOMBRES = {"PROVIDENCIA":"Providencia","ÑUÑOA":"Ñuñoa","MAIPU":"Maipú"};
+
+function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
+function fmtPct(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec||1,maximumFractionDigits:dec||1}); }
+function fmtCLP(n){ if(n===null||n===undefined) return "Sin dato"; return "$"+Math.round(n).toLocaleString('es-CL'); }
+
+let charts = {};
+function destroyCharts(){ Object.values(charts).forEach(c=>c && c.destroy()); charts={}; }
+
+function litem(label, color, value, pct){
+  return `<div class="litem"><span class="ln" style="--c:${color}">${label}</span><span class="lv"><span class="a">${value}</span><span class="p">${pct}</span></span></div>`;
+}
+
+function render(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const anio = document.getElementById('sel-anio').value;
+  const d = DATA[comuna][anio];
+  if(!d){ return; }
+
+  document.getElementById('hdr-comuna').textContent = NOMBRES[comuna].toUpperCase();
+  document.getElementById('hdr-anio').textContent = anio;
+  document.getElementById('src-year').textContent = 'Año ' + anio;
+  document.getElementById('traj-nombre').textContent = NOMBRES[comuna];
+
+  // ---- KPIs ----
+  const funcMuni = d.municipal_total;
+  const func1000 = d.poblacion ? (funcMuni/d.poblacion*1000) : null;
+  document.getElementById('kpi-func-n').textContent = fmtPct(func1000,1);
+  document.getElementById('kpi-func-d').textContent =
+    `${fmtInt(funcMuni)} funcionarios municipales (Planta + Contrata + Programas Comunitarios) / ${fmtInt(d.poblacion)} habitantes. Consolidado Municipal — no incluye Educación ni Salud, ya que no todas las comunas administran esas áreas.`;
+
+  document.getElementById('kpi-mujer-n').textContent = fmtPct(d.participacion_femenina_pct,1);
+  document.getElementById('kpi-mujer-d').textContent = `Participación femenina de los funcionarios municipales (IADM33).`;
+
+  document.getElementById('kpi-prof-n').textContent = fmtPct(d.profesionalizacion_pct,1);
+  document.getElementById('kpi-prof-d').textContent = `Parte de la dotación municipal con título profesional o técnico (IADM25) — indicador de calificación del personal, no de cantidad.`;
+
+  // ---- Barra reparto entre áreas ----
+  const areas = [
+    {label:'Municipal', val:d.municipal_total, color:'var(--royal)', activa:d.areas_activas.municipal},
+    {label:'Educación', val:d.educacion_total, color:'#2a78d6', activa:d.areas_activas.educacion},
+    {label:'Salud', val:d.salud_total, color:'#d98200', activa:d.areas_activas.salud},
+  ];
+  const totalAreas = areas.filter(a=>a.activa && a.val!==null).reduce((s,a)=>s+a.val,0);
+  document.getElementById('area-bar-sub').textContent = `${fmtInt(totalAreas)} personas — ${areas.filter(a=>a.activa).map(a=>a.label).join(', ')}`;
+  document.getElementById('area-bar-stack').innerHTML = areas.filter(a=>a.activa && a.val).map(a=>
+    `<i style="background:${a.color};width:${(a.val/totalAreas*100).toFixed(1)}%"></i>`).join('');
+  document.getElementById('area-bar-legend').innerHTML = areas.map(a=>{
+    if(!a.activa) return `<span><i style="background:var(--muted-soft)"></i>${a.label} · No administra esta comuna</span>`;
+    const pct = totalAreas ? (a.val/totalAreas*100).toFixed(1) : '0';
+    return `<span><i style="background:${a.color}"></i>${a.label} · ${fmtInt(a.val)} (${pct.replace('.',',')}%)</span>`;
+  }).join('');
+
+  // ---- Composición N° personas (consolidado) ----
+  const cons = d.consolidado;
+  const consItems = [
+    {label:'Planta', color:'var(--royal)', val:cons.planta},
+    {label:'Contrata', color:'#2563EB', val:cons.contrata},
+    {label:'Código del Trabajo', color:'#9AA3B0', val:cons.cdt},
+    {label:'Programas Comunitarios', color:'#F5A623', val:cons.comunitarios},
+    {label:'Honorarios', color:'#7C3AED', val:cons.honorarios},
+  ];
+  const totalPersonas = consItems.filter(i=>i.val!==null).reduce((s,i)=>s+i.val,0);
+  document.getElementById('dot-total').innerHTML = `${fmtInt(totalPersonas)} <span style="font-size:12px;color:var(--muted);font-weight:500;">personas</span>`;
+  document.getElementById('dot-stack').innerHTML = consItems.filter(i=>i.val).map(i=>
+    `<i style="background:${i.color};width:${(i.val/totalPersonas*100).toFixed(1)}%"></i>`).join('');
+  document.getElementById('dot-litems').innerHTML = consItems.map(i=>{
+    if(i.val===null) return litem(i.label, i.color, 'Sin dato de personas', '');
+    const pct = totalPersonas ? (i.val/totalPersonas*100).toFixed(1).replace('.',',')+'%' : '';
+    return litem(i.label, i.color, fmtInt(i.val), pct);
+  }).join('');
+
+  // ---- Gasto en M$ ----
+  const g = d.gasto;
+  const gItems = [
+    {label:'Planta', color:'var(--royal)', val:g.planta},
+    {label:'Contrata', color:'#2563EB', val:g.contrata},
+    {label:'Honorarios', color:'#7C3AED', val:g.honorarios},
+    {label:'Programas Comunitarios', color:'#F5A623', val:g.comunitarios},
+  ];
+  document.getElementById('gas-dot-total').innerHTML = `${fmtCLP(g.total)} <span style="font-size:12px;color:var(--muted);font-weight:500;">Gasto en personal</span>`;
+  document.getElementById('gas-dot-stack').innerHTML = gItems.filter(i=>i.val).map(i=>
+    `<i style="background:${i.color};width:${(i.val/g.total*100).toFixed(1)}%"></i>`).join('');
+  document.getElementById('gas-dot-litems').innerHTML = gItems.map(i=>{
+    const pct = g.total ? (i.val/g.total*100).toFixed(1).replace('.',',')+'%' : '';
+    return litem(i.label, i.color, fmtCLP(i.val), pct);
+  }).join('');
+
+  // ---- Límites legales (solo Personal Municipal) ----
+  const lim = d.limites;
+  function limRow(label, color, val){
+    if(val===null) return litem(label, color, 'Sin dato', '');
+    const ok = val<=100;
+    return litem(label, ok?'#16a34a':'#dc2626', fmtPct(val,1)+'%', `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:800;">${ok?'OK':'EXCEDE'}</span>`);
+  }
+  document.getElementById('lim-items').innerHTML =
+    limRow('Gasto en personal / 42% ingresos propios','#16a34a',lim.lim42) +
+    limRow('Personal a contrata / 40% de la planta','#16a34a',lim.lim40) +
+    limRow('Gasto en honorarios / 10% del gasto en personal','#16a34a',lim.lim10);
+
+  const excede = [];
+  if(lim.lim42!==null && lim.lim42>100) excede.push(`el tope de gasto en personal respecto a ingresos propios (${fmtPct(lim.lim42,1)}%)`);
+  if(lim.lim40!==null && lim.lim40>100) excede.push(`el tope legal de personal a contrata (Ley N° 18.883) — tiene ${fmtPct(lim.lim40,1)}% del límite permitido respecto a su dotación de planta`);
+  if(lim.lim10!==null && lim.lim10>100) excede.push(`el tope de gasto en honorarios (${fmtPct(lim.lim10,1)}%)`);
+  const limNoteEl = document.getElementById('lim-note');
+  if(excede.length){
+    limNoteEl.className = 'note';
+    limNoteEl.style.background = 'rgba(220,38,38,.08)'; limNoteEl.style.borderColor='rgba(220,38,38,.18)'; limNoteEl.style.color='#7f1d1d';
+    limNoteEl.textContent = `${NOMBRES[comuna]} excede ${excede.join('; y ')}.`;
+  } else {
+    limNoteEl.style.background = 'rgba(22,163,74,.08)'; limNoteEl.style.borderColor='rgba(22,163,74,.18)'; limNoteEl.style.color='#14532d';
+    limNoteEl.textContent = `${NOMBRES[comuna]} está dentro de los 3 límites legales de gasto en personal municipal.`;
+  }
+
+  // ---- Gráficos de evolución ----
+  destroyCharts();
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>a-b);
+  const baseOpts = (ytitle)=>({ responsive:true, maintainAspectRatio:false, spanGaps:true,
+    plugins:{legend:{display:false}},
+    scales:{ y:{title:{display:true,text:ytitle},ticks:{color:'#6B7280'},grid:{color:'rgba(13,46,107,.08)'}},
+             x:{ticks:{color:'#6B7280'},grid:{display:false}} } });
+
+  const toMM = (v)=> v===null||v===undefined ? null : +(v/1000000).toFixed(1);
+
+  charts.evoArea = new Chart(document.getElementById('evoArea'), {
+    type:'line',
+    data:{ labels: years, datasets:[
+      {label:'Municipal', data: years.map(y=>toMM(DATA[comuna][y].gasto_por_area.municipal)), borderColor:'#1A4A9C', backgroundColor:'#1A4A9C', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Educación', data: years.map(y=>toMM(DATA[comuna][y].gasto_por_area.educacion)), borderColor:'#2a78d6', backgroundColor:'#2a78d6', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Salud', data: years.map(y=>toMM(DATA[comuna][y].gasto_por_area.salud)), borderColor:'#d98200', backgroundColor:'#d98200', pointRadius:3, borderWidth:2, tension:0.15}
+    ]},
+    options: baseOpts('Miles de millones de pesos ($)')
+  });
+
+  charts.evoDotacion = new Chart(document.getElementById('evoDotacion'), {
+    type:'line',
+    data:{ labels: years, datasets:[
+      {label:'Planta', data: years.map(y=>DATA[comuna][y].consolidado.planta), borderColor:'#0F2A5F', backgroundColor:'#0F2A5F', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Contrata', data: years.map(y=>DATA[comuna][y].consolidado.contrata), borderColor:'#2563EB', backgroundColor:'#2563EB', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Código del Trabajo', data: years.map(y=>DATA[comuna][y].consolidado.cdt), borderColor:'#9AA3B0', backgroundColor:'#9AA3B0', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Comunitarios', data: years.map(y=>DATA[comuna][y].consolidado.comunitarios), borderColor:'#F5A623', backgroundColor:'#F5A623', pointRadius:3, borderWidth:2, tension:0.15},
+      {label:'Honorarios', data: years.map(y=>DATA[comuna][y].consolidado.honorarios), borderColor:'#7C3AED', backgroundColor:'#7C3AED', pointRadius:3, borderWidth:2, tension:0.15}
+    ]},
+    options: baseOpts('N° de personas')
+  });
+}
+
+function populateAnio(){
+  const comuna = document.getElementById('sel-comuna').value;
+  const years = Object.keys(DATA[comuna]).map(Number).sort((a,b)=>b-a);
+  const selAnio = document.getElementById('sel-anio');
+  const prev = selAnio.value;
+  selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(+prev)) selAnio.value = prev;
+  else selAnio.value = years.includes(2025) ? 2025 : years[0];
+}
+
+document.getElementById('sel-comuna').addEventListener('change', ()=>{ populateAnio(); render(); });
+document.getElementById('sel-anio').addEventListener('change', render);
+
+populateAnio();
+render();
+</script>
+</body>
+</html>
