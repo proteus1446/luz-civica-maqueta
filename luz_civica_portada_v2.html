@@ -515,9 +515,23 @@
       dots.forEach(function(d, i){ d.classList.toggle('is-active', i === index); });
     }
     function go(n){ index = (n + slides.length) % slides.length; render(); }
-    if(prevBtn) prevBtn.addEventListener('click', function(){ go(index - 1); });
-    if(nextBtn) nextBtn.addEventListener('click', function(){ go(index + 1); });
-    dots.forEach(function(d, i){ d.addEventListener('click', function(){ go(i); }); });
+
+    const AUTOPLAY_MS = 6000;
+    let timer = null;
+    function startAutoplay(){ stopAutoplay(); timer = setInterval(function(){ go(index + 1); }, AUTOPLAY_MS); }
+    function stopAutoplay(){ if(timer){ clearInterval(timer); timer = null; } }
+    function restartAutoplay(){ startAutoplay(); } // reinicia el conteo tras una interacción manual
+
+    if(prevBtn) prevBtn.addEventListener('click', function(){ go(index - 1); restartAutoplay(); });
+    if(nextBtn) nextBtn.addEventListener('click', function(){ go(index + 1); restartAutoplay(); });
+    dots.forEach(function(d, i){ d.addEventListener('click', function(){ go(i); restartAutoplay(); }); });
+
+    const viewport = document.querySelector('.carousel-viewport');
+    if(viewport){
+      viewport.addEventListener('mouseenter', stopAutoplay);
+      viewport.addEventListener('mouseleave', startAutoplay);
+    }
+    startAutoplay();
   })();
 
   (function(){
@@ -553,6 +567,7 @@
     selComuna.addEventListener('change', function(){
       selAnio.innerHTML = YEARS.map(y=>`<option value="${y}" ${y===2025?'selected':''}>${y}</option>`).join('');
       selAnio.disabled = false;
+      irAlPanel(); // comuna + año (2025 por defecto) ya alcanzan para ir directo al panel
     });
 
     selAnio.addEventListener('change', irAlPanel);
