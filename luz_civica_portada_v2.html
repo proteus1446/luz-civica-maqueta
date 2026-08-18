@@ -239,6 +239,8 @@
   .footer-links a{ font-size:12.5px; font-weight:700; color:var(--muted-soft); }
   .footer-links a:hover{ color:var(--navy); }
 </style>
+<script src="data/nombres_comunas.js"></script>
+<script src="data/regiones_comunas.js"></script>
 </head>
 <body>
 
@@ -387,21 +389,14 @@
       <div class="field">
         <label>1. Selecciona tu región</label>
         <div class="select-shell" style="padding:0;">
-          <select class="select-shell" id="sel-region">
-            <option value="Metropolitana">Metropolitana</option>
-          </select>
+          <select class="select-shell" id="sel-region"></select>
           <i class="ti ti-chevron-down select-caret"></i>
         </div>
       </div>
       <div class="field">
         <label>2. Selecciona tu comuna</label>
         <div class="select-shell" style="padding:0;">
-          <select class="select-shell" id="sel-comuna">
-            <option value="" selected disabled>Comuna</option>
-            <option value="PROVIDENCIA">Providencia</option>
-            <option value="ÑUÑOA">Ñuñoa</option>
-            <option value="MAIPU">Maipú</option>
-          </select>
+          <select class="select-shell" id="sel-comuna"><option value="" selected disabled>Comuna</option></select>
           <i class="ti ti-chevron-down select-caret"></i>
         </div>
       </div>
@@ -526,10 +521,27 @@
   })();
 
   (function(){
+    const selRegion = document.getElementById('sel-region');
     const selComuna = document.getElementById('sel-comuna');
     const selAnio = document.getElementById('sel-anio');
     const ctaIr = document.getElementById('cta-ir');
     const YEARS = [2025,2024,2023,2022,2021,2020,2019,2018,2017,2016];
+
+    function populateRegiones(){
+      selRegion.innerHTML = '<option value="">Todas las regiones</option>' +
+        ORDEN_REGIONES.map(r=>`<option value="${r}">${NOMBRES_REGIONES[r]}</option>`).join('');
+    }
+    function populateComunas(){
+      const region = selRegion.value;
+      const keys = Object.keys(NOMBRES_COMUNAS)
+        .filter(k => !region || REGION_POR_COMUNA[k] === region)
+        .sort((a,b)=>NOMBRES_COMUNAS[a].localeCompare(NOMBRES_COMUNAS[b],'es'));
+      selComuna.innerHTML = '<option value="" selected disabled>Comuna</option>' +
+        keys.map(k=>`<option value="${k}">${NOMBRES_COMUNAS[k]}</option>`).join('');
+    }
+    populateRegiones();
+    populateComunas();
+    selRegion.addEventListener('change', populateComunas);
 
     function irAlPanel(){
       if(!selComuna.value) return;
