@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="data/data_administracion.js"></script>
 <script src="data/nombres_comunas.js"></script>
+<script src="data/regiones_comunas.js"></script>
 <style>
   :root{
     --royal:#0F2A5F;--royal-mid:#1A4A9C;--royal-light:#1D4ED8;
@@ -293,7 +294,7 @@
   <div class="filtros-reales">
     <div class="filtro-box-real">
       <label>Región</label>
-      <select id="sel-region"><option>Metropolitana</option></select>
+      <select id="sel-region"></select>
     </div>
     <div class="filtro-box-real">
       <label>Comuna</label>
@@ -460,14 +461,26 @@
 // DATA_ADMINISTRACION y NOMBRES_COMUNAS vienen de data/data_administracion.js y data/nombres_comunas.js (generados por scripts/build_administracion.py)
 const DATA = DATA_ADMINISTRACION;
 const NOMBRES = NOMBRES_COMUNAS;
+
+function populateRegiones(){
+  const sel = document.getElementById('sel-region');
+  sel.innerHTML = '<option value="">Todas las regiones</option>' +
+    ORDEN_REGIONES.map(r=>`<option value="${r}">${NOMBRES_REGIONES[r]}</option>`).join('');
+}
+
 function populateComunas(){
   const sel = document.getElementById('sel-comuna');
-  const keys = Object.keys(DATA).sort((a,b)=>NOMBRES[a].localeCompare(NOMBRES[b],'es'));
+  const region = document.getElementById('sel-region').value;
+  const prev = sel.value;
+  const keys = Object.keys(DATA)
+    .filter(k => !region || REGION_POR_COMUNA[k] === region)
+    .sort((a,b)=>NOMBRES[a].localeCompare(NOMBRES[b],'es'));
   sel.innerHTML = keys.map(k=>`<option value="${k}">${NOMBRES[k]}</option>`).join('');
+  if(keys.includes(prev)){ sel.value = prev; return; }
   const params = new URLSearchParams(location.search);
   const comunaParam = params.get('comuna');
-  if(comunaParam && DATA[comunaParam.toUpperCase()]) sel.value = comunaParam.toUpperCase();
-  else if(DATA['PROVIDENCIA']) sel.value = 'PROVIDENCIA';
+  if(comunaParam && keys.includes(comunaParam.toUpperCase())) sel.value = comunaParam.toUpperCase();
+  else if(keys.includes('PROVIDENCIA')) sel.value = 'PROVIDENCIA';
 }
 
 function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
@@ -620,9 +633,11 @@ function populateAnio(){
   else selAnio.value = years.includes(2025) ? 2025 : years[0];
 }
 
+document.getElementById('sel-region').addEventListener('change', ()=>{ populateComunas(); populateAnio(); render(); });
 document.getElementById('sel-comuna').addEventListener('change', ()=>{ populateAnio(); render(); });
 document.getElementById('sel-anio').addEventListener('change', render);
 
+populateRegiones();
 populateComunas();
 populateAnio();
 render();

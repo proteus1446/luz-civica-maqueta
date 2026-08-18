@@ -35,6 +35,17 @@ import unicodedata
 import openpyxl
 
 
+# Variantes de nombre entre el archivo SINIM y el de Contraloría para la misma
+# comuna (verificado manualmente: las 4 quedaban sin región/deficit/deuda flotante
+# por el desajuste de nombre, no por falta real de dato).
+ALIASES_CONTRALORIA = {
+    "PAIHUANO": "PAIGUANO",
+    "LA CALERA": "CALERA",
+    "LLAY LLAY": "LLAILLAY",
+    "O'HIGGINS": "O´HIGGINS",
+}
+
+
 def comuna_key(municipio):
     """Normalize a comuna name to the site's canonical key: uppercase, vowel
     accents stripped, but Ñ preserved (matches MAIPU/ÑUÑOA/PROVIDENCIA convention
@@ -51,6 +62,7 @@ SINIM_CARAC = "/Users/cristobal/prueba/sinim/7-caracterizacion comunal.xlsx"
 CONTRALORIA = "/Users/cristobal/Desktop/luz _c/contraloria .xlsx"
 OUT_JS = "/Users/cristobal/Downloads/maqueta/data/data_administracion.js"
 OUT_NOMBRES = "/Users/cristobal/Downloads/maqueta/data/nombres_comunas.js"
+OUT_REGIONES = "/Users/cristobal/Downloads/maqueta/data/regiones_comunas.js"
 
 
 def num(v):
@@ -206,21 +218,38 @@ def add_poblacion(data):
             data[municipio][anio]["poblacion"] = num(r[idx_pob])
 
 
+REGIONES = {
+    "XV": "Arica y Parinacota", "I": "Tarapacá", "II": "Antofagasta",
+    "III": "Atacama", "IV": "Coquimbo", "V": "Valparaíso", "RM": "Metropolitana",
+    "VI": "O'Higgins", "VII": "Maule", "XVI": "Ñuble", "VIII": "Biobío",
+    "IX": "Araucanía", "XIV": "Los Ríos", "X": "Los Lagos", "XI": "Aysén",
+    "XII": "Magallanes",
+}
+# orden geográfico norte -> sur, el mismo que usa Contraloría/SUBDERE
+ORDEN_REGIONES = ["XV", "I", "II", "III", "IV", "V", "RM", "VI", "VII", "XVI",
+                   "VIII", "IX", "XIV", "X", "XI", "XII"]
+
+
 def add_contraloria(data):
     wb = openpyxl.load_workbook(CONTRALORIA, read_only=True)
     ws = wb["Sheet1"]
     rows = ws.iter_rows(values_only=True)
     header = next(rows)
     idx = {h: i for i, h in enumerate(header)}
+    regiones_comuna = {}
     for r in rows:
         if r[0] is None:
             continue
         anio = str(r[idx["Año"]])
         municipio = comuna_key(str(r[idx["Nombre Municipio"]]).strip())
+        municipio = ALIASES_CONTRALORIA.get(municipio, municipio)
         deficit = num(r[idx["Deficit/super"]])
         situacion = r[idx["Situacion"]]
         flotante = num(r[idx["Deuda Flotante"]])
         pagado = num(r[idx["Deuda Flotante pagado"]])
+        region = str(r[idx["Región"]]).strip()
+        if region == "XIII":
+            region = "RM"
 
         if flotante is None:
             pct = None
@@ -237,11 +266,19 @@ def add_contraloria(data):
             d["deuda_flotante_pagado"] = pagado
             d["kpis"]["deuda_flotante_pct"] = pct
 
+        # nos quedamos con la región del año más reciente vista para esa comuna
+        if region in REGIONES:
+            prev_year = regiones_comuna.get(municipio, (None, None))[1]
+            if prev_year is None or anio >= prev_year:
+                regiones_comuna[municipio] = (region, anio)
+
+    return {k: v[0] for k, v in regiones_comuna.items()}
+
 
 def main():
     data, nombres = load_admin()
     add_poblacion(data)
-    add_contraloria(data)
+    region_por_comuna = add_contraloria(data)
 
     # strip internal helper key
     for muni in data:
@@ -259,6 +296,22 @@ def main():
         f.write("const NOMBRES_COMUNAS = ")
         json.dump(nombres, f, ensure_ascii=False, indent=2, sort_keys=True)
         f.write(";\n")
+
+    with open(OUT_REGIONES, "w", encoding="utf-8") as f:
+        f.write("// Generado por scripts/build_administracion.py — no editar a mano.\n")
+        f.write("const NOMBRES_REGIONES = ")
+        json.dump(REGIONES, f, ensure_ascii=False, indent=2)
+        f.write(";\n")
+        f.write("const ORDEN_REGIONES = ")
+        json.dump(ORDEN_REGIONES, f, ensure_ascii=False)
+        f.write(";\n")
+        f.write("const REGION_POR_COMUNA = ")
+        json.dump(region_por_comuna, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write(";\n")
+
+    n_sin_region = len([k for k in data if k not in region_por_comuna])
+    if n_sin_region:
+        print(f"AVISO: {n_sin_region} comunas sin región asignada")
 
     n_comunas = len(data)
     n_rows = sum(len(v) for v in data.values())
