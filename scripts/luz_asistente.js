@@ -24,10 +24,10 @@
   );
 
   const FAQ = [
-    "¿Por qué importa este indicador?",
-    "¿Esta cifra es alta o baja?",
-    "¿Cómo evolucionó esta comuna en el tiempo?",
-    "Explícamelo en lenguaje simple",
+    { texto: "¿Por qué importa este indicador?" },
+    { texto: "¿Esta cifra es alta o baja?" },
+    { texto: "¿Cómo evolucionó esta comuna en el tiempo?", incluirHistorial: true },
+    { texto: "Explícamelo en lenguaje simple" },
   ];
 
   function hoyKey() {
@@ -75,6 +75,26 @@
       datos = dataObj[comuna][anio] || null;
     }
     return { comuna, nombre, anio, tema: CFG.tema, temaLabel: CFG.temaLabel, datos };
+  }
+
+  // Historial multi-año de la comuna seleccionada, para preguntas de
+  // evolución/tendencia. Se recorta automáticamente (empezando por los años
+  // más antiguos) hasta caber en LIMITE_HISTORIAL_CHARS, para no mandar
+  // payloads enormes al modelo.
+  const LIMITE_HISTORIAL_CHARS = 6000;
+  function historialComuna(comuna) {
+    const dataObj = datosGlobal();
+    if (!dataObj || !comuna || !dataObj[comuna]) return null;
+    const anios = Object.keys(dataObj[comuna]).sort(); // ascendente
+    let usados = anios.slice();
+    while (usados.length > 1) {
+      const serie = {};
+      usados.forEach((a) => (serie[a] = dataObj[comuna][a]));
+      const texto = JSON.stringify(serie);
+      if (texto.length <= LIMITE_HISTORIAL_CHARS) return serie;
+      usados = usados.slice(1); // descarta el año más antiguo restante
+    }
+    return null;
   }
 
   // ---- estilos (con prefijo lc-asist- para no chocar con la página) ----
@@ -144,8 +164,8 @@
 
   FAQ.forEach((q) => {
     const b = document.createElement("button");
-    b.textContent = q;
-    b.onclick = () => enviar(q);
+    b.textContent = q.texto;
+    b.onclick = () => enviar(q.texto, { incluirHistorial: !!q.incluirHistorial });
     faqBox.appendChild(b);
   });
 
@@ -188,9 +208,10 @@
   btn.onclick = toggle;
   panel.querySelector(".lc-asist-close").onclick = toggle;
 
-  async function enviar(preguntaForzada) {
+  async function enviar(preguntaForzada, opts) {
     const pregunta = (preguntaForzada || input.value || "").trim();
     if (!pregunta) return;
+    const incluirHistorial = !!(opts && opts.incluirHistorial);
 
     if (!CFG.endpoint) {
       addMsg(pregunta, "user");
@@ -218,6 +239,8 @@
     sendBtn.disabled = true;
     const pending = addMsg("Pensando…", "bot");
 
+    const historial = incluirHistorial ? historialComuna(ctx.comuna) : null;
+
     try {
       const resp = await fetch(CFG.endpoint, {
         method: "POST",
@@ -230,6 +253,7 @@
           tema: ctx.tema,
           temaLabel: ctx.temaLabel,
           datos: ctx.datos,
+          historial: historial,
         }),
       });
       if (!resp.ok) throw new Error("HTTP " + resp.status);
