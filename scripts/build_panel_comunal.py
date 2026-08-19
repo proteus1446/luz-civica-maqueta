@@ -187,6 +187,16 @@ def main():
             if al:
                 al = dict(al)
                 al["grado"] = grado_alcalde.get(key, {}).get("MGRADALC")
+                # NOTA (no corregir): la escala oficial de grado alcalde es 1-6,
+                # pero el archivo fuente (2-Recursos H.xlsx, MGRADALC) trae 6
+                # filas con grado 7 u 8 — siempre un salto aislado de un solo
+                # año para la misma persona/comuna que en el resto de los años
+                # tiene grado 5 o 6 (ej. CABO DE HORNOS 2020/2021, COCHRANE
+                # 2019, COIHUECO 2020, SAAVEDRA 2021, VILLA ALEGRE 2020;
+                # 4 de los 6 casos caen en 2020-2021, años de pandemia).
+                # Se deja el valor tal cual viene de la fuente oficial SINIM,
+                # sin alterarlo — el asistente de IA está avisado de esto
+                # vía el glosario en worker/asistente-worker.js.
 
             data.setdefault(municipio, {})[anio] = {
                 "poblacion": poblacion,
