@@ -83,6 +83,7 @@
     .chart-panel{ transform:translate(-46%,-50%) scale(.42) !important; }
     .constellation-holder{ opacity:.55; }
   }
+  @media (max-width:640px){ .lamp-stack{ display:none; } }
   .lamp-stack{
     position:absolute; top:-118px; left:50%; transform:translateX(-50%);
     width:248px; height:320px; z-index:1; pointer-events:none;
@@ -272,11 +273,6 @@
     </span>
     <span class="titulo-logo">LUZ CÍVICA</span>
   </button>
-  <div class="nav-links">
-    <a href="#" data-scroll-about>Sobre el proyecto</a>
-    <a href="explorador-comunal.html">Explorador de datos</a>
-    <a href="#" data-go-contact>Contacto</a>
-  </div>
 </nav>
 
 <div class="page">
@@ -464,6 +460,7 @@
     <div class="footer-links">
       <a href="#">Fuentes oficiales y datos municipales</a>
       <a href="#">Transparencia y visualización ciudadana</a>
+      <a href="#" data-go-contact>Contacto</a>
       <a href="#">© 2026 · Todos los derechos reservados</a>
     </div>
   </footer>
