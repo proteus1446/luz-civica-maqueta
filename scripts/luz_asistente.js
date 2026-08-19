@@ -24,11 +24,16 @@
   );
 
   const FAQ = [
-    { texto: "¿Por qué importa este indicador?" },
-    { texto: "¿Esta cifra es alta o baja?" },
     { texto: "¿Cómo evolucionó esta comuna en el tiempo?", incluirHistorial: true },
+    { texto: "¿Qué comuna tiene el valor más alto o más bajo?", incluirRanking: true },
     { texto: "Explícamelo en lenguaje simple" },
   ];
+
+  // Preguntas escritas a mano que también deberían disparar el ranking
+  // entre comunas (ej. "qué alcalde gana más", "qué comuna tiene mayor
+  // dotación"), aunque no se use el botón de FAQ.
+  const PATRON_COMPARATIVA =
+    /(qu[ée]\s+comuna|cu[áa]l\s+comuna|m[áa]s\s+alt[oa]|m[áa]s\s+baj[oa]|mayor\b|menor\b|ranking|compar|todas\s+las\s+comunas|qu[ée]\s+alcalde|cu[áa]l\s+alcalde)/i;
 
   function hoyKey() {
     const d = new Date();
@@ -95,6 +100,132 @@
       usados = usados.slice(1); // descarta el año más antiguo restante
     }
     return null;
+  }
+
+  // Aplana un objeto en pares "ruta.punteada": valor, solo para valores
+  // numéricos (para poder rankear cualquier campo sin tener que listarlos
+  // a mano por página). Ej: {alcalde:{mediana:123}} -> {"alcalde.mediana":123}
+  function aplanarNumeros(obj, prefijo) {
+    let out = {};
+    if (!obj || typeof obj !== "object") return out;
+    Object.keys(obj).forEach((k) => {
+      const v = obj[k];
+      const ruta = prefijo ? prefijo + "." + k : k;
+      if (typeof v === "number" && isFinite(v)) {
+        out[ruta] = v;
+      } else if (v && typeof v === "object" && !Array.isArray(v)) {
+        Object.assign(out, aplanarNumeros(v, ruta));
+      }
+    });
+    return out;
+  }
+
+  function obtenerRuta(obj, ruta) {
+    return ruta.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), obj);
+  }
+
+  // Averigua qué campos numéricos existen para un año, revisando varias
+  // comunas (no solo la seleccionada) — si la comuna actual tiene ese campo
+  // en null (ej. sin alcalde registrado ese año), igual se detecta el campo
+  // gracias a otra comuna que sí lo tenga.
+  const MUESTRA_CAMPOS = 25;
+  function camposDisponibles(anio, plantilla) {
+    const dataObj = datosGlobal();
+    let campos = {};
+    Object.assign(campos, aplanarNumeros(plantilla));
+    if (dataObj) {
+      const comunas = Object.keys(dataObj).slice(0, MUESTRA_CAMPOS);
+      comunas.forEach((k) => {
+        const anioObj = dataObj[k] && dataObj[k][anio];
+        if (anioObj) Object.assign(campos, aplanarNumeros(anioObj));
+      });
+    }
+    return Object.keys(campos);
+  }
+
+  function sinAcentos(s) {
+    return (s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "");
+  }
+
+  // Filtra a solo los campos relevantes para la pregunta (evita mandar los
+  // ~30 campos posibles cuando el usuario solo pregunta por uno). Si algún
+  // segmento del nombre del campo aparece en la pregunta, se incluye.
+  // Si nada calza, usa los campos que ya están en pantalla (o, en último
+  // caso, un puñado cualquiera) — nunca deja el ranking vacío.
+  const MAX_CAMPOS_RANKING = 6;
+  function filtrarCampos(campos, pregunta, plantilla) {
+    const preguntaNorm = sinAcentos(pregunta);
+    const coincidentes = campos.filter((c) =>
+      c.split(".").some((seg) => seg.length > 3 && preguntaNorm.includes(sinAcentos(seg)))
+    );
+    let elegidos = coincidentes.length ? coincidentes : Object.keys(aplanarNumeros(plantilla));
+    if (!elegidos.length) elegidos = campos;
+
+    // Desambiguación: si dentro de un mismo grupo (ej. "alcalde.mediana",
+    // "alcalde.min", "alcalde.max") hay una variante "mediana" y la
+    // pregunta no pidió explícitamente el mínimo/máximo puntual, nos
+    // quedamos SOLO con "mediana" — evita que el modelo (que a veces se
+    // confunde) elija "max" para preguntas genéricas de "cuánto gana".
+    const pidioMin = /\bm[íi]nim/.test(preguntaNorm);
+    const pidioMax = /\bm[áa]xim/.test(preguntaNorm);
+    if (!pidioMin && !pidioMax) {
+      const grupos = {};
+      elegidos.forEach((c) => {
+        const partes = c.split(".");
+        const ultimo = partes[partes.length - 1];
+        const padre = partes.slice(0, -1).join(".");
+        if (!grupos[padre]) grupos[padre] = [];
+        grupos[padre].push({ campo: c, ultimo });
+      });
+      const filtrados = [];
+      Object.values(grupos).forEach((grupo) => {
+        const tieneMediana = grupo.some((g) => g.ultimo === "mediana");
+        grupo.forEach((g) => {
+          if (tieneMediana && (g.ultimo === "min" || g.ultimo === "max")) return; // descarta min/max
+          filtrados.push(g.campo);
+        });
+      });
+      elegidos = filtrados;
+    }
+
+    return elegidos.slice(0, MAX_CAMPOS_RANKING);
+  }
+
+  // Ranking real (calculado en JS, no por el modelo) entre TODAS las
+  // comunas para el año seleccionado. Top 5 y últimos 5, solo de los
+  // campos relevantes a la pregunta (para no exceder el tamaño permitido).
+  const TOPE_COMUNAS_RANKING = 5;
+  function rankingComparativo(anio, plantilla, pregunta) {
+    const dataObj = datosGlobal();
+    const nombres = nombresGlobal();
+    if (!dataObj || !anio) return null;
+    const disponibles = camposDisponibles(anio, plantilla);
+    if (!disponibles.length) return null;
+    const campos = filtrarCampos(disponibles, pregunta, plantilla);
+    if (!campos.length) return null;
+
+    const resultado = {};
+    campos.forEach((campo) => {
+      const filas = [];
+      Object.keys(dataObj).forEach((comunaKey) => {
+        const anioObj = dataObj[comunaKey] && dataObj[comunaKey][anio];
+        if (!anioObj) return;
+        const valor = obtenerRuta(anioObj, campo);
+        if (typeof valor === "number" && isFinite(valor)) {
+          filas.push({ comuna: nombres[comunaKey] || comunaKey, valor });
+        }
+      });
+      if (filas.length < 2) return;
+      filas.sort((a, b) => b.valor - a.valor);
+      resultado[campo] = {
+        top: filas.slice(0, TOPE_COMUNAS_RANKING),
+        ultimos: filas.slice(-TOPE_COMUNAS_RANKING).reverse(),
+      };
+    });
+    return resultado;
   }
 
   // ---- estilos (con prefijo lc-asist- para no chocar con la página) ----
@@ -165,7 +296,8 @@
   FAQ.forEach((q) => {
     const b = document.createElement("button");
     b.textContent = q.texto;
-    b.onclick = () => enviar(q.texto, { incluirHistorial: !!q.incluirHistorial });
+    b.onclick = () =>
+      enviar(q.texto, { incluirHistorial: !!q.incluirHistorial, incluirRanking: !!q.incluirRanking });
     faqBox.appendChild(b);
   });
 
@@ -199,7 +331,7 @@
       if (!iniciado) {
         iniciado = true;
         addMsg(
-          "Puedo explicarte los indicadores que estás viendo, usando solo los datos de esta página. No invento cifras: si algo no está disponible, te lo digo. Verifica siempre las fuentes oficiales para decisiones importantes.",
+          "Puedo explicarte los datos de esta comuna, o comparar entre todas las comunas (ej. \"qué comuna tiene mayor dotación\", \"qué alcalde gana más\"). No invento cifras: si algo no está disponible, te lo digo. Verifica siempre las fuentes oficiales para decisiones importantes.",
           "sys"
         );
       }
@@ -212,6 +344,7 @@
     const pregunta = (preguntaForzada || input.value || "").trim();
     if (!pregunta) return;
     const incluirHistorial = !!(opts && opts.incluirHistorial);
+    const incluirRanking = !!(opts && opts.incluirRanking) || PATRON_COMPARATIVA.test(pregunta);
 
     if (!CFG.endpoint) {
       addMsg(pregunta, "user");
@@ -240,6 +373,7 @@
     const pending = addMsg("Pensando…", "bot");
 
     const historial = incluirHistorial ? historialComuna(ctx.comuna) : null;
+    const ranking = incluirRanking ? rankingComparativo(ctx.anio, ctx.datos, pregunta) : null;
 
     try {
       const resp = await fetch(CFG.endpoint, {
@@ -254,6 +388,7 @@
           temaLabel: ctx.temaLabel,
           datos: ctx.datos,
           historial: historial,
+          ranking: ranking,
         }),
       });
       if (!resp.ok) throw new Error("HTTP " + resp.status);

@@ -31,13 +31,15 @@ function corsHeaders(origin) {
 }
 
 const SYSTEM_PROMPT = `Eres el Asistente de Luz Cívica, una plataforma chilena de transparencia municipal.
-Tu única función es ayudar a entender los datos que la aplicación te entrega en el mensaje del usuario (bloques "GLOSARIO", "DATOS" y, si viene, "HISTORIAL").
+Tu única función es ayudar a entender los datos que la aplicación te entrega en el mensaje del usuario (bloques "GLOSARIO", "DATOS" y, si vienen, "HISTORIAL" y "RANKING").
 
 Reglas estrictas:
-- Usa EXCLUSIVAMENTE las cifras de los bloques DATOS/HISTORIAL. Nunca inventes números, comparaciones nacionales ni datos de otras comunas u otros años que no estén en esos bloques.
+- Usa EXCLUSIVAMENTE las cifras de los bloques DATOS/HISTORIAL/RANKING. Nunca inventes números, ni datos de otra comuna/año que no estén en esos bloques.
 - El bloque GLOSARIO te explica qué significa cada campo del JSON (nombres técnicos como "deficit", "lim40", "casen_pct"). Úsalo para interpretar los datos, pero nunca lo cites como si fuera un dato.
-- Si el usuario pide algo que no está en los datos entregados (ej. comparar con otra comuna, o un año que no aparece en HISTORIAL), dilo explícitamente: "no tengo ese dato en pantalla" — no lo estimes.
-- Cuando el mensaje del usuario incluya un bloque HISTORIAL con varios años, ÚSALO para describir la evolución o tendencia en el tiempo (por ejemplo: subió, bajó, se mantuvo estable, y con qué cifras). Cuando ese bloque no esté presente en el mensaje, responde solo con el bloque DATOS.
+- Si el usuario pide algo que no está en ningún bloque entregado (ej. un año que no aparece en HISTORIAL, o comparar comunas cuando no viene RANKING), dilo explícitamente: "no tengo ese dato en pantalla" — no lo estimes.
+- Cuando el mensaje incluya un bloque HISTORIAL con varios años, ÚSALO para describir la evolución/tendencia en el tiempo (subió, bajó, se mantuvo estable, con qué cifras).
+- Cuando el mensaje incluya un bloque RANKING (comparación real, ya calculada, entre TODAS las comunas para el año seleccionado — trae el top 5 y los últimos 5 de cada campo), ÚSALO para responder preguntas del tipo "qué comuna tiene más/menos X" o "qué alcalde gana más" — es la ÚNICA fuente válida para comparar entre comunas. Nombra la comuna y la cifra exacta del RANKING; si el campo que preguntan no está en RANKING, dilo.
+- Si no viene ni HISTORIAL ni RANKING y te preguntan por evolución en el tiempo o comparación entre comunas, responde solo con el bloque DATOS y aclara que no tienes ese detalle cargado para esta pregunta.
 - Distingue con claridad: (1) el dato tal cual, (2) una comparación si hay base para hacerla dentro de los mismos datos, (3) una interpretación en lenguaje simple.
 - Nunca calcules un déficit, indicador financiero o metodológico distinto al que ya viene calculado en los datos; solo explica lo que ya está calculado.
 - Para las unidades de cada cifra (pesos, miles de $, %, etc.), usa EXACTAMENTE la unidad indicada en el GLOSARIO para ese campo. No multipliques, no dividas ni conviertas de escala (ej. no transformes "miles de $" en "millones" salvo que el GLOSARIO lo pida explícitamente) — copia el número tal cual viene en DATOS/HISTORIAL, solo agregándole la unidad correspondiente.
@@ -71,7 +73,8 @@ GLOSARIO.panel =
   "salud: {" + GLOSARIO.salud + "} · " +
   "dotacion: {" + GLOSARIO.dotacion + "} · " +
   "social: {" + GLOSARIO.social + "} · " +
-  "perfil: {" + GLOSARIO.perfil + ", areas_verdes_hab: metros cuadrados de áreas verdes por habitante}";
+  "perfil: {" + GLOSARIO.perfil + ", areas_verdes_hab: metros cuadrados de áreas verdes por habitante} · " +
+  "alcalde: {nombre: nombre del alcalde en ejercicio · mediana: remuneración líquida MEDIANA mensual del alcalde durante el año — este es el valor correcto para responder \"cuánto gana\" o \"quién gana más/menos\" · min/max: remuneración líquida mínima/máxima registrada en algún mes de ese año (pueden incluir bonos, aguinaldos u otros pagos puntuales de un solo mes — NO son el sueldo habitual, no los uses para \"cuánto gana\" salvo que pregunten específicamente por el mes de mayor/menor pago) · grado: grado de la Escala Única de Sueldos (EUS) asignado al cargo}";
 
 export default {
   async fetch(request, env) {
@@ -120,6 +123,15 @@ export default {
       }
     }
 
+    let rankingTexto = "";
+    if (body.ranking) {
+      try {
+        rankingTexto = JSON.stringify(body.ranking).slice(0, 9000);
+      } catch {
+        rankingTexto = "";
+      }
+    }
+
     const glosario = GLOSARIO[body.tema] || "";
 
     const contexto = `Tema: ${body.temaLabel || body.tema || "—"}
@@ -127,7 +139,7 @@ Comuna: ${body.nombreComuna || body.comuna || "—"}
 Año: ${body.anio || "—"}
 GLOSARIO (qué significa cada campo, no es un dato): ${glosario || "no disponible"}
 DATOS (JSON, únicamente lo visible en pantalla): ${datosTexto}
-${historialTexto ? `HISTORIAL (JSON por año, para preguntas de evolución/tendencia): ${historialTexto}\n` : ""}
+${historialTexto ? `HISTORIAL (JSON por año, para preguntas de evolución/tendencia): ${historialTexto}\n` : ""}${rankingTexto ? `RANKING (comparación real entre TODAS las comunas para el año ${body.anio || "—"}; por cada campo trae "top" = 5 comunas con el valor más alto y "ultimos" = 5 con el valor más bajo): ${rankingTexto}\n` : ""}
 Pregunta del usuario: ${pregunta}`;
 
     try {
