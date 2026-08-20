@@ -79,12 +79,13 @@
   .verdict{margin-top:22px;
     background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);
     border-radius:20px;padding:28px 34px;color:#fff;
-    display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:center;
     box-shadow:0 20px 60px -12px rgba(13,46,107,.38)}
   .verdict .vtext{font-size:clamp(16px,2vw,21px);font-weight:400;line-height:1.5;
     max-width:50ch;color:rgba(255,255,255,.85)}
   .verdict .vtext b{color:#fff;font-weight:600}
   .verdict .vbadge{text-align:center;border-left:1px solid rgba(255,255,255,.15);padding-left:32px}
+  @media(max-width:640px){.verdict{grid-template-columns:1fr;gap:16px;padding:22px 20px;}.verdict .vbadge{border-left:0;border-top:1px solid rgba(255,255,255,.15);padding-left:0;padding-top:16px;}}
   .verdict .vbadge .n{font-size:34px;font-weight:700;line-height:1;letter-spacing:-.03em;color:#4ade80}
   .verdict .vbadge .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
     color:rgba(255,255,255,.45);margin-top:8px;font-weight:600}
@@ -210,7 +211,7 @@
   .traj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
   .traj-row-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
     color:var(--royal-mid);margin:16px 0 8px;padding-left:2px}
-  .traj-card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  .traj-card{min-width:0;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
     border:1px solid var(--glass-border);border-radius:18px;padding:20px;
     box-shadow:var(--shadow-sm);margin-bottom:0}
   .traj-card-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
@@ -232,7 +233,7 @@
   .traj-text{font-size:12px;color:var(--ink);line-height:1.6;
     border-top:1px solid var(--line);padding-top:10px;margin-top:12px}
   .traj-text b{color:var(--royal)}
-  @media(max-width:920px){.traj-grid{grid-template-columns:1fr}}
+  @media(max-width:920px){.traj-grid{grid-template-columns:minmax(0,1fr)}}
 
   @media(prefers-reduced-motion:no-preference){
     .verdict{animation:rise .5s cubic-bezier(.22,.68,0,1.2) both}
@@ -246,8 +247,9 @@
   .barra-superior{background:rgba(255,255,255,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);position:sticky;top:0;z-index:1000;padding:14px 40px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--glass-border);}
   .titulo-logo{font-size:18px;font-weight:900;color:var(--ink);}
   .wrap-filtros{max-width:1160px;margin:0 auto;padding:22px 32px 0;}
-  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;}
+  .filtros-reales{display:flex;gap:18px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
   .filtro-box-real{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+  @media(max-width:640px){.filtros-reales{gap:10px;}.filtro-box-real{flex:1 1 100%;min-width:0;}.filtro-box-real select{width:100%;}}
   .filtro-box-real label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
   .filtro-box-real select{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--ink);}
   .nav-areas-real{display:flex;gap:6px;background:rgba(255,255,255,.5);border:1px solid var(--glass-border);border-radius:14px;padding:6px;overflow-x:auto;}
@@ -258,6 +260,7 @@
   .panel-quick-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;margin-top:18px;padding-top:18px;border-top:1px solid var(--line);}
   .panel-quick-title{color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-right:2px;}
   .panel-quick-btn{border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.09);color:#1d4ed8;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
+  @media(max-width:640px){.wrap{padding-left:16px;padding-right:16px;}.panel-quick-btn{white-space:normal;text-align:left;}}
   .panel-quick-btn:hover{background:rgba(37,99,235,.15);}
   /* KPI simples — mismo formato que Salud/Educación/Social: número, título, descripción corta. Sin ícono, sin barras de comparación. */
   .kpis-simple{grid-template-columns:repeat(4,1fr);}
