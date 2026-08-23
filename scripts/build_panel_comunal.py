@@ -11,6 +11,8 @@ Fórmulas verificadas exactas contra Providencia/Ñuñoa/Maipú del DATA
 original hardcodeado de panel_comunal.html:
   administracion.gasto_hab = (gastos.total - (fcm+salud+educacion)) / poblacion
   administracion.delta_pct = (deficit[año] - deficit[año-1]) / |deficit[año-1]| * 100
+  administracion.dependencia_fcm    = kpis.dependencia_fcm (de data_administracion.js, = IADM75)
+  administracion.deuda_flotante_pct = kpis.deuda_flotante_pct (de data_administracion.js)
   educacion.deficit  = ingresos.total - gastos.total
   educacion.delta_pct = misma fórmula que arriba, sobre educacion.deficit
   educacion.admin_tipo = MTASE (3-Educacion.xlsx, no incluido en build_educacion.py)
@@ -209,6 +211,8 @@ def main():
                     "deficit": a.get("deficit"),
                     "delta_pct": delta_pct(a.get("deficit"), a_prev.get("deficit")),
                     "gasto_hab": gasto_hab,
+                    "dependencia_fcm": (a.get("kpis") or {}).get("dependencia_fcm"),
+                    "deuda_flotante_pct": (a.get("kpis") or {}).get("deuda_flotante_pct"),
                 },
                 "educacion": {
                     "deficit": edu_deficit,
