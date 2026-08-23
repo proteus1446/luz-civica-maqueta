@@ -518,10 +518,18 @@ function render(){
 
   // ============ ZONA 2b — Ingresos y gasto: stack + detalle (monto + % del total) ============
   document.getElementById('f-ing-total').textContent = fmtM(d.ISAL009);
-  const otrosIng = (d.ISAL009!=null && d.ISAL013!=null) ? Math.max(0, d.ISAL009 - d.ISAL013) : null;
+  // Aporte MINSAL en pesos = % del ISAL012 (aporte per cápita del MINSAL,
+  // ya viene como % del ingreso total) aplicado al ingreso total (ISAL009).
+  // ISAL010 (que antes se mostraba entero como "MINSAL") en realidad es
+  // "ingreso total menos transferencia municipal" — incluye el aporte MINSAL
+  // MÁS otras fuentes (copagos, FONASA por prestación, etc.), así que no es
+  // el aporte MINSAL solo. Se separa en dos filas para no mezclarlos.
+  const aporteMinsal = (d.ISAL012!=null && d.ISAL009!=null) ? d.ISAL012/100*d.ISAL009 : null;
+  const otrosIng = (d.ISAL009!=null && d.ISAL013!=null && aporteMinsal!=null) ? Math.max(0, d.ISAL009 - d.ISAL013 - aporteMinsal) : null;
   renderStackYDetalle('f-ing-stack','f-ing-items',[
     ['Aporte municipal (ISAL013)', d.ISAL013, 'var(--royal)'],
-    ['Otros ingresos / MINSAL (ISAL010)', d.ISAL010, '#F5A623']
+    ['Aporte MINSAL per cápita (ISAL012)', aporteMinsal, '#0D9488'],
+    ['Otros ingresos (copagos, FONASA por prestación, etc.)', otrosIng, '#F5A623']
   ], d.ISAL009);
 
   document.getElementById('f-gas-total').textContent = fmtM(d.ISAL018);
