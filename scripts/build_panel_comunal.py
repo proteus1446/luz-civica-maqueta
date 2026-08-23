@@ -13,6 +13,8 @@ original hardcodeado de panel_comunal.html:
   administracion.delta_pct = (deficit[año] - deficit[año-1]) / |deficit[año-1]| * 100
   administracion.dependencia_fcm    = kpis.dependencia_fcm (de data_administracion.js, = IADM75)
   administracion.deuda_flotante_pct = kpis.deuda_flotante_pct (de data_administracion.js)
+  educacion.activa   = activa (de data_educacion.js, = bool(IEDU025))
+  salud.administra   = MASM == "Si" (de data_salud.js)
   educacion.deficit  = ingresos.total - gastos.total
   educacion.delta_pct = misma fórmula que arriba, sobre educacion.deficit
   educacion.admin_tipo = MTASE (3-Educacion.xlsx, no incluido en build_educacion.py)
@@ -20,6 +22,10 @@ original hardcodeado de panel_comunal.html:
   salud.delta_pct = misma fórmula
   salud.medicos_1000 = MTFCM / HPISM * 1000
   dotacion.planta_pct = consolidado.planta / consolidado_total * 100
+  dotacion.municipal/educacion/salud = null si areas_activas.<área> es False
+    (la comuna no administra ese sector directamente) en vez de 0 — mismo
+    criterio que el reparto por área de maqueta_dotacion.html
+  dotacion.total = suma solo de las áreas activas (no consolidado_total crudo)
   alcalde.nombre  = nombre_completo (title case)
   alcalde.grado   = MGRADALC (2-Recursos H.xlsx)
   alcalde.mediana/min/max = mediana/minimo/maximo_remuneracion_LIQUIDA
@@ -184,6 +190,17 @@ def main():
             dot_planta = (dot.get("consolidado") or {}).get("planta")
             planta_pct = round(dot_planta / dot_total * 100, 3) if dot_planta is not None and dot_total else None
 
+            # Solo se cuentan las áreas que la comuna efectivamente administra
+            # (mismo criterio que usa el reparto por área en maqueta_dotacion.html:
+            # areas_activas.* se basa en si el gasto del sector es > 0). Así una
+            # comuna donde Educación/Salud las lleva una Corporación externa
+            # muestra "No administra" en vez de "0 (0,0%)".
+            dot_aa = dot.get("areas_activas") or {}
+            dot_muni = dot.get("municipal_total") if dot_aa.get("municipal") else None
+            dot_edu = dot.get("educacion_total") if dot_aa.get("educacion") else None
+            dot_sal = dot.get("salud_total") if dot_aa.get("salud") else None
+            dot_total_activo = (dot_muni or 0) + (dot_edu or 0) + (dot_sal or 0)
+
             key = (municipio, anio)
             al = alcalde.get(key)
             if al:
@@ -215,6 +232,7 @@ def main():
                     "deuda_flotante_pct": (a.get("kpis") or {}).get("deuda_flotante_pct"),
                 },
                 "educacion": {
+                    "activa": bool(edu.get("activa")),
                     "deficit": edu_deficit,
                     "delta_pct": delta_pct(edu_deficit, edu_deficit_prev),
                     "admin_tipo": mtase.get(key, {}).get("MTASE"),
@@ -223,6 +241,7 @@ def main():
                     "alumnos_docente": edu.get("alumnos_por_docente"),
                 },
                 "salud": {
+                    "administra": sal.get("MASM") == "Si",
                     "deficit": sal_deficit,
                     "delta_pct": delta_pct(sal_deficit, sal_deficit_prev),
                     "medicos_1000": medicos_1000,
@@ -230,10 +249,10 @@ def main():
                     "gasto_inscrito": sal.get("ISAL23"),
                 },
                 "dotacion": {
-                    "total": dot_total,
-                    "municipal": dot.get("municipal_total"),
-                    "educacion": dot.get("educacion_total"),
-                    "salud": dot.get("salud_total"),
+                    "total": dot_total_activo,
+                    "municipal": dot_muni,
+                    "educacion": dot_edu,
+                    "salud": dot_sal,
                     "gasto_personal": (dot.get("gasto") or {}).get("total"),
                     "planta_pct": planta_pct,
                     "lim40": (dot.get("limites") or {}).get("lim40"),

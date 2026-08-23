@@ -12,6 +12,17 @@ original (5 comunas de muestra) contra las columnas reales del archivo SINIM.
 Nota: MVACU y MTFCOTR existen en el archivo SINIM y en la especificación de
 variables, pero el JS de la página NO los referencia (grep confirmó 0 usos) —
 se omiten a propósito para no incluir datos que la página no consume.
+
+MASM (S-N) ¿Administra Servicio de Salud Primaria? se agrega para poder
+mostrar un aviso claro ("esta comuna no administra Salud") en vez de
+tarjetas llenas de "Sin dato" cuando MASM es "No" / "Sin Servicio" / "No
+Recepcionado" (a diferencia de MTAS, que describe QUIÉN administra y no
+sirve como bandera confiable: trae "Sin Servicio" en algunos casos donde
+igual hay datos numéricos).
+
+HPISM en 0 se guarda como null: ninguna comuna real tiene 0 personas
+inscritas en FONASA, es la misma convención de dato faltante que usa SINIM
+para esta columna.
 """
 import json
 import re
@@ -34,6 +45,10 @@ CODES_NUM = [
     "MTFPSIQ", "MTFTECENF", "MTFTECMED",
 ]
 CODE_TEXT = "MTAS"
+# MASM (S-N): ¿administra Servicio de Salud Primaria? "Si" / "No" / "Sin
+# Servicio" / "No Recepcionado". Se usa para mostrar un aviso claro en vez de
+# tarjetas llenas de "Sin dato" cuando la comuna no administra Salud.
+CODE_TEXT_MASM = "MASM"
 
 
 def find_col(header, code):
@@ -59,6 +74,7 @@ def main():
 
     idx_num = {c: find_col(header, c) for c in CODES_NUM}
     idx_text = find_col(header, CODE_TEXT)
+    idx_masm = find_col(header, CODE_TEXT_MASM)
     idx_anio = find_anio_col(header)
 
     data = {}
@@ -68,8 +84,15 @@ def main():
         municipio = comuna_key(str(r[1]).strip())
         anio = str(r[idx_anio])
         record = {c: num(r[i]) for c, i in idx_num.items()}
+        # HPISM (población inscrita FONASA) en 0 no es un valor real — ninguna
+        # comuna tiene 0 inscritos; es la misma convención de "sin dato" que
+        # usa el resto del archivo SINIM para esta columna en particular.
+        if record.get("HPISM") == 0:
+            record["HPISM"] = None
         raw_text = r[idx_text]
         record[CODE_TEXT] = raw_text if isinstance(raw_text, str) else None
+        raw_masm = r[idx_masm]
+        record[CODE_TEXT_MASM] = raw_masm if isinstance(raw_masm, str) else None
         data.setdefault(municipio, {})[anio] = record
 
     with open(OUT_JS, "w", encoding="utf-8") as f:

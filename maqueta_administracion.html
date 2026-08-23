@@ -423,19 +423,11 @@
 </div>
 
 <div class="panel" style="margin-top:18px;">
-<div class="eyebrow"><i class="ti ti-chart-line"></i>Ingresos vs. Gastos totales</div>
+<div class="eyebrow"><i class="ti ti-chart-line"></i>Ingresos presupuestarios vs. Gastos presupuestarios</div>
 <div class="panel-sub">Miles de millones de pesos.</div>
 <div class="evo-legend"><span><i style="background:#10b981"></i>Ingresos</span><span><i style="background:#2563EB"></i>Gastos</span></div>
 <div style="position:relative;width:100%;height:240px;"><canvas id="evoIngGas"></canvas></div>
 <div class="note" id="traj-ig-text">—</div>
-</div>
-
-<div class="panel" style="margin-top:18px;">
-<div class="eyebrow"><i class="ti ti-chart-line"></i>Ingresos propios (IPP) vs. Fondo Común + Transferencias</div>
-<div class="panel-sub">Miles de millones de pesos.</div>
-<div class="evo-legend"><span><i style="background:#10b981"></i>IPP</span><span><i style="background:#F5A623"></i>FCM + Transferencias</span></div>
-<div style="position:relative;width:100%;height:240px;"><canvas id="evoIpp"></canvas></div>
-<div class="note" id="traj-ipp-text">—</div>
 </div>
 
 <div class="panel" style="margin-top:18px;">
@@ -603,16 +595,7 @@ function render(){
       {label:'Gastos', data: years.map(y=>toMM(DATA[comuna][y].gastos.total)), borderColor:'#2563EB', backgroundColor:'#2563EB', pointRadius:3, borderWidth:2, tension:0.15},
     ]}, options: baseOpts('Miles de millones de pesos ($)')
   });
-  document.getElementById('traj-ig-text').textContent = 'Ingresos y gastos totales, año a año, sin restarse entre sí (ver nota al pie).';
-
-  charts.ipp = new Chart(document.getElementById('evoIpp'), {
-    type:'line',
-    data:{ labels: years, datasets:[
-      {label:'IPP', data: years.map(y=>toMM(DATA[comuna][y].ingresos.ipp)), borderColor:'#10b981', backgroundColor:'#10b981', pointRadius:3, borderWidth:2, tension:0.15},
-      {label:'FCM + Transferencias', data: years.map(y=>toMM((DATA[comuna][y].ingresos.traspaso_fcm||0)+(DATA[comuna][y].ingresos.transferencias||0))), borderColor:'#F5A623', backgroundColor:'#F5A623', pointRadius:3, borderWidth:2, tension:0.15},
-    ]}, options: baseOpts('Miles de millones de pesos ($)')
-  });
-  document.getElementById('traj-ipp-text').textContent = 'Ingresos propios (IPP) comparados con Fondo Común + Transferencias recibidas.';
+  document.getElementById('traj-ig-text').textContent = 'Ingresos y gastos presupuestarios totales, año a año, sin restarse entre sí (ver nota al pie).';
 
   const deudaSerie = years.map(y=>toMM(DATA[comuna][y].deuda_flotante));
   charts.deuda = new Chart(document.getElementById('evoDeuda'), {

@@ -259,6 +259,9 @@
     <div class="detail-hero-metrics kpis-propios" id="kpiRow"></div>
   </div>
 
+  <div id="no-data-salud" style="display:none;padding:40px;text-align:center;color:var(--text-muted);background:var(--glass);border-radius:18px;margin-bottom:26px;">Esta comuna no administra Salud Primaria Municipal (fuente: SINIM, campo MASM).</div>
+
+  <div id="salud-content">
   <!-- ZONA 2 — Cobertura FONASA + personal clínico/administrativo -->
   <div class="dashboard-grid-2" style="margin-bottom:26px;">
     <div class="panel-propio">
@@ -326,10 +329,16 @@
     </div>
 
     <div class="traj-card" style="margin-top:18px;">
-      <div class="traj-title-hl">EVOLUCIÓN ANUAL DE FINANZAS MUNICIPALES (gráfico original del técnico)</div>
+      <div class="traj-title-hl">EVOLUCIÓN ANUAL DE FINANZAS MUNICIPALES</div>
+      <div class="traj-legend">
+        <span><i style="background:#2563eb;"></i>Gasto total (ISAL018)</span>
+        <span><i style="background:#16a34a;"></i>Ingresos (ISAL009)</span>
+        <span><i style="background:#d97706;"></i>Aporte municipal (ISAL013)</span>
+      </div>
       <div class="chart-box" style="height:280px;"><canvas id="lineChart"></canvas></div>
     </div>
   </section>
+  </div><!-- /salud-content -->
 
   <section class="card-glass indicator-trends-section" id="sec-indicadores">
     <h3 class="section-title">Evolución anual por indicador</h3>
@@ -389,6 +398,7 @@ function populateComunas(){
 const INDICATOR_META = [
   ['HPISM','Población Validada FONASA','N°'],
   ['MTAS','Administrado por','TEXT'],
+  ['MASM','¿Administra Servicio de Salud Primaria?','TEXT'],
   ['ISAL005','Cobertura de Salud Primaria Municipal','%'],
   ['ISAL012','Aporte MINSAL per cápita / Ingreso Total Salud','%'],
   ['ISAL013','Aporte Municipal al Sector Salud','M$'],
@@ -461,6 +471,18 @@ function populateAnioSelect(){
 function render(){
   const d = rec(state.comuna, state.anio);
   document.getElementById('subHero').textContent = state.comuna + ' · Año ' + state.anio + ' · Montos en miles de pesos · ' + (d.MTAS ? d.MTAS.trim() : 'Sin dato de administración');
+
+  // Si MASM no dice "Si", la comuna no administra Salud Primaria Municipal
+  // ese año: se avisa con un mensaje claro en vez de mostrar tarjetas y
+  // gráficos llenos de "Sin dato"/"$0" que parecen un error.
+  const administra = (d.MASM || '').trim() === 'Si';
+  document.getElementById('no-data-salud').style.display = administra ? 'none' : 'block';
+  document.getElementById('salud-content').style.display = administra ? '' : 'none';
+  if (!administra) {
+    renderTrendCards();
+    renderIndicatorList(document.getElementById('searchInput').value);
+    return;
+  }
 
   // ============ ZONA 1 — KPIs propios (sin círculos, sin semáforo) ============
   // Indicadores de cómo opera la comuna: financiamiento, personal, gasto por persona.
@@ -545,13 +567,19 @@ function baseIndex100(arr){
 
 function renderLineChart(){
   if (window._line) window._line.destroy();
-  const codes = [['ISAL018','Gasto total','#2563eb'],['ISAL009','Ingresos','#16a34a'],['ISAL013','Aporte municipal','#d97706'],['ISAL23','Gasto por beneficiario','#7c3aed']];
+  // Gasto por beneficiario (ISAL23) se saca de acá: ya tiene su propio
+  // gráfico arriba ("Gasto anual por persona inscrita") y mezclado en este
+  // índice base 100 quedaba con una escala que no se lee bien junto al resto.
+  const codes = [['ISAL018','Gasto total','#2563eb'],['ISAL009','Ingresos','#16a34a'],['ISAL013','Aporte municipal','#d97706']];
   const datasets = codes.map(function(c){
     return { label:c[1], data: baseIndex100(seriesFor(state.comuna, c[0])), borderColor:c[2], backgroundColor:'transparent', tension:.3, pointRadius:2, spanGaps:true };
   });
   window._line = new Chart(document.getElementById('lineChart').getContext('2d'), {
     type:'line', data:{ labels:YEARS, datasets:datasets },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{y:{title:{display:true,text:'Índice base 100'}}} }
+    // legend:false — el color/nombre de cada serie ya lo indica la leyenda
+    // en pills (.traj-legend) sobre el gráfico, mismo estilo que el resto
+    // de esta sección en vez de la leyenda por defecto de Chart.js.
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{title:{display:true,text:'Índice base 100'}}} }
   });
 }
 

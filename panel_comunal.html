@@ -120,6 +120,10 @@
   .legal .ln{font-size:17px;font-weight:800;color:var(--amber);line-height:1}
   .legal .ld{font-size:10.5px;color:var(--muted);line-height:1.45}
 
+  /* card simplificada cuando la comuna no administra esa área — solo queda
+     visible el chead (icono + título + pregunta) y este aviso */
+  .no-administra-card{margin-top:8px;padding:18px 0 6px;color:var(--muted);font-size:13.5px;font-weight:600;}
+
   /* fila de sub-stats con separadores (como la referencia) */
   .substats{display:flex;align-items:flex-start;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
   .substats .ss{flex:1;min-width:0;padding:0 12px;border-left:1px solid var(--line);
@@ -308,7 +312,7 @@
 <div class="grid">
 
 <!-- 01 PERFIL COMUNAL -->
-<a class="card" href="maqueta_perfil.html" style="--a1:#DCEAFB;--a2:#B8D4F5;--ai:#1A4A9C">
+<a class="card" id="card-perfil" href="maqueta_perfil.html" style="--a1:#DCEAFB;--a2:#B8D4F5;--ai:#1A4A9C">
   <div class="chead">
     <div class="cico"><i class="ti ti-map-pin"></i></div>
     <div class="ct">
@@ -332,7 +336,7 @@
 </a>
 
 <!-- 02 ADMINISTRACIÓN -->
-<a class="card" href="maqueta_administracion.html" style="--a1:#DDE4FB;--a2:#B0C4F0;--ai:#0F2A5F">
+<a class="card" id="card-administracion" href="maqueta_administracion.html" style="--a1:#DDE4FB;--a2:#B0C4F0;--ai:#0F2A5F">
   <div class="chead">
     <div class="cico"><i class="ti ti-building-bank"></i></div>
     <div class="ct">
@@ -357,7 +361,7 @@
 </a>
 
 <!-- 03 EDUCACIÓN -->
-<a class="card" href="maqueta_educacion.html" style="--a1:#E8E1FB;--a2:#D0C2F5;--ai:#5B3FA0">
+<a class="card" id="card-educacion" href="maqueta_educacion.html" style="--a1:#E8E1FB;--a2:#D0C2F5;--ai:#5B3FA0">
   <div class="chead">
     <div class="cico"><i class="ti ti-school"></i></div>
     <div class="ct">
@@ -366,6 +370,8 @@
       <div class="cq">¿Cuál es la situación presupuestaria de educación?</div>
     </div>
   </div>
+  <div class="no-administra-card" id="c3-noadmin" style="display:none;">No administra Educación municipal</div>
+  <div id="c3-data">
   <div class="hero"><span class="n" id="c3-hero">—</span></div>
   <div class="hero-label" id="c3-herolabel">—</div>
   <div class="chips">
@@ -379,11 +385,12 @@
     <div class="ss"><div class="sl">Gasto/alumno mes</div><div class="sv" id="c3-gastoalu">—</div></div>
     <div class="ss"><div class="sl">Alumnos por docente</div><div class="sv" id="c3-aludoc">—</div></div>
   </div>
+  </div>
   <div class="foot"><div class="go">Explorar educación <i class="ti ti-arrow-right"></i></div></div>
 </a>
 
 <!-- 04 SALUD -->
-<a class="card" href="maqueta_salud.html" style="--a1:#DDF3EE;--a2:#B7E6DA;--ai:#0F7A62">
+<a class="card" id="card-salud" href="maqueta_salud.html" style="--a1:#DDF3EE;--a2:#B7E6DA;--ai:#0F7A62">
   <div class="chead">
     <div class="cico"><i class="ti ti-heartbeat"></i></div>
     <div class="ct">
@@ -392,6 +399,8 @@
       <div class="cq">¿Cuál es la situación presupuestaria de salud?</div>
     </div>
   </div>
+  <div class="no-administra-card" id="c4-noadmin" style="display:none;">No administra Salud Primaria Municipal</div>
+  <div id="c4-data">
   <div class="hero"><span class="n" id="c4-hero">—</span></div>
   <div class="hero-label" id="c4-herolabel">—</div>
   <div class="chips">
@@ -404,11 +413,12 @@
     <div class="ss"><div class="sl">Inscritos FONASA</div><div class="sv" id="c4-inscritos">—</div></div>
     <div class="ss"><div class="sl">Gasto por inscrito</div><div class="sv" id="c4-gastoinsc">—</div></div>
   </div>
+  </div>
   <div class="foot"><div class="go">Explorar salud <i class="ti ti-arrow-right"></i></div></div>
 </a>
 
 <!-- 05 DOTACIÓN -->
-<a class="card" href="maqueta_dotacion.html" style="--a1:#DDF3FB;--a2:#B8E6F5;--ai:#0E7490">
+<a class="card" id="card-dotacion" href="maqueta_dotacion.html" style="--a1:#DDF3FB;--a2:#B8E6F5;--ai:#0E7490">
   <div class="chead">
     <div class="cico"><i class="ti ti-id-badge-2"></i></div>
     <div class="ct">
@@ -449,7 +459,7 @@
 </a>
 
 <!-- 06 SOCIAL -->
-<a class="card" href="maqueta_social.html" style="--a1:#FBE9DD;--a2:#F5CBA8;--ai:#B5651C">
+<a class="card" id="card-social" href="maqueta_social.html" style="--a1:#FBE9DD;--a2:#F5CBA8;--ai:#B5651C">
   <div class="chead">
     <div class="cico"><i class="ti ti-users-group"></i></div>
     <div class="ct">
@@ -555,6 +565,18 @@ function render(){
   document.getElementById('hdr-comuna').textContent = nombre;
   document.getElementById('hdr-anio').textContent = anio;
 
+  // Los links a los paneles de detalle deben llevar la comuna/año elegidos —
+  // si no, siempre abren en el default de esa página (Providencia), sin
+  // importar qué comuna se esté viendo acá.
+  const qs = `?comuna=${encodeURIComponent(comuna)}&anio=${encodeURIComponent(anio)}`;
+  const cardLinks = {
+    'card-perfil': 'maqueta_perfil.html', 'card-administracion': 'maqueta_administracion.html',
+    'card-educacion': 'maqueta_educacion.html', 'card-salud': 'maqueta_salud.html',
+    'card-dotacion': 'maqueta_dotacion.html', 'card-social': 'maqueta_social.html',
+  };
+  Object.entries(cardLinks).forEach(([id, file]) => { document.getElementById(id).href = file + qs; });
+  document.getElementById('rbanda-block').href = 'remuneraciones.html' + qs;
+
   // ---- Alcalde ----
   const al = d.alcalde;
   if(al){
@@ -599,53 +621,75 @@ function render(){
 
   // ---- 03 Educación ----
   const edu = d.educacion;
-  const supE = edu.deficit!==null && edu.deficit>=0;
-  document.getElementById('c3-hero').textContent = edu.deficit!==null ? fmtMM(edu.deficit) : 'Sin dato';
-  document.getElementById('c3-hero').className = 'n ' + (edu.deficit===null?'':(supE?'pos':'neg'));
-  document.getElementById('c3-herolabel').textContent = edu.deficit===null ? `${nombre} no administra Educación en ${anio}, o no hay dato.` :
-    `Los ingresos de educación ${supE?'superaron':'fueron menores a'} los gastos en ${anio}`;
-  setChip(document.getElementById('c3-chip1'), document.getElementById('c3-chip1-text'), supE?'good':'bad', supE?'Superávit':'Déficit', supE?'ti-circle-check':'ti-circle-x');
-  if(edu.delta_pct!==null){
-    const up = edu.delta_pct>=0;
-    setChip(document.getElementById('c3-chip2'), document.getElementById('c3-chip2-text'), up?'good':'warn',
-      `${up?'+':''}${fmtPct(edu.delta_pct,0)}% vs. ${anio-1}`, up?'ti-arrow-up-right':'ti-arrow-down-right');
-  } else { document.getElementById('c3-chip2').style.display='none'; }
-  const c3chip3 = document.getElementById('c3-chip3');
-  if(edu.admin_tipo){ c3chip3.style.display='inline-flex'; document.getElementById('c3-chip3-text').textContent = `Administra: ${edu.admin_tipo}`; }
-  else { c3chip3.style.display='none'; }
-  document.getElementById('c3-cobertura').textContent = edu.cobertura!==null ? fmtPct(edu.cobertura,1)+'%' : 'Sin dato';
-  document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? fmtCLP(edu.gasto_alumno_mensual*1000).replace('$','$')+' ' : 'Sin dato';
-  document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? '$'+Math.round(edu.gasto_alumno_mensual).toLocaleString('es-CL')+' mil' : 'Sin dato';
-  document.getElementById('c3-aludoc').textContent = edu.alumnos_docente!==null ? fmtPct(edu.alumnos_docente,1) : 'Sin dato';
+  document.getElementById('c3-noadmin').style.display = edu.activa ? 'none' : '';
+  document.getElementById('c3-data').style.display = edu.activa ? '' : 'none';
+  if (edu.activa) {
+    const supE = edu.deficit!==null && edu.deficit>=0;
+    document.getElementById('c3-hero').textContent = edu.deficit!==null ? fmtMM(edu.deficit) : 'Sin dato';
+    document.getElementById('c3-hero').className = 'n ' + (edu.deficit===null?'':(supE?'pos':'neg'));
+    document.getElementById('c3-herolabel').textContent = edu.deficit===null ? `Sin dato de educación para ${anio}.` :
+      `Los ingresos de educación ${supE?'superaron':'fueron menores a'} los gastos en ${anio}`;
+    setChip(document.getElementById('c3-chip1'), document.getElementById('c3-chip1-text'), supE?'good':'bad', supE?'Superávit':'Déficit', supE?'ti-circle-check':'ti-circle-x');
+    if(edu.delta_pct!==null){
+      const up = edu.delta_pct>=0;
+      setChip(document.getElementById('c3-chip2'), document.getElementById('c3-chip2-text'), up?'good':'warn',
+        `${up?'+':''}${fmtPct(edu.delta_pct,0)}% vs. ${anio-1}`, up?'ti-arrow-up-right':'ti-arrow-down-right');
+    } else { document.getElementById('c3-chip2').style.display='none'; }
+    const c3chip3 = document.getElementById('c3-chip3');
+    if(edu.admin_tipo){ c3chip3.style.display='inline-flex'; document.getElementById('c3-chip3-text').textContent = `Administra: ${edu.admin_tipo}`; }
+    else { c3chip3.style.display='none'; }
+    document.getElementById('c3-cobertura').textContent = edu.cobertura!==null ? fmtPct(edu.cobertura,1)+'%' : 'Sin dato';
+    document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? '$'+Math.round(edu.gasto_alumno_mensual).toLocaleString('es-CL')+' mil' : 'Sin dato';
+    document.getElementById('c3-aludoc').textContent = edu.alumnos_docente!==null ? fmtPct(edu.alumnos_docente,1) : 'Sin dato';
+  }
 
   // ---- 04 Salud ----
   const sal = d.salud;
-  const supS = sal.deficit!==null && sal.deficit>=0;
-  document.getElementById('c4-hero').textContent = sal.deficit!==null ? fmtMM(sal.deficit) : 'Sin dato';
-  document.getElementById('c4-hero').className = 'n ' + (sal.deficit===null?'':(supS?'pos':'neg'));
-  document.getElementById('c4-herolabel').textContent = sal.deficit===null ? `Sin dato para Salud en ${anio}.` :
-    `Los ${supS?'ingresos':'gastos'} de salud superaron los ${supS?'gastos':'ingresos'} en ${anio}`;
-  setChip(document.getElementById('c4-chip1'), document.getElementById('c4-chip1-text'), supS?'good':'bad', supS?'Superávit':'Déficit', supS?'ti-circle-check':'ti-circle-x');
-  if(sal.delta_pct!==null){
-    const worse = sal.delta_pct<0;
-    setChip(document.getElementById('c4-chip2'), document.getElementById('c4-chip2-text'), worse?'bad':'good',
-      `${sal.delta_pct>=0?'+':''}${fmtPct(sal.delta_pct,1)}% vs. ${anio-1}`, worse?'ti-arrow-down-right':'ti-arrow-up-right');
-  } else { document.getElementById('c4-chip2').style.display='none'; }
-  document.getElementById('c4-medicos').textContent = sal.medicos_1000!==null ? fmtPct(sal.medicos_1000,2) : 'Sin dato';
-  document.getElementById('c4-inscritos').textContent = fmtInt(sal.inscritos_fonasa);
-  document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito).toLocaleString('es-CL')+' mil' : 'Sin dato';
+  document.getElementById('c4-noadmin').style.display = sal.administra ? 'none' : '';
+  document.getElementById('c4-data').style.display = sal.administra ? '' : 'none';
+  if (sal.administra) {
+    const supS = sal.deficit!==null && sal.deficit>=0;
+    document.getElementById('c4-hero').textContent = sal.deficit!==null ? fmtMM(sal.deficit) : 'Sin dato';
+    document.getElementById('c4-hero').className = 'n ' + (sal.deficit===null?'':(supS?'pos':'neg'));
+    document.getElementById('c4-herolabel').textContent = sal.deficit===null ? `Sin dato para Salud en ${anio}.` :
+      `Los ${supS?'ingresos':'gastos'} de salud superaron los ${supS?'gastos':'ingresos'} en ${anio}`;
+    setChip(document.getElementById('c4-chip1'), document.getElementById('c4-chip1-text'), supS?'good':'bad', supS?'Superávit':'Déficit', supS?'ti-circle-check':'ti-circle-x');
+    if(sal.delta_pct!==null){
+      const worse = sal.delta_pct<0;
+      setChip(document.getElementById('c4-chip2'), document.getElementById('c4-chip2-text'), worse?'bad':'good',
+        `${sal.delta_pct>=0?'+':''}${fmtPct(sal.delta_pct,1)}% vs. ${anio-1}`, worse?'ti-arrow-down-right':'ti-arrow-up-right');
+    } else { document.getElementById('c4-chip2').style.display='none'; }
+    document.getElementById('c4-medicos').textContent = sal.medicos_1000!==null ? fmtPct(sal.medicos_1000,2) : 'Sin dato';
+    document.getElementById('c4-inscritos').textContent = fmtInt(sal.inscritos_fonasa);
+    document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito).toLocaleString('es-CL')+' mil' : 'Sin dato';
+  }
 
   // ---- 05 Dotación (donut) ----
   const dot = d.dotacion;
   const tot = dot.total || 1;
   const pM = (dot.municipal||0)/tot*100, pE=(dot.educacion||0)/tot*100, pS=(dot.salud||0)/tot*100;
-  const circ = 99.9;
-  document.getElementById('donut-muni').setAttribute('stroke-dasharray', `${(pM/100*circ).toFixed(1)} ${circ}`);
-  document.getElementById('donut-muni').setAttribute('stroke-dashoffset','25');
-  document.getElementById('donut-edu').setAttribute('stroke-dasharray', `${(pE/100*circ).toFixed(1)} ${circ}`);
-  document.getElementById('donut-edu').setAttribute('stroke-dashoffset', (25-(pM/100*circ)).toFixed(1));
-  document.getElementById('donut-sal').setAttribute('stroke-dasharray', `${(pS/100*circ).toFixed(1)} ${circ}`);
-  document.getElementById('donut-sal').setAttribute('stroke-dashoffset', (25-(pM/100*circ)-(pE/100*circ)).toFixed(1));
+  // Si solo hay un área activa, el círculo va completo y sólido (sin el hueco
+  // que separa segmentos) — con una sola área, ese hueco se lee como si
+  // faltara otra categoría en vez de "esta comuna solo administra esta área".
+  const areasActivas = [dot.municipal, dot.educacion, dot.salud].filter(v => v !== null).length;
+  if (areasActivas <= 1) {
+    // Círculo sólido en el color de la única área activa (o vacío si no hay
+    // ninguna); sin patrón de guiones — con guiones, el punto de partida del
+    // patrón (stroke-dashoffset) siempre deja asomar un fragmento del hueco.
+    ['donut-muni','donut-edu','donut-sal'].forEach(id => { document.getElementById(id).style.strokeLinecap = 'butt'; });
+    document.getElementById('donut-muni').setAttribute('stroke-dasharray', pM > 0 ? 'none' : '0 999');
+    document.getElementById('donut-edu').setAttribute('stroke-dasharray', pE > 0 ? 'none' : '0 999');
+    document.getElementById('donut-sal').setAttribute('stroke-dasharray', pS > 0 ? 'none' : '0 999');
+  } else {
+    const circ = 99.9;
+    ['donut-muni','donut-edu','donut-sal'].forEach(id => { document.getElementById(id).style.strokeLinecap = 'round'; });
+    document.getElementById('donut-muni').setAttribute('stroke-dasharray', `${(pM/100*circ).toFixed(1)} ${circ}`);
+    document.getElementById('donut-muni').setAttribute('stroke-dashoffset','25');
+    document.getElementById('donut-edu').setAttribute('stroke-dasharray', `${(pE/100*circ).toFixed(1)} ${circ}`);
+    document.getElementById('donut-edu').setAttribute('stroke-dashoffset', (25-(pM/100*circ)).toFixed(1));
+    document.getElementById('donut-sal').setAttribute('stroke-dasharray', `${(pS/100*circ).toFixed(1)} ${circ}`);
+    document.getElementById('donut-sal').setAttribute('stroke-dashoffset', (25-(pM/100*circ)-(pE/100*circ)).toFixed(1));
+  }
   document.getElementById('c5-total').textContent = fmtInt(dot.total);
   document.getElementById('c5-muni').textContent = dot.municipal!==null ? `${fmtInt(dot.municipal)} (${fmtPct(pM,1)}%)` : 'No administra';
   document.getElementById('c5-edu').textContent = dot.educacion!==null ? `${fmtInt(dot.educacion)} (${fmtPct(pE,1)}%)` : 'No administra';
