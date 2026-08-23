@@ -181,7 +181,7 @@
   @media (max-width:920px){ .traj-grid{grid-template-columns:minmax(0,1fr);} }
   .traj-title-hl{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--royal);background:rgba(37,99,235,.12);padding:8px 14px;border-radius:10px;margin-bottom:14px;}
   .traj-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
-  .traj-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .traj-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px;}
 
   @media (max-width:900px){
     .dashboard-grid-3,.dashboard-grid-2{grid-template-columns:minmax(0,1fr);}
@@ -317,6 +317,10 @@
     <div class="traj-grid">
       <div class="traj-card">
         <div class="traj-title-hl">RESULTADO FINANCIERO (DÉFICIT / SUPERÁVIT) · M$</div>
+        <div class="traj-legend">
+          <span><i style="background:#16a34a;"></i>Superávit</span>
+          <span><i style="background:#dc2626;"></i>Déficit</span>
+        </div>
         <div class="chart-box" style="height:230px;"><canvas id="chartResultado"></canvas></div>
       </div>
       <div class="traj-card">
@@ -433,6 +437,11 @@ const INDICATOR_META = [
 
 const YEARS = Array.from({length:18}, (_,i)=>String(2008+i));
 let state = { comuna:'PROVIDENCIA', anio:'2025' };
+{
+  const params = new URLSearchParams(location.search);
+  const anioParam = params.get('anio');
+  if (anioParam && YEARS.includes(anioParam)) state.anio = anioParam;
+}
 
 function fmtM(v){ if(v==null) return '—'; return '$' + Math.round(v).toLocaleString('es-CL') + 'M'; }
 function fmtN(v){ if(v==null) return '—'; return Math.round(v).toLocaleString('es-CL'); }

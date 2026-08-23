@@ -31,11 +31,17 @@ de Providencia 2008):
   gasto.total         = IADM61 + IEDU026.1 + ISAL019.1
   limites.lim42 (gasto en personal)   = (IADM61 / (IADM42 * 0.42)) * 100
   limites.lim40 (personal a contrata) = (IADM79 / (IADM78 * 0.40)) * 100
-  limites.lim10 (honorarios)          = (IADM80 / (IADM61 * 0.10)) * 100
-    (el documento de especificación dice "IADM80 / IADM78 x 100", pero eso NO
-    reproduce el valor original hardcodeado de Providencia 2008 (86,43); la
-    fórmula de arriba sí lo reproduce exacto — se prioriza el comportamiento
-    real de la página por sobre el documento, que quedó desactualizado)
+  limites.lim10 (honorarios)          = (IADM80 / IADM78) * 100 — se compara
+    contra 10 (no contra 100). Fórmula del Art. 13, Ley N° 19.280.
+    (Hasta [fecha del fix de esta línea] se usaba (IADM80/(IADM61*0.10))*100,
+    que por casualidad reproducía el valor hardcodeado de Providencia 2008
+    (86,43) pero NO es la fórmula legal — daba resultados absurdos como
+    46,46% "dentro del límite" para un caso que en realidad excede el 10%
+    real por poco. Se corrige a la fórmula correcta de la ley aunque ya no
+    reproduzca ese valor histórico.)
+  limites.blindspot_comunitarios_pct = ((IADM80 + IADM111) / IADM78) * 100
+    (solo Personal Municipal; NO es un límite legal, no tiene techo — ver
+    nota junto al cálculo, más abajo en el código)
   municipal_honorarios_sindato = True si IRH15 falta/0 pero IADM80 (gasto) > 0
   areas_activas.educacion/salud = True si el gasto total de ese sector es > 0
   gasto_por_area.{municipal,educacion,salud} = IADM61, IEDU026.1, ISAL019.1
@@ -142,8 +148,27 @@ def main():
         iadm42 = a.get("IADM42")
         lim42 = round(g(a, "IADM61") / (iadm42 * 0.42) * 100, 2) if iadm42 else None
         lim40 = round(g(a, "IADM79") / (iadm78 * 0.40) * 100, 2) if iadm78 else None
-        iadm61 = a.get("IADM61")
-        lim10 = round(g(a, "IADM80") / (iadm61 * 0.10) * 100, 2) if iadm61 else None
+        # lim10 = gasto en honorarios / gasto en personal de planta, en % —
+        # se compara directo contra el tope legal de 10% (Ley N° 19.280,
+        # Art. 13), NO contra 100. Verificado exacto contra Providencia 2024:
+        # 1.747.877 / 22.255.103 × 100 = 7,9%.
+        # (Antes se usaba IADM80/(IADM61×0,10)×100 — daba 46,46% para el
+        # mismo caso, muy por sobre el 10% legal, porque esa fórmula NO es
+        # la del Art. 13: dividía por el gasto en personal TOTAL, no por el
+        # de planta, y escalaba el resultado contra el 10% en vez de
+        # comparar el % real. Se corrige a la fórmula de la ley.)
+        lim10 = round(g(a, "IADM80") / iadm78 * 100, 2) if iadm78 else None
+
+        # "Blindspot" de Programas Comunitarios (solo Personal Municipal, no
+        # es un límite legal — no tiene techo). El único límite que existe
+        # para honorarios es el 10% de la Ley N° 19.280 Art. 13, calculado
+        # solo con IADM80/IADM78 (sin Comunitarios). Los Programas
+        # Comunitarios (IADM111) están excluidos de todos los límites
+        # (dictamen CGR 2017) — sumarlos al numerador muestra cuánto sería
+        # el gasto en honorarios si ese vacío legal no existiera.
+        # Verificado exacto contra Providencia 2024: (1.747.877 + 3.459.818)
+        # / 22.255.103 × 100 = 23,4%.
+        blindspot_comunitarios_pct = round((g(a, "IADM80") + g(a, "IADM111")) / iadm78 * 100, 2) if iadm78 else None
 
         irh15_raw = rh.get("IRH15")
         sindato = (irh15_raw is None or irh15_raw == 0) and g(a, "IADM80") > 0
@@ -174,7 +199,8 @@ def main():
                 "comunitarios": gasto_comunitarios,
                 "total": gasto_total,
             },
-            "limites": {"lim42": lim42, "lim40": lim40, "lim10": lim10},
+            "limites": {"lim42": lim42, "lim40": lim40, "lim10": lim10,
+                        "blindspot_comunitarios_pct": blindspot_comunitarios_pct},
             "gasto_por_area": {
                 "municipal": a.get("IADM61"),
                 "educacion": gasto_edu_total_sector,

@@ -160,9 +160,9 @@
   .litem .lv{text-align:right}
   .litem .lv .a{font-size:13px;font-weight:700;color:var(--royal);font-variant-numeric:tabular-nums}
   .litem .lv .p{font-size:11px;color:var(--muted);margin-left:5px}
-  #lim-items .lv{display:flex;align-items:baseline;justify-content:flex-end;width:150px;}
-  #lim-items .lv .a{display:inline-block;width:64px;text-align:right;margin-left:0;}
-  #lim-items .lv .p{display:inline-block;width:64px;text-align:left;margin-left:6px;}
+  #lim-items .lv{display:flex;align-items:baseline;justify-content:flex-end;width:190px;}
+  #lim-items .lv .a{display:inline-block;width:60px;text-align:right;margin-left:0;}
+  #lim-items .lv .p{display:inline-block;width:124px;text-align:left;margin-left:6px;white-space:nowrap;}
   .fin-summary{display:flex;justify-content:space-between;align-items:center;
     margin-top:8px;padding-top:14px;border-top:1px solid var(--line)}
   .fin-summary .fn{font-size:12.5px;font-weight:600;color:var(--ink)}
@@ -402,6 +402,7 @@
 </div>
 <div id="lim-items" style="margin-top:14px;"></div>
 <div class="note" id="lim-note">—</div>
+<div class="note" id="lim-blindspot-note" style="margin-top:8px;background:rgba(245,166,35,.10);border-color:rgba(245,166,35,.28);color:#92400E;">—</div>
 </div>
 </div>
 
@@ -549,20 +550,30 @@ function render(){
 
   // ---- Límites legales (solo Personal Municipal) ----
   const lim = d.limites;
-  function limRow(label, color, val){
+  function limRow(label, color, val, cap){
     if(val===null) return litem(label, color, 'Sin dato', '');
-    const ok = val<=100;
+    const ok = val<=cap;
     return litem(label, ok?'#16a34a':'#dc2626', fmtPct(val,1)+'%', `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:800;">${ok?'OK':'EXCEDE'}</span>`);
   }
+  // Blindspot de Programas Comunitarios: NO es un límite legal (no tiene
+  // techo que lo regule) — se muestra aparte, sin badge OK/EXCEDE, para no
+  // confundirlo con los 3 topes de arriba. Revela cuánto sería el gasto en
+  // honorarios si el vacío legal de los Programas Comunitarios (excluidos de
+  // todo límite por dictamen CGR 2017) no existiera.
+  function limRowSinTope(label, val){
+    if(val===null) return litem(label, '#F5A623', 'Sin dato', '');
+    return litem(label, '#F5A623', fmtPct(val,1)+'%', `<span style="color:#92400E;font-weight:800;">SIN TOPE LEGAL</span>`);
+  }
   document.getElementById('lim-items').innerHTML =
-    limRow('Gasto en personal / 42% ingresos propios','#16a34a',lim.lim42) +
-    limRow('Personal a contrata / 40% de la planta','#16a34a',lim.lim40) +
-    limRow('Gasto en honorarios / 10% del gasto en personal','#16a34a',lim.lim10);
+    limRow('Gasto en personal / 42% ingresos propios','#16a34a',lim.lim42,100) +
+    limRow('Personal a contrata / 40% de la planta','#16a34a',lim.lim40,100) +
+    limRow('Gasto en honorarios / gasto en planta (máx. legal 10%)','#16a34a',lim.lim10,10) +
+    limRowSinTope('Honorarios + Programas Comunitarios / gasto en planta', lim.blindspot_comunitarios_pct);
 
   const excede = [];
   if(lim.lim42!==null && lim.lim42>100) excede.push(`el tope de gasto en personal respecto a ingresos propios (${fmtPct(lim.lim42,1)}%)`);
   if(lim.lim40!==null && lim.lim40>100) excede.push(`el tope legal de personal a contrata (Ley N° 18.883) — tiene ${fmtPct(lim.lim40,1)}% del límite permitido respecto a su dotación de planta`);
-  if(lim.lim10!==null && lim.lim10>100) excede.push(`el tope de gasto en honorarios (${fmtPct(lim.lim10,1)}%)`);
+  if(lim.lim10!==null && lim.lim10>10) excede.push(`el tope de gasto en honorarios (Ley N° 19.280, Art. 13) — ${fmtPct(lim.lim10,1)}% del gasto en personal de planta, sobre el 10% permitido`);
   const limNoteEl = document.getElementById('lim-note');
   if(excede.length){
     limNoteEl.className = 'note';
@@ -572,6 +583,10 @@ function render(){
     limNoteEl.style.background = 'rgba(22,163,74,.08)'; limNoteEl.style.borderColor='rgba(22,163,74,.18)'; limNoteEl.style.color='#14532d';
     limNoteEl.textContent = `${NOMBRES[comuna]} está dentro de los 3 límites legales de gasto en personal municipal.`;
   }
+
+  const bs = lim.blindspot_comunitarios_pct;
+  document.getElementById('lim-blindspot-note').textContent = bs===null ? 'Sin dato para calcular el gasto en Honorarios + Programas Comunitarios.' :
+    `El único límite legal para honorarios es el 10% de la Ley N° 19.280 (Art. 13), calculado solo con Honorarios regulares. Los Programas Comunitarios están excluidos de todos los límites (dictamen CGR 2017) — si se sumaran al gasto en honorarios, ${NOMBRES[comuna]} llegaría a ${fmtPct(bs,1)}% del gasto en personal de planta, sin ningún tope legal que lo regule.`;
 
   // ---- Gráficos de evolución ----
   destroyCharts();
@@ -612,7 +627,9 @@ function populateAnio(){
   const selAnio = document.getElementById('sel-anio');
   const prev = selAnio.value;
   selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  if(years.includes(+prev)) selAnio.value = prev;
+  if(years.includes(+prev)) { selAnio.value = prev; return; }
+  const anioParam = new URLSearchParams(location.search).get('anio');
+  if(anioParam && years.includes(+anioParam)) selAnio.value = anioParam;
   else selAnio.value = years.includes(2025) ? 2025 : years[0];
 }
 

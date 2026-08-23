@@ -193,7 +193,7 @@
   @media (max-width:920px){ .traj-grid{grid-template-columns:minmax(0,1fr);} }
   .traj-title-hl{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--royal);background:rgba(37,99,235,.12);padding:8px 14px;border-radius:10px;margin-bottom:14px;}
   .traj-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
-  .traj-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .traj-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px;}
   .traj-row-label-propio{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--royal-mid);margin:4px 0 10px;}
   .traj-chart-propio{display:flex;gap:8px;margin-bottom:4px;}
   .traj-y-propio{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;min-width:64px;}
@@ -377,6 +377,7 @@
 
     <div class="panel-propio" style="margin-top:14px;">
       <div class="eyebrow-propio">Resultado financiero del sector (Ingresos − Gastos) · M$</div>
+      <div class="evo-legend"><span><i style="background:#16a34a"></i>Superávit</span><span><i style="background:#dc2626"></i>Déficit</span></div>
       <div style="position:relative;width:100%;height:220px;"><canvas id="evoResultado"></canvas></div>
       <div class="note" id="traj-resultado-text" style="margin-top:10px;">—</div>
     </div>
@@ -552,7 +553,9 @@ function populateAnio(){
   const selAnio = document.getElementById('sel-anio');
   const prev = selAnio.value;
   selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  if(years.includes(+prev)) selAnio.value = prev;
+  if(years.includes(+prev)) { selAnio.value = prev; return; }
+  const anioParam = new URLSearchParams(location.search).get('anio');
+  if(anioParam && years.includes(+anioParam)) selAnio.value = anioParam;
   else selAnio.value = years.includes(2025) ? 2025 : years[0];
 }
 

@@ -219,6 +219,8 @@
   .traj-legend{display:flex;gap:14px;font-size:10.5px;color:var(--muted);margin-bottom:12px}
   .traj-legend span{display:flex;align-items:center;gap:5px}
   .traj-legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+  .evo-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink);margin-bottom:12px}
+  .evo-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px}
   .traj-chart{display:flex;gap:8px}
   .traj-y{display:flex;flex-direction:column;justify-content:space-between;
     align-items:flex-end;min-width:58px}
@@ -418,6 +420,7 @@
 <div class="panel" style="margin-top:18px;">
 <div class="eyebrow"><i class="ti ti-chart-line"></i>Resultado financiero (déficit / superávit)</div>
 <div class="panel-sub">Miles de millones de pesos. Fuente: Contraloría General de la República.</div>
+<div class="evo-legend"><span><i style="background:#10b981"></i>Superávit</span><span><i style="background:#E24B4A"></i>Déficit</span></div>
 <div style="position:relative;width:100%;height:240px;"><canvas id="evoResultado"></canvas></div>
 <div class="note" id="traj-resultado-text">—</div>
 </div>
@@ -615,7 +618,9 @@ function populateAnio(){
   const selAnio = document.getElementById('sel-anio');
   const prev = selAnio.value;
   selAnio.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  if(years.includes(+prev)) selAnio.value = prev;
+  if(years.includes(+prev)) { selAnio.value = prev; return; }
+  const anioParam = new URLSearchParams(location.search).get('anio');
+  if(anioParam && years.includes(+anioParam)) selAnio.value = anioParam;
   else selAnio.value = years.includes(2025) ? 2025 : years[0];
 }
 
