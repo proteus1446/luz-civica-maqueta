@@ -586,7 +586,7 @@ function render(){
 
   const bs = lim.blindspot_comunitarios_pct;
   document.getElementById('lim-blindspot-note').textContent = bs===null ? 'Sin dato para calcular el gasto en Honorarios + Programas Comunitarios.' :
-    `El único límite legal para honorarios es el 10% de la Ley N° 19.280 (Art. 13), calculado solo con Honorarios regulares. Los Programas Comunitarios están excluidos de todos los límites (dictamen CGR 2017) — si se sumaran al gasto en honorarios, ${NOMBRES[comuna]} llegaría a ${fmtPct(bs,1)}% del gasto en personal de planta, sin ningún tope legal que lo regule.`;
+    `El único límite legal para honorarios es el 10% de la Ley N° 19.280 (Art. 13), calculado solo con Honorarios regulares. Los Programas Comunitarios están excluidos de todos los límites (dictamen CGR 2017).`;
 
   // ---- Gráficos de evolución ----
   destroyCharts();
