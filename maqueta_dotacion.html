@@ -565,8 +565,8 @@ function render(){
     return litem(label, '#F5A623', fmtPct(val,1)+'%', `<span style="color:#92400E;font-weight:800;">SIN TOPE LEGAL</span>`);
   }
   document.getElementById('lim-items').innerHTML =
-    limRow('Gasto en personal / 42% ingresos propios','#16a34a',lim.lim42,100) +
-    limRow('Personal a contrata / 40% de la planta','#16a34a',lim.lim40,100) +
+    limRow('Gasto en personal / 42% ingresos propios (límite 100%)','#16a34a',lim.lim42,100) +
+    limRow('Personal a contrata / 40% de la planta (límite 100%)','#16a34a',lim.lim40,100) +
     limRow('Gasto en honorarios / gasto en planta (máx. legal 10%)','#16a34a',lim.lim10,10) +
     limRowSinTope('Honorarios + Programas Comunitarios / gasto en planta', lim.blindspot_comunitarios_pct);
 
