@@ -28,8 +28,10 @@ original hardcodeado de panel_comunal.html:
   dotacion.total = suma solo de las áreas activas (no consolidado_total crudo)
   alcalde.nombre  = nombre_completo (title case)
   alcalde.grado   = MGRADALC (2-Recursos H.xlsx)
-  alcalde.mediana/min/max = mediana/minimo/maximo_remuneracion_LIQUIDA
-    (no bruta — verificado exacto contra Maipú 2024)
+  alcalde.mediana/min/max = mediana/minimo/maximo_remuneracion_BRUTA
+    (a pedido — el hardcodeado original de Maipú 2024 coincidía con la
+    líquida, pero se cambió a bruta deliberadamente; el Excel fuente trae
+    ambas si en algún momento se quiere volver a líquida)
   REMUN_LOOKUP[comuna] = {n_total, n_atipicos} desde data_remuneraciones.js
     (nivel comuna, no por año — igual que el original)
 """
@@ -109,9 +111,9 @@ def load_alcalde():
         anio = str(r[idx["anyo"]])
         out[(municipio, anio)] = {
             "nombre": str(r[idx["nombre_completo"]]).title(),
-            "mediana": num(r[idx["mediana_remuneracion_liquida"]]),
-            "min": num(r[idx["minimo_remuneracion_liquida"]]),
-            "max": num(r[idx["maximo_remuneracion_liquida"]]),
+            "mediana": num(r[idx["mediana_remuneracion_bruta"]]),
+            "min": num(r[idx["minimo_remuneracion_bruta"]]),
+            "max": num(r[idx["maximo_remuneracion_bruta"]]),
         }
     return out
 
