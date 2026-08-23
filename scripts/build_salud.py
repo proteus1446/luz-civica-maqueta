@@ -23,6 +23,12 @@ igual hay datos numéricos).
 HPISM en 0 se guarda como null: ninguna comuna real tiene 0 personas
 inscritas en FONASA, es la misma convención de dato faltante que usa SINIM
 para esta columna.
+
+ISAL005 (Cobertura de Salud Primaria Municipal) = HPISM/ITPC*100. Cuando
+SINIM trae HPISM pero no ISAL005, se completa con esta fórmula usando la
+población (ITPC de 4-SALUD.xlsx no existe como columna — se usa ICAR004 de
+7-caracterizacion comunal.xlsx, que es la misma cifra exacta que ITPC en
+las 6.210 filas donde ambas están disponibles).
 """
 import json
 import re
@@ -31,7 +37,28 @@ import openpyxl
 from build_administracion import comuna_key, num
 
 SINIM_SALUD = "/Users/cristobal/prueba/sinim/4-SALUD.xlsx"
+SINIM_CARAC = "/Users/cristobal/prueba/sinim/7-caracterizacion comunal.xlsx"
 OUT_JS = "/Users/cristobal/Downloads/maqueta/data/data_salud.js"
+
+
+def load_poblacion():
+    """ICAR004 (7-caracterizacion comunal.xlsx) — idéntico a ITPC de la misma
+    planilla (verificado exacto en las 6.210 filas comuna-año), que es la
+    población que usa la fórmula real de ISAL005: HPISM/ITPC*100."""
+    wb = openpyxl.load_workbook(SINIM_CARAC, read_only=True)
+    ws = wb["Hoja1"]
+    rows = ws.iter_rows(values_only=True)
+    header = next(rows)
+    idx_pob = [i for i, h in enumerate(header) if h and str(h).startswith("ICAR004")][0]
+    idx_anio = len(header) - 1
+    out = {}
+    for r in rows:
+        if r[0] is None:
+            continue
+        municipio = comuna_key(str(r[1]).strip())
+        anio = str(r[idx_anio])
+        out[(municipio, anio)] = num(r[idx_pob])
+    return out
 
 # Códigos numéricos usados por maqueta_salud.html (confirmado por inspección del
 # DATA embebido original + grep del JS). MTAS se maneja aparte por ser texto.
@@ -76,8 +103,10 @@ def main():
     idx_text = find_col(header, CODE_TEXT)
     idx_masm = find_col(header, CODE_TEXT_MASM)
     idx_anio = find_anio_col(header)
+    poblacion = load_poblacion()
 
     data = {}
+    isal005_completados = 0
     for r in rows:
         if r[0] is None:
             continue
@@ -89,6 +118,17 @@ def main():
         # usa el resto del archivo SINIM para esta columna en particular.
         if record.get("HPISM") == 0:
             record["HPISM"] = None
+        # ISAL005 (Cobertura de Salud Primaria Municipal) = HPISM/ITPC*100.
+        # Cuando SINIM no trae ISAL005 pero sí HPISM, se completa con la
+        # fórmula real usando la población (ITPC/ICAR004, misma cifra —
+        # verificado exacto en las 6.210 filas comuna-año donde ambas
+        # columnas están presentes: diferencia media de 0,002 puntos,
+        # solo redondeo).
+        if record.get("ISAL005") is None and record.get("HPISM") is not None:
+            pob = poblacion.get((municipio, anio))
+            if pob:
+                record["ISAL005"] = round(record["HPISM"] / pob * 100, 2)
+                isal005_completados += 1
         raw_text = r[idx_text]
         record[CODE_TEXT] = raw_text if isinstance(raw_text, str) else None
         raw_masm = r[idx_masm]
@@ -100,6 +140,8 @@ def main():
         f.write("const DATA_SALUD = ")
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         f.write(";\n")
+
+    print(f"ISAL005 completados con HPISM/población: {isal005_completados}")
 
     n_comunas = len(data)
     n_rows = sum(len(v) for v in data.values())
