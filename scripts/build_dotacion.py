@@ -13,8 +13,10 @@ Fuentes:
 Fórmulas (verificadas al número exacto contra los valores hardcodeados originales
 de Providencia 2008):
   poblacion                     = ICAR004
-  profesionalizacion_pct        = IADM25 (SINIM ya lo calcula, fracción 0-1)
-  participacion_femenina_pct    = IADM33 (ídem)
+  profesionalizacion_pct        = IADM25, normalizado a escala 0-100 (SINIM
+    lo entrega en fracción 0-1 hasta 2023 y en 0-100 desde 2024 — se
+    detecta y corrige automáticamente, ver pct_norm())
+  participacion_femenina_pct    = IADM33 (mismo tratamiento que IADM25)
   municipal_total   = IRH05 + IRH12 + IRH15 + IRH16               (planta+contrata+honorarios+comunitarios; IRH16 solo existe desde 2019)
   educacion_total   = IEDU040 + IEDU042 + IEDU043 + IEDU041       (+ cdt)
   salud_total       = MPSP + MPSCC + MPSH + MPSCDT + MPSOC        (+ cdt + comunitarios)
@@ -43,7 +45,10 @@ de Providencia 2008):
     (solo Personal Municipal; NO es un límite legal, no tiene techo — ver
     nota junto al cálculo, más abajo en el código)
   municipal_honorarios_sindato = True si IRH15 falta/0 pero IADM80 (gasto) > 0
-  areas_activas.educacion/salud = True si el gasto total de ese sector es > 0
+  areas_activas.educacion/salud = True si el gasto en personal del sector es
+    > 0 O si hay headcount del sector > 0 (28 filas de educación y 25 de
+    salud tienen headcount real con gasto en 0 — antes solo se miraba el
+    gasto y esas personas "desaparecían" de la tarjeta de Dotación)
   gasto_por_area.{municipal,educacion,salud} = IADM61, IEDU026.1, ISAL019.1
     (campo usado por el gráfico de evolución "Municipal/Educación/Salud" del HTML;
     no existía en los datos originales — el gráfico estaba roto desde antes)
@@ -176,10 +181,19 @@ def main():
         gasto_edu_total_sector = e.get("IEDU026.1")
         gasto_sal_total_sector = s.get("ISAL019.1")
 
+        def pct_norm(v):
+            """IADM25/IADM33 vienen en escala 0-1 (fracción) en 2008-2023 y
+            en escala 0-100 (porcentaje) desde 2024 en adelante — cambio de
+            formato de SINIM verificado en las 6.210 filas (0 excepciones a
+            este corte por año). Se normaliza siempre a 0-100."""
+            if v is None:
+                return None
+            return round(v * 100, 2) if v <= 1 else round(v, 2)
+
         data.setdefault(municipio, {})[anio] = {
             "poblacion": poblacion.get((municipio, anio)),
-            "profesionalizacion_pct": rh.get("IADM25"),
-            "participacion_femenina_pct": rh.get("IADM33"),
+            "profesionalizacion_pct": pct_norm(rh.get("IADM25")),
+            "participacion_femenina_pct": pct_norm(rh.get("IADM33")),
             "municipal_total": municipal_total,
             "educacion_total": educacion_total,
             "salud_total": salud_total,
@@ -206,10 +220,16 @@ def main():
                 "educacion": gasto_edu_total_sector,
                 "salud": gasto_sal_total_sector,
             },
+            # "Activa" = hay gasto en personal del sector O headcount del
+            # sector (no solo gasto): hay casos reales (ej. Queilén 2023)
+            # donde el sector tiene personas contratadas (IEDU04x/MPSxx > 0)
+            # pero el gasto en personal de ese sector viene en 0 en la hoja
+            # de Administración/Salud — antes eso hacía desaparecer 246
+            # personas reales de la tarjeta de Dotación.
             "areas_activas": {
                 "municipal": True,
-                "educacion": bool(gasto_edu_total_sector),
-                "salud": bool(gasto_sal_total_sector),
+                "educacion": bool(gasto_edu_total_sector) or educacion_total > 0,
+                "salud": bool(gasto_sal_total_sector) or salud_total > 0,
             },
         }
 
