@@ -689,7 +689,10 @@ function render(){
     document.getElementById('donut-sal').setAttribute('stroke-dashoffset', (25-(pM/100*circ)-(pE/100*circ)).toFixed(1));
   }
   document.getElementById('c5-total').textContent = fmtInt(dot.total);
-  document.getElementById('c5-muni').textContent = dot.municipal!==null ? `${fmtInt(dot.municipal)} (${fmtPct(pM,1)}%)` : 'No administra';
+  // El área Municipal siempre está "activa" (toda comuna se administra a
+  // sí misma) — si viene null es que SINIM no reportó ese año, nunca que
+  // "no administra".
+  document.getElementById('c5-muni').textContent = dot.municipal!==null ? `${fmtInt(dot.municipal)} (${fmtPct(pM,1)}%)` : 'Sin dato';
   document.getElementById('c5-edu').textContent = dot.educacion!==null ? `${fmtInt(dot.educacion)} (${fmtPct(pE,1)}%)` : 'No administra';
   document.getElementById('c5-sal').textContent = dot.salud!==null ? `${fmtInt(dot.salud)} (${fmtPct(pS,1)}%)` : 'No administra';
   // Gasto en personal / 42% ingresos propios — criterio SUBDERE:

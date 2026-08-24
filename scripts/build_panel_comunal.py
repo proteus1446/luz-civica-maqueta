@@ -223,7 +223,8 @@ def main():
             dot_muni = dot.get("municipal_total") if dot_aa.get("municipal") else None
             dot_edu = dot.get("educacion_total") if dot_aa.get("educacion") else None
             dot_sal = dot.get("salud_total") if dot_aa.get("salud") else None
-            dot_total_activo = (dot_muni or 0) + (dot_edu or 0) + (dot_sal or 0)
+            dot_total_activo = (None if dot_muni is None and dot_edu is None and dot_sal is None
+                                else (dot_muni or 0) + (dot_edu or 0) + (dot_sal or 0))
 
             key = (municipio, anio)
             al = alcalde.get(key)

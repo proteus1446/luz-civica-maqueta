@@ -486,7 +486,7 @@ function render(){
 
   // ---- KPIs ----
   const funcMuni = d.municipal_total;
-  const func1000 = d.poblacion ? (funcMuni/d.poblacion*1000) : null;
+  const func1000 = (d.poblacion && funcMuni!=null) ? (funcMuni/d.poblacion*1000) : null;
   document.getElementById('kpi-func-n').textContent = fmtPct(func1000,1);
   document.getElementById('kpi-func-d').textContent =
     `${fmtInt(funcMuni)} funcionarios municipales (Planta + Contrata + Programas Comunitarios) / ${fmtInt(d.poblacion)} habitantes. Consolidado Municipal — no incluye Educación ni Salud, ya que no todas las comunas administran esas áreas.`;
@@ -503,12 +503,16 @@ function render(){
     {label:'Educación', val:d.educacion_total, color:'#2a78d6', activa:d.areas_activas.educacion},
     {label:'Salud', val:d.salud_total, color:'#d98200', activa:d.areas_activas.salud},
   ];
-  const totalAreas = areas.filter(a=>a.activa && a.val!==null).reduce((s,a)=>s+a.val,0);
-  document.getElementById('area-bar-sub').textContent = `${fmtInt(totalAreas)} personas — ${areas.filter(a=>a.activa).map(a=>a.label).join(', ')}`;
+  const areasConDato = areas.filter(a=>a.activa && a.val!==null);
+  const totalAreas = areasConDato.reduce((s,a)=>s+a.val,0);
+  document.getElementById('area-bar-sub').textContent = areasConDato.length
+    ? `${fmtInt(totalAreas)} personas — ${areas.filter(a=>a.activa).map(a=>a.label).join(', ')}`
+    : `Sin dato para este año — ${areas.filter(a=>a.activa).map(a=>a.label).join(', ')}`;
   document.getElementById('area-bar-stack').innerHTML = areas.filter(a=>a.activa && a.val).map(a=>
     `<i style="background:${a.color};width:${(a.val/totalAreas*100).toFixed(1)}%"></i>`).join('');
   document.getElementById('area-bar-legend').innerHTML = areas.map(a=>{
     if(!a.activa) return `<span><i style="background:var(--muted-soft)"></i>${a.label} · No administra esta comuna</span>`;
+    if(a.val===null) return `<span><i style="background:var(--muted-soft)"></i>${a.label} · Sin dato para este año</span>`;
     const pct = totalAreas ? (a.val/totalAreas*100).toFixed(1) : '0';
     return `<span><i style="background:${a.color}"></i>${a.label} · ${fmtInt(a.val)} (${pct.replace('.',',')}%)</span>`;
   }).join('');

@@ -146,9 +146,20 @@ def main():
         def g(d, k):
             return d.get(k) or 0
 
-        municipal_total = g(rh, "IRH05") + g(rh, "IRH12") + g(rh, "IRH15") + g(rh, "IRH16")
-        educacion_total = g(e, "IEDU040") + g(e, "IEDU042") + g(e, "IEDU043") + g(e, "IEDU041")
-        salud_total = g(s, "MPSP") + g(s, "MPSCC") + g(s, "MPSH") + g(s, "MPSCDT") + g(s, "MPSOC")
+        def sum_or_none(d, keys):
+            """Suma varias columnas SINIM tratando cada faltante individual
+            como 0 (igual que g()), PERO si TODAS vienen "No Recepcionado"
+            (None) devuelve None en vez de 0 — para no mostrar "0 personas"
+            cuando en realidad es que la comuna no reportó nada ese año
+            (ej. Alhué 2018/2019/2021/2024: IRH05/12/15/16 todas None)."""
+            vals = [d.get(k) for k in keys]
+            if all(v is None for v in vals):
+                return None
+            return sum(v or 0 for v in vals)
+
+        municipal_total = sum_or_none(rh, ["IRH05", "IRH12", "IRH15", "IRH16"])
+        educacion_total = sum_or_none(e, ["IEDU040", "IEDU042", "IEDU043", "IEDU041"])
+        salud_total = sum_or_none(s, ["MPSP", "MPSCC", "MPSH", "MPSCDT", "MPSOC"])
 
         gasto_planta = g(a, "IADM78") + g(e, "IEDU040.1") + g(s, "ISAL029")
         gasto_contrata = g(a, "IADM79") + g(e, "IEDU042.1") + g(s, "ISAL031")
@@ -204,7 +215,9 @@ def main():
             "municipal_total": municipal_total,
             "educacion_total": educacion_total,
             "salud_total": salud_total,
-            "consolidado_total": municipal_total + educacion_total + salud_total,
+            "consolidado_total": (None
+                if municipal_total is None and educacion_total is None and salud_total is None
+                else (municipal_total or 0) + (educacion_total or 0) + (salud_total or 0)),
             "consolidado": {
                 "planta": g(rh, "IRH05") + g(e, "IEDU040") + g(s, "MPSP"),
                 "contrata": g(rh, "IRH12") + g(e, "IEDU042") + g(s, "MPSCC"),
@@ -235,8 +248,8 @@ def main():
             # personas reales de la tarjeta de Dotación.
             "areas_activas": {
                 "municipal": True,
-                "educacion": bool(gasto_edu_total_sector) or educacion_total > 0,
-                "salud": bool(gasto_sal_total_sector) or salud_total > 0,
+                "educacion": bool(gasto_edu_total_sector) or (educacion_total or 0) > 0,
+                "salud": bool(gasto_sal_total_sector) or (salud_total or 0) > 0,
             },
         }
 
