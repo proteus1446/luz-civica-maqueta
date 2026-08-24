@@ -696,9 +696,7 @@ function render(){
   const overL42 = l42!==null && l42>100;
   document.getElementById('c5-lim').textContent = l42!==null ? fmtPct(l42,1)+'%' : 'Sin dato';
   document.getElementById('c5-lim').style.color = overL42 ? '#dc2626' : '#16a34a';
-  document.getElementById('c5-limtext').textContent = overL42
-    ? 'Supera el 42% del ingreso propio permitido para gasto en personal (criterio SUBDERE, Ley N° 18.294 / 18.382). No aplica a educación ni salud, que se rigen por otros estatutos.'
-    : 'Dentro del 42% del ingreso propio permitido para gasto en personal (criterio SUBDERE, Ley N° 18.294 / 18.382). No aplica a educación ni salud, que se rigen por otros estatutos.';
+  document.getElementById('c5-limtext').textContent = 'Participación de Gastos en Personal Respecto del Umbral Legal (42%) según criterio SUBDERE.';
   document.getElementById('c5-gastopersonal').textContent = dot.gasto_personal ? fmtMM(dot.gasto_personal).replace('+','') : 'Sin dato';
   document.getElementById('c5-profesionalizacion').textContent = dot.profesionalizacion_pct!==null && dot.profesionalizacion_pct!==undefined ? fmtPct(dot.profesionalizacion_pct,1)+'%' : 'Sin dato';
   document.getElementById('c5-func1000').textContent = dot.func_1000_hab!==null && dot.func_1000_hab!==undefined ? fmtPct(dot.func_1000_hab,1) : 'Sin dato';
