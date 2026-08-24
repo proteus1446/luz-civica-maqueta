@@ -32,6 +32,13 @@ de Providencia 2008):
   gasto.comunitarios  = IADM111  (solo categoría municipal)
   gasto.total         = IADM61 + IEDU026.1 + ISAL019.1
   limites.lim42 (gasto en personal)   = (IADM61 / (IADM42 * 0.42)) * 100
+    "Participación de Gastos en Personal Respecto del Umbral Legal (42%)",
+    criterio SUBDERE. Fuente: Balance de Ejecución Presupuestario (BEP).
+    Base legal: Art. 1 Ley 18.294, modificado por la letra a) del Art. 65
+    de la Ley 18.382 — el gasto anual en personal no puede exceder el 42%
+    del rendimiento estimado de los ingresos propios municipales. Incluye
+    la renta del alcalde/alcaldesa (va dentro del Subtítulo 21 — IADM61 —
+    y no se puede aislar). Sobre 100% excede el umbral del 42%.
   limites.lim40 (personal a contrata) = (IADM79 / (IADM78 * 0.40)) * 100
   limites.lim10 (honorarios)          = (IADM80 / IADM78) * 100 — se compara
     contra 10 (no contra 100). Fórmula del Art. 13, Ley N° 19.280.

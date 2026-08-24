@@ -25,6 +25,20 @@ original hardcodeado de panel_comunal.html:
   salud.delta_pct = misma fórmula
   salud.medicos_1000 = MTFCM / HPISM * 1000
   dotacion.planta_pct = consolidado.planta / consolidado_total * 100
+  dotacion.func_1000_hab = dotacion.municipal / población × 1.000 (mismo
+    criterio que el KPI "Funcionarios por 1.000 habitantes" de
+    maqueta_dotacion.html — solo cuenta el área Municipal)
+  dotacion.profesionalizacion_pct = profesionalizacion_pct (de
+    data_dotacion.js, ya normalizado a escala 0-100)
+  dotacion.blindspot_comunitarios_pct = limites.blindspot_comunitarios_pct
+    (de data_dotacion.js)
+  dotacion.lim42 = limites.lim42 (de data_dotacion.js) — "Participación de
+    Gastos en Personal Respecto del Umbral Legal (42%)", criterio SUBDERE:
+    (Gasto en Personal Total / (Ingresos Propios × 42%)) × 100. Fuente:
+    Balance de Ejecución Presupuestario (BEP). Base legal: Art. 1 Ley
+    18.294, modificado por la letra a) del Art. 65 de la Ley 18.382. Incluye
+    la renta del alcalde/alcaldesa (va dentro del Subtítulo 21, no se puede
+    aislar). Sobre 100% excede el umbral del 42% del ingreso propio.
   dotacion.municipal/educacion/salud = null si areas_activas.<área> es False
     (la comuna no administra ese sector directamente) en vez de 0 — mismo
     criterio que el reparto por área de maqueta_dotacion.html
@@ -262,6 +276,11 @@ def main():
                     "gasto_personal": (dot.get("gasto") or {}).get("total"),
                     "planta_pct": planta_pct,
                     "lim40": (dot.get("limites") or {}).get("lim40"),
+                    "lim42": (dot.get("limites") or {}).get("lim42"),
+                    "blindspot_comunitarios_pct": (dot.get("limites") or {}).get("blindspot_comunitarios_pct"),
+                    "profesionalizacion_pct": dot.get("profesionalizacion_pct"),
+                    "func_1000_hab": (round(dot_muni / poblacion * 1000, 2)
+                                      if dot_muni is not None and poblacion else None),
                 },
                 "social": {
                     "casen_pct": soc.get("casen_pct"),

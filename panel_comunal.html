@@ -443,7 +443,8 @@
   </div>
   <div class="substats">
     <div class="ss"><div class="sl">Gasto en personal</div><div class="sv" id="c5-gastopersonal">—</div></div>
-    <div class="ss"><div class="sl">Personal de planta</div><div class="sv" id="c5-plantapct">—</div></div>
+    <div class="ss"><div class="sl">Nivel de profesionalización (Municipal)</div><div class="sv" id="c5-profesionalizacion">—</div></div>
+    <div class="ss"><div class="sl">Func./1.000 hab.</div><div class="sv" id="c5-func1000">—</div></div>
   </div>
   <div class="foot"><div class="go">Ver personal municipal <i class="ti ti-arrow-right"></i></div></div>
 </a>
@@ -687,14 +688,20 @@ function render(){
   document.getElementById('c5-muni').textContent = dot.municipal!==null ? `${fmtInt(dot.municipal)} (${fmtPct(pM,1)}%)` : 'No administra';
   document.getElementById('c5-edu').textContent = dot.educacion!==null ? `${fmtInt(dot.educacion)} (${fmtPct(pE,1)}%)` : 'No administra';
   document.getElementById('c5-sal').textContent = dot.salud!==null ? `${fmtInt(dot.salud)} (${fmtPct(pS,1)}%)` : 'No administra';
-  const overLim = dot.lim40!==null && dot.lim40>100;
-  document.getElementById('c5-lim').textContent = dot.lim40!==null ? fmtPct(dot.lim40,1)+'%' : 'Sin dato';
-  document.getElementById('c5-lim').style.color = overLim ? '#dc2626' : '#16a34a';
-  document.getElementById('c5-limtext').textContent = overLim
-    ? 'Supera el límite de referencia para personal a contrata (Ley 20.922). No aplica a educación ni salud, que se rigen por otros estatutos.'
-    : 'Dentro del límite de referencia para personal a contrata (Ley 20.922). No aplica a educación ni salud, que se rigen por otros estatutos.';
-  document.getElementById('c5-gastopersonal').textContent = dot.gasto_personal!==null ? fmtMM(dot.gasto_personal).replace('+','') : 'Sin dato';
-  document.getElementById('c5-plantapct').textContent = dot.planta_pct!==null ? fmtPct(dot.planta_pct,1)+'%' : 'Sin dato';
+  // Gasto en personal / 42% ingresos propios — criterio SUBDERE:
+  // (Gasto en Personal Total / (Ingresos Propios × 42%)) × 100. Fuente:
+  // Balance de Ejecución Presupuestario (BEP). Base legal: Art. 1 Ley
+  // 18.294, modificado por la letra a) del Art. 65 de la Ley 18.382.
+  const l42 = dot.lim42;
+  const overL42 = l42!==null && l42>100;
+  document.getElementById('c5-lim').textContent = l42!==null ? fmtPct(l42,1)+'%' : 'Sin dato';
+  document.getElementById('c5-lim').style.color = overL42 ? '#dc2626' : '#16a34a';
+  document.getElementById('c5-limtext').textContent = overL42
+    ? 'Supera el 42% del ingreso propio permitido para gasto en personal (criterio SUBDERE, Ley N° 18.294 / 18.382). No aplica a educación ni salud, que se rigen por otros estatutos.'
+    : 'Dentro del 42% del ingreso propio permitido para gasto en personal (criterio SUBDERE, Ley N° 18.294 / 18.382). No aplica a educación ni salud, que se rigen por otros estatutos.';
+  document.getElementById('c5-gastopersonal').textContent = dot.gasto_personal ? fmtMM(dot.gasto_personal).replace('+','') : 'Sin dato';
+  document.getElementById('c5-profesionalizacion').textContent = dot.profesionalizacion_pct!==null && dot.profesionalizacion_pct!==undefined ? fmtPct(dot.profesionalizacion_pct,1)+'%' : 'Sin dato';
+  document.getElementById('c5-func1000').textContent = dot.func_1000_hab!==null && dot.func_1000_hab!==undefined ? fmtPct(dot.func_1000_hab,1) : 'Sin dato';
 
   // ---- 06 Social ----
   const soc = d.social;
