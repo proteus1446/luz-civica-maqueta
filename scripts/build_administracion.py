@@ -15,9 +15,14 @@ Fórmulas (verificadas contra los valores hardcodeados originales de Providencia
   kpis.eficiencia_cobro  = IADM100 (%)
   kpis.deuda_flotante_pct= pagado/flotante*100 (100 si flotante es 0/nulo, null si no hay fila)
   ingresos.ipp           = IADM41
-  ingresos.traspaso_fcm  = IADM39, con tope al residuo disponible en el
-    0,2% de filas donde excede el residuo grueso (descalce SINIM/
-    Contraloría) — ver ingresos.otros
+  ingresos.traspaso_fcm  = "Ingreso para fondo comun" (Contraloría) — con
+    IADM39 (SINIM) de respaldo solo si la comuna/año no está en el archivo
+    de Contraloría. Ambas fuentes reportan montos ligeramente distintos
+    para el mismo concepto (cortes de fecha distintos); se prioriza
+    Contraloría porque es la fuente que reproduce el caso de prueba
+    verificado (Providencia 2024: $65.818.459,544). Con tope al residuo
+    disponible en el 0,2% de filas donde excede el residuo grueso — ver
+    ingresos.otros
   ingresos.transferencias= IADM43.1 (solo desde 2011)
   ingresos.fcm_recibido  = IADM40
   ingresos.total         = IADM999
@@ -92,6 +97,22 @@ def num(v):
         return None
 
 
+def compute_otros_ing(total_ing, ipp, fcm_recibido, transferencias, fcm_traspaso):
+    """"Otros ingresos" como residuo, restando también el traspaso al FCM
+    (si no, ese monto queda contado dos veces — ver
+    bug_doble_conteo_ingresos.md). Devuelve (fcm_traspaso_mostrado,
+    otros_ing); el primero viene topado al residuo disponible en el caso
+    raro de descalce entre fuentes, para no mostrar Otros negativo."""
+    if total_ing is None:
+        return fcm_traspaso, None
+    residuo_grueso = total_ing - (ipp or 0) - (fcm_recibido or 0) - (transferencias or 0)
+    if fcm_traspaso is None:
+        return fcm_traspaso, residuo_grueso
+    if fcm_traspaso <= residuo_grueso:
+        return fcm_traspaso, residuo_grueso - fcm_traspaso
+    return residuo_grueso, 0.0
+
+
 def col_index(header, code):
     """Find the column index whose header starts with the exact SINIM code."""
     code_norm = code.strip()
@@ -163,32 +184,13 @@ def load_admin():
         fcm_recibido = g("fcm_recibido")
         transferencias = g("transferencias")
         fcm_g = g("traspaso_fcm")
-        fcm_ing_mostrado = fcm_g  # ver tope más abajo para el caso raro
-        otros_ing = None
-        if total_ing is not None:
-            # "Recursos de traspaso al Fondo Común" (fcm_g) es memo de
-            # Contraloría, no una cuenta SINIM con código propio — sale del
-            # mismo resto sin clasificar que "otros_ing" captura. Si no se
-            # resta también acá, ese monto queda contado dos veces: una vez
-            # en su propia línea y otra escondido dentro de "Otros ingresos"
-            # (bug reportado — ver bug_doble_conteo_ingresos.md).
-            residuo_grueso = total_ing - (ipp or 0) - (fcm_recibido or 0) - (transferencias or 0)
-            if fcm_g is not None:
-                if fcm_g <= residuo_grueso:
-                    otros_ing = residuo_grueso - fcm_g
-                else:
-                    # Caso raro (0,2% de las filas): fcm_g viene de una
-                    # fuente distinta (Contraloría) al resto (SINIM) y los
-                    # cortes de fecha no siempre calzan exacto, dando
-                    # fcm_g > residuo_grueso. Se topa el traspaso mostrado
-                    # en la línea de Ingresos al residuo disponible (no se
-                    # toca fcm_g en sí, que se sigue usando tal cual para
-                    # gastos.fcm más abajo) y Otros ingresos queda en 0 en
-                    # vez de mostrar un negativo.
-                    fcm_ing_mostrado = residuo_grueso
-                    otros_ing = 0.0
-            else:
-                otros_ing = residuo_grueso
+        # IADM39 (SINIM) es el valor de respaldo para ingresos.traspaso_fcm
+        # — add_contraloria() más abajo lo reemplaza por "Ingreso para
+        # fondo comun" (Contraloría) cuando esa fuente tiene la fila, que
+        # es la fuente correcta según el caso de prueba verificado (difiere
+        # de IADM39 porque son reportes de fuentes distintas). gastos.fcm
+        # sigue usando IADM39 tal cual, sin este reemplazo.
+        fcm_ing_mostrado, otros_ing = compute_otros_ing(total_ing, ipp, fcm_recibido, transferencias, fcm_g)
 
         total_gas = g("total_gas")
         personal = g("personal")
@@ -291,6 +293,8 @@ def add_contraloria(data):
         else:
             pct = round((pagado or 0) / flotante * 100, 2)
 
+        fondo_comun = num(r[idx["Ingreso para fondo comun"]])
+
         if municipio in data and anio in data[municipio]:
             d = data[municipio][anio]
             d["deficit"] = deficit
@@ -298,6 +302,15 @@ def add_contraloria(data):
             d["deuda_flotante"] = flotante
             d["deuda_flotante_pagado"] = pagado
             d["kpis"]["deuda_flotante_pct"] = pct
+            # "Ingreso para fondo comun" (Contraloría) es la fuente correcta
+            # para ingresos.traspaso_fcm — reemplaza el valor de respaldo
+            # (IADM39, SINIM) que trae load_admin(), y recalcula
+            # ingresos.otros con el mismo criterio (residuo, sin negativos).
+            # gastos.fcm no se toca acá, sigue en IADM39.
+            if fondo_comun is not None:
+                ing = d["ingresos"]
+                ing["traspaso_fcm"], ing["otros"] = compute_otros_ing(
+                    ing["total"], ing["ipp"], ing["fcm_recibido"], ing["transferencias"], fondo_comun)
 
         # nos quedamos con la región del año más reciente vista para esa comuna
         if region in REGIONES:
