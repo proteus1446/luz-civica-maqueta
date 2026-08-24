@@ -18,14 +18,16 @@ de Providencia 2008):
     detecta y corrige automáticamente, ver pct_norm())
   participacion_femenina_pct    = IADM33 (mismo tratamiento que IADM25)
   municipal_total   = IRH05 + IRH12 + IRH15 + IRH16               (planta+contrata+honorarios+comunitarios; IRH16 solo existe desde 2019)
-  educacion_total   = IEDU040 + IEDU042 + IEDU043 + IEDU041       (+ cdt)
+  educacion_total   = IEDU040 + IEDU042 + IEDU043 + IEDU041 + MPECT  (+ cdt + comunitarios;
+    MPECT faltaba — se agrega para que educación cuente comunitarios igual
+    que municipal (IRH16) y salud (MPSOC), no solo planta/contrata/honorarios/cdt)
   salud_total       = MPSP + MPSCC + MPSH + MPSCDT + MPSOC        (+ cdt + comunitarios)
   consolidado_total = municipal_total + educacion_total + salud_total
   consolidado.planta       = IRH05 + IEDU040 + MPSP
   consolidado.contrata     = IRH12 + IEDU042 + MPSCC
   consolidado.cdt          = IEDU041 + MPSCDT
   consolidado.honorarios   = IRH15 + IEDU043 + MPSH
-  consolidado.comunitarios = IRH16 + MPSOC
+  consolidado.comunitarios = IRH16 + MPSOC + MPECT
   gasto.planta       = IADM78 + IEDU040.1 + ISAL029
   gasto.contrata      = IADM79 + IEDU042.1 + ISAL031
   gasto.honorarios    = IADM80 + IEDU043.1 + ISAL032
@@ -129,7 +131,7 @@ def load_poblacion():
 def main():
     admin = load_sheet(SINIM_ADMIN, ["IADM78", "IADM79", "IADM80", "IADM111", "IADM61", "IADM42"])
     rrhh = load_sheet(SINIM_RRHH, ["IRH05", "IRH12", "IRH15", "IRH16", "IADM25", "IADM33"])
-    edu = load_sheet(SINIM_EDU, ["IEDU040", "IEDU042", "IEDU043", "IEDU041",
+    edu = load_sheet(SINIM_EDU, ["IEDU040", "IEDU042", "IEDU043", "IEDU041", "MPECT",
                                   "IEDU040.1", "IEDU042.1", "IEDU043.1", "IEDU026.1"])
     salud = load_sheet(SINIM_SALUD, ["MPSP", "MPSCC", "MPSH", "MPSCDT", "MPSOC",
                                       "ISAL029", "ISAL031", "ISAL032", "ISAL019.1"])
@@ -158,7 +160,7 @@ def main():
             return sum(v or 0 for v in vals)
 
         municipal_total = sum_or_none(rh, ["IRH05", "IRH12", "IRH15", "IRH16"])
-        educacion_total = sum_or_none(e, ["IEDU040", "IEDU042", "IEDU043", "IEDU041"])
+        educacion_total = sum_or_none(e, ["IEDU040", "IEDU042", "IEDU043", "IEDU041", "MPECT"])
         salud_total = sum_or_none(s, ["MPSP", "MPSCC", "MPSH", "MPSCDT", "MPSOC"])
 
         gasto_planta = g(a, "IADM78") + g(e, "IEDU040.1") + g(s, "ISAL029")
@@ -223,7 +225,7 @@ def main():
                 "contrata": g(rh, "IRH12") + g(e, "IEDU042") + g(s, "MPSCC"),
                 "cdt": g(e, "IEDU041") + g(s, "MPSCDT"),
                 "honorarios": g(rh, "IRH15") + g(e, "IEDU043") + g(s, "MPSH"),
-                "comunitarios": g(rh, "IRH16") + g(s, "MPSOC"),
+                "comunitarios": g(rh, "IRH16") + g(s, "MPSOC") + g(e, "MPECT"),
             },
             "municipal_honorarios_sindato": sindato,
             "gasto": {
