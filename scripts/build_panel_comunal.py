@@ -18,6 +18,11 @@ original hardcodeado de panel_comunal.html:
     más confiable que activa para decidir "no administra" en la UI, ver
     nota en build_educacion.py)
   salud.administra   = MASM == "Si" (de data_salud.js)
+  salud.admin_tipo   = MTAS (de data_salud.js) — a diferencia de Educación,
+    en Salud "Corporación" SIEMPRE viene con MASM="Si" (nunca es motivo de
+    "no administra": es solo el detalle de quién lo administra dentro de
+    los que sí administran). Valores posibles: "Depto. o Dirección",
+    "Corporación", "Sin Servicio" (cuando no administra).
   educacion.deficit  = ingresos.total - gastos.total
   educacion.delta_pct = misma fórmula que arriba, sobre educacion.deficit
   educacion.admin_tipo = MTASE (3-Educacion.xlsx, no incluido en build_educacion.py)
@@ -262,6 +267,7 @@ def main():
                 },
                 "salud": {
                     "administra": sal.get("MASM") == "Si",
+                    "admin_tipo": (sal.get("MTAS") or "").strip() or None,
                     "deficit": sal_deficit,
                     "delta_pct": delta_pct(sal_deficit, sal_deficit_prev),
                     "medicos_1000": medicos_1000,

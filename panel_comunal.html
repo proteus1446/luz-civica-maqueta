@@ -396,6 +396,7 @@
   <div class="chips">
     <span class="chip" id="c4-chip1"><i class="ti ti-circle-x"></i><span id="c4-chip1-text">—</span></span>
     <span class="chip" id="c4-chip2"><i class="ti ti-arrow-down-right"></i><span id="c4-chip2-text">—</span></span>
+    <span class="chip neutral" id="c4-chip3" style="display:none;"><i class="ti ti-building"></i><span id="c4-chip3-text">—</span></span>
   </div>
   <div class="cbody"></div>
   <div class="substats">
@@ -653,6 +654,9 @@ function render(){
       setChip(document.getElementById('c4-chip2'), document.getElementById('c4-chip2-text'), worse?'bad':'good',
         `${sal.delta_pct>=0?'+':''}${fmtPct(sal.delta_pct,1)}% vs. ${anio-1}`, worse?'ti-arrow-down-right':'ti-arrow-up-right');
     } else { document.getElementById('c4-chip2').style.display='none'; }
+    const c4chip3 = document.getElementById('c4-chip3');
+    if(sal.admin_tipo){ c4chip3.style.display='inline-flex'; document.getElementById('c4-chip3-text').textContent = `Administra: ${sal.admin_tipo}`; }
+    else { c4chip3.style.display='none'; }
     document.getElementById('c4-medicos').textContent = sal.medicos_1000!==null ? fmtPct(sal.medicos_1000,2) : 'Sin dato';
     document.getElementById('c4-inscritos').textContent = fmtInt(sal.inscritos_fonasa);
     document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito).toLocaleString('es-CL')+' mil' : 'Sin dato';
