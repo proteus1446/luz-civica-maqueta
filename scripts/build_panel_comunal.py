@@ -14,6 +14,9 @@ original hardcodeado de panel_comunal.html:
   administracion.dependencia_fcm    = kpis.dependencia_fcm (de data_administracion.js, = IADM75)
   administracion.deuda_flotante_pct = kpis.deuda_flotante_pct (de data_administracion.js)
   educacion.activa   = activa (de data_educacion.js, = bool(IEDU025))
+  educacion.administra = administra (de data_educacion.js, viene de MTASE —
+    más confiable que activa para decidir "no administra" en la UI, ver
+    nota en build_educacion.py)
   salud.administra   = MASM == "Si" (de data_salud.js)
   educacion.deficit  = ingresos.total - gastos.total
   educacion.delta_pct = misma fórmula que arriba, sobre educacion.deficit
@@ -235,9 +238,10 @@ def main():
                 },
                 "educacion": {
                     "activa": bool(edu.get("activa")),
+                    "administra": edu.get("administra"),
                     "deficit": edu_deficit,
                     "delta_pct": delta_pct(edu_deficit, edu_deficit_prev),
-                    "admin_tipo": mtase.get(key, {}).get("MTASE"),
+                    "admin_tipo": edu.get("admin_tipo") or mtase.get(key, {}).get("MTASE"),
                     "cobertura": edu.get("cobertura_pct"),
                     "gasto_alumno_mensual": edu.get("gasto_alumno_mensual"),
                     "alumnos_docente": edu.get("alumnos_por_docente"),

@@ -213,16 +213,6 @@
   .ab-stat .av{font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
   .ab-stat .av.small{font-size:14px}
 
-  /* cierre global — resumen del resumen, después de las 6 tarjetas */
-  .gclose{background:linear-gradient(115deg,var(--royal) 0%,var(--royal-mid) 100%);
-    border-radius:16px;padding:20px 26px;margin:26px auto 0;max-width:1180px;
-    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-    box-shadow:0 16px 44px -10px rgba(13,46,107,.35)}
-  @media(max-width:640px){.gclose{margin:20px 20px 0}}
-  .gclose i{font-size:20px;color:#fff;flex:none}
-  .gclose .gc-text{color:rgba(255,255,255,.92);font-size:13.5px;font-weight:600;line-height:1.5;flex:1;min-width:240px}
-  .gclose .gc-text b{color:#fff;font-weight:800}
-
   /* franja Remuneraciones — mismo ancho/estilo que .abanda (Alcalde), propio destino */
   .rbanda{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
     border:1px solid var(--glass-border);border-radius:18px;padding:18px 24px;
@@ -508,10 +498,6 @@
   <div class="go">Ver análisis <i class="ti ti-arrow-right"></i></div>
 </a>
 
-<div class="gclose">
-  <i class="ti ti-report-analytics"></i>
-  <div class="gc-text" id="gc-text">—</div>
-</div>
 <script src="data/data_panel_comunal.js"></script>
 <script src="data/nombres_comunas.js"></script>
 <script src="data/regiones_comunas.js"></script>
@@ -623,6 +609,13 @@ function render(){
   const edu = d.educacion;
   document.getElementById('c3-noadmin').style.display = edu.activa ? 'none' : '';
   document.getElementById('c3-data').style.display = edu.activa ? '' : 'none';
+  if (!edu.activa) {
+    // edu.activa solo dice si hay gasto reportado ese año — edu.administra
+    // (de MTASE) dice si el municipio de verdad lo administra o no.
+    document.getElementById('c3-noadmin').textContent = edu.administra === false
+      ? (edu.admin_tipo === 'Administra MINEDUC' ? 'Administrada por el Estado (SLEP)' : 'Administrada por una Corporación municipal')
+      : edu.administra === true ? 'Sin dato de gasto para este año' : 'Sin dato de Educación';
+  }
   if (edu.activa) {
     const supE = edu.deficit!==null && edu.deficit>=0;
     document.getElementById('c3-hero').textContent = edu.deficit!==null ? fmtMM(edu.deficit) : 'Sin dato';
@@ -739,12 +732,6 @@ function render(){
     document.getElementById('rb-comparacion').textContent = 'Información no disponible';
   }
 
-  // ---- Cierre ----
-  const partes = [];
-  if(adm.deficit!==null) partes.push(`Administración ${supA?'en superávit':'en déficit'}`);
-  if(edu.deficit!==null) partes.push(`Educación ${supE?'en superávit':'en déficit'}`);
-  if(sal.deficit!==null) partes.push(`Salud ${supS?'en superávit':'en déficit'}`);
-  document.getElementById('gc-text').innerHTML = partes.length ? `<b>${partes.join(' · ')}.</b> Año ${anio}, ${nombre}.` : `Sin datos suficientes para ${nombre} en ${anio}.`;
 }
 
 function populateAnio(){

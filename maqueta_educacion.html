@@ -444,7 +444,23 @@ function render(){
   document.getElementById('zona-kpis').style.display = d.activa ? '' : 'none';
 
   if(!d.activa){
-    document.getElementById('v-text').textContent = `${NOMBRES[comuna]} no administra Educación municipal en ${anio}.`;
+    // d.activa (bool(IEDU025)) solo dice si SINIM trajo gasto ese año — no
+    // dice quién administra. Para el mensaje se usa d.administra/admin_tipo
+    // (viene de MTASE, poblado siempre), que si distingue entre "lo
+    // administra una Corporación/el Estado" y "el municipio lo administra
+    // pero falta el dato de gasto ese año en particular".
+    let msg;
+    if (d.administra === false) {
+      msg = d.admin_tipo === 'Administra MINEDUC'
+        ? `${NOMBRES[comuna]}, ${anio}: Administrada por el Estado (SLEP).`
+        : `${NOMBRES[comuna]}, ${anio}: Administrada por una Corporación municipal.`;
+    } else if (d.administra === true) {
+      msg = `${NOMBRES[comuna]}, ${anio}: Sin dato de gasto para este año.`;
+    } else {
+      msg = `Sin datos de Educación para ${NOMBRES[comuna]} en ${anio}.`;
+    }
+    document.getElementById('no-data-edu').textContent = msg;
+    document.getElementById('v-text').textContent = msg;
     document.getElementById('v-num').textContent = 'Sin dato';
     destroyCharts();
     return;

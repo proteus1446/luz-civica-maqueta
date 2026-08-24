@@ -9,7 +9,16 @@ Fuentes:
   - /Users/cristobal/prueba/sinim/7-caracterizacion comunal.xlsx   (población, ICAR004)
 
 Fórmulas (verificadas exactas contra Providencia 2008/2009 hardcodeado):
-  activa                  = bool(IEDU025)  (mismo criterio que areas_activas.educacion en Dotación)
+  activa                  = bool(IEDU025)  (mismo criterio que areas_activas.educacion en Dotación
+    — OJO: 337 de 342 filas con activa=False son en realidad falta de dato
+    de gasto ese año, no ausencia real de administración municipal; para
+    saber si el municipio administra de verdad, usar "administra")
+  administra              = MTASE en ("Depto. o Dirección","Depto. y Corporación")
+    None si MTASE no está disponible esa fila (no debería pasar, MTASE
+    viene poblado en las 6.210 filas de 3-Educacion.xlsx)
+  admin_tipo              = MTASE tal cual (para mostrar "Administrada por
+    Corporación" / "Administrada por MINEDUC (SLEP)" en vez de un genérico
+    "no administra")
   edad_escolar             = IPEEC
   cobertura_pct            = IEDU009
   asistencia_pct           = IEDU005
@@ -91,6 +100,33 @@ def load_sheet(path, codes):
     return out
 
 
+def load_mtase():
+    """MTASE (TEXT) Tipo de Administración Sistema de Educación Municipal.
+    A diferencia de 'activa' (bool(IEDU025), que confunde "no administra"
+    con "SINIM no tiene el gasto ese año"), MTASE viene poblado en las
+    6.210 filas y distingue quién administra de verdad:
+      - "Depto. o Dirección" / "Depto. y Corporación": lo administra el
+        municipio directamente (departamento/dirección de educación).
+      - "Corporación": lo administra una Corporación municipal externa.
+      - "Administra MINEDUC": lo administra el Estado (SLEP).
+    """
+    wb = openpyxl.load_workbook(SINIM_EDU, read_only=True)
+    ws = wb.active
+    rows = ws.iter_rows(values_only=True)
+    header = next(rows)
+    idx_mtase = find_col(header, "MTASE")
+    idx_anio = find_anio_col(header)
+    out = {}
+    for r in rows:
+        if r[0] is None:
+            continue
+        municipio = comuna_key(str(r[1]).strip())
+        anio = str(r[idx_anio])
+        v = r[idx_mtase]
+        out[(municipio, anio)] = v.strip() if isinstance(v, str) else None
+    return out
+
+
 def load_poblacion():
     wb = openpyxl.load_workbook(SINIM_CARAC, read_only=True)
     ws = wb["Hoja1"]
@@ -112,9 +148,17 @@ def main():
     edu = load_sheet(SINIM_EDU, CODES)
     admin = load_sheet(SINIM_ADMIN, ["IADM999"])
     poblacion = load_poblacion()
+    mtase_map = load_mtase()
 
     data = {}
     for (municipio, anio), e in edu.items():
+        admin_tipo = mtase_map.get((municipio, anio))
+        # "administra" (a diferencia de "activa") se basa en MTASE, no en si
+        # hay gasto reportado — evita decir "no administra" cuando en
+        # realidad el municipio sí lo administra pero SINIM no tiene el
+        # gasto de ese año en particular (dato faltante, no un hecho
+        # administrativo).
+        administra = admin_tipo in ("Depto. o Dirección", "Depto. y Corporación") if admin_tipo else None
         def g(k):
             return e.get(k) or 0
 
@@ -151,6 +195,8 @@ def main():
         data.setdefault(municipio, {})[anio] = {
             "poblacion": poblacion.get((municipio, anio)),
             "activa": bool(gasto_total),
+            "administra": administra,
+            "admin_tipo": admin_tipo,
             "edad_escolar": e.get("IPEEC"),
             "cobertura_pct": e.get("IEDU009"),
             "asistencia_pct": e.get("IEDU005"),
