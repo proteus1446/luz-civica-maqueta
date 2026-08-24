@@ -15,11 +15,21 @@ Fórmulas (verificadas contra los valores hardcodeados originales de Providencia
   kpis.eficiencia_cobro  = IADM100 (%)
   kpis.deuda_flotante_pct= pagado/flotante*100 (100 si flotante es 0/nulo, null si no hay fila)
   ingresos.ipp           = IADM41
-  ingresos.traspaso_fcm  = IADM39   (memo, no se suma al total)
+  ingresos.traspaso_fcm  = IADM39, con tope al residuo disponible en el
+    0,2% de filas donde excede el residuo grueso (descalce SINIM/
+    Contraloría) — ver ingresos.otros
   ingresos.transferencias= IADM43.1 (solo desde 2011)
   ingresos.fcm_recibido  = IADM40
   ingresos.total         = IADM999
-  ingresos.otros         = total - ipp - fcm_recibido - transferencias   (residual)
+  ingresos.otros         = (total - ipp - fcm_recibido - transferencias) - traspaso_fcm
+    (residual, restando TAMBIÉN traspaso_fcm — antes NO se restaba y el
+    monto quedaba contado dos veces: una vez en su propia línea y otra
+    escondido dentro de "Otros ingresos"; ver bug_doble_conteo_ingresos.md
+    para el caso de prueba completo. Nunca queda negativo: en el 0,2% de
+    filas donde traspaso_fcm > residuo grueso, por descalce entre fuentes
+    (SINIM vs. Contraloría), se topa el traspaso mostrado en Ingresos al
+    residuo disponible y Otros queda en 0 — gastos.fcm más abajo sigue
+    usando el valor real de Contraloría sin tope, no le aplica este ajuste)
   gastos.fcm             = IADM39
   gastos.personal        = IADM61
   gastos.bienes_servicios= IADM85
@@ -152,12 +162,35 @@ def load_admin():
         ipp = g("ipp")
         fcm_recibido = g("fcm_recibido")
         transferencias = g("transferencias")
+        fcm_g = g("traspaso_fcm")
+        fcm_ing_mostrado = fcm_g  # ver tope más abajo para el caso raro
         otros_ing = None
         if total_ing is not None:
-            otros_ing = total_ing - (ipp or 0) - (fcm_recibido or 0) - (transferencias or 0)
+            # "Recursos de traspaso al Fondo Común" (fcm_g) es memo de
+            # Contraloría, no una cuenta SINIM con código propio — sale del
+            # mismo resto sin clasificar que "otros_ing" captura. Si no se
+            # resta también acá, ese monto queda contado dos veces: una vez
+            # en su propia línea y otra escondido dentro de "Otros ingresos"
+            # (bug reportado — ver bug_doble_conteo_ingresos.md).
+            residuo_grueso = total_ing - (ipp or 0) - (fcm_recibido or 0) - (transferencias or 0)
+            if fcm_g is not None:
+                if fcm_g <= residuo_grueso:
+                    otros_ing = residuo_grueso - fcm_g
+                else:
+                    # Caso raro (0,2% de las filas): fcm_g viene de una
+                    # fuente distinta (Contraloría) al resto (SINIM) y los
+                    # cortes de fecha no siempre calzan exacto, dando
+                    # fcm_g > residuo_grueso. Se topa el traspaso mostrado
+                    # en la línea de Ingresos al residuo disponible (no se
+                    # toca fcm_g en sí, que se sigue usando tal cual para
+                    # gastos.fcm más abajo) y Otros ingresos queda en 0 en
+                    # vez de mostrar un negativo.
+                    fcm_ing_mostrado = residuo_grueso
+                    otros_ing = 0.0
+            else:
+                otros_ing = residuo_grueso
 
         total_gas = g("total_gas")
-        fcm_g = g("traspaso_fcm")
         personal = g("personal")
         bienes = g("bienes_servicios")
         salud = g("salud")
@@ -177,7 +210,7 @@ def load_admin():
             },
             "ingresos": {
                 "ipp": ipp,
-                "traspaso_fcm": fcm_g,
+                "traspaso_fcm": fcm_ing_mostrado,
                 "transferencias": transferencias,
                 "fcm_recibido": fcm_recibido,
                 "otros": otros_ing,
