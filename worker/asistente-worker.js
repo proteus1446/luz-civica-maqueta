@@ -149,17 +149,27 @@ export default {
     // conteos de personas y porcentajes (números cortos) los lee bien. Los
     // montos grandes en pesos casi siempre vienen en "miles de $"; acá se
     // reescalan a "millones de $" (menos dígitos) ANTES de mandarlos al
-    // modelo. No toca porcentajes ni conteos, que ya son números cortos.
+    // modelo. No toca porcentajes ni conteos, que ya son números cortos —
+    // EXCEPTO los campos de esta lista, que NO son dinero pero pueden ser
+    // grandes igual (ej. población de comunas grandes) y NUNCA deben
+    // reescalarse aunque superen el umbral.
     const UMBRAL_REESCALA = 100000;
-    function reescalarMontos(v) {
+    const CAMPOS_NO_MONETARIOS = new Set([
+      "poblacion", "matricula", "edad_escolar", "establecimientos",
+      "docentes_aula", "rshnp", "rsh60", "rsh60_pct", "HPISM", "GTCM",
+      "consolidado_total", "municipal_total", "educacion_total", "salud_total",
+      "grado", "anio", "año",
+    ]);
+    function reescalarMontos(v, key) {
       if (typeof v === "number") {
+        if (key && CAMPOS_NO_MONETARIOS.has(key)) return v;
         if (Math.abs(v) >= UMBRAL_REESCALA) return Math.round((v / 1000) * 10) / 10;
         return v;
       }
-      if (Array.isArray(v)) return v.map(reescalarMontos);
+      if (Array.isArray(v)) return v.map((x) => reescalarMontos(x, key));
       if (v && typeof v === "object") {
         const out = {};
-        for (const k of Object.keys(v)) out[k] = reescalarMontos(v[k]);
+        for (const k of Object.keys(v)) out[k] = reescalarMontos(v[k], k);
         return out;
       }
       return v;
@@ -183,10 +193,40 @@ export default {
       }
     }
 
+    // El ranking viene como { "ruta.del.campo": { top:[{comuna,valor}], ... } }
+    // — "valor" no dice nada por sí solo, así que hay que usar la ruta del
+    // campo (la llave de más afuera) para saber si es monetario o no. No se
+    // reusa reescalarMontos() genérico porque ahí perdería ese contexto al
+    // bajar por "top"/"ultimos"/"valor" (ninguno es el nombre real del campo).
+    function reescalarValor(v) {
+      if (typeof v !== "number") return v;
+      if (Math.abs(v) >= UMBRAL_REESCALA) return Math.round((v / 1000) * 10) / 10;
+      return v;
+    }
+    function reescalarRanking(ranking) {
+      const out = {};
+      for (const campo of Object.keys(ranking || {})) {
+        const ultimoSegmento = campo.split(".").pop();
+        const esMonetario = !CAMPOS_NO_MONETARIOS.has(ultimoSegmento);
+        const grupo = ranking[campo] || {};
+        out[campo] = {
+          top: (grupo.top || []).map((f) => ({
+            comuna: f.comuna,
+            valor: esMonetario ? reescalarValor(f.valor) : f.valor,
+          })),
+          ultimos: (grupo.ultimos || []).map((f) => ({
+            comuna: f.comuna,
+            valor: esMonetario ? reescalarValor(f.valor) : f.valor,
+          })),
+        };
+      }
+      return out;
+    }
+
     let rankingTexto = "";
     if (body.ranking) {
       try {
-        rankingTexto = JSON.stringify(reescalarMontos(body.ranking)).slice(0, 9000);
+        rankingTexto = JSON.stringify(reescalarRanking(body.ranking)).slice(0, 9000);
       } catch {
         rankingTexto = "";
       }
