@@ -19,14 +19,18 @@
       tema: "general",
       temaLabel: "Luz Cívica",
       limiteDiario: 8,
+      faq: null, // opcional: array de {texto, incluirHistorial?, incluirRanking?} para reemplazar las preguntas por defecto de esta página
     },
     window.LUZ_ASISTENTE_CONFIG || {}
   );
 
-  const FAQ = [
+  // Por defecto (páginas que no definen su propio `faq`): evolución en el
+  // tiempo + comparación entre comunas del tema actual. Cada página puede
+  // reemplazar esto con preguntas más específicas (ver LUZ_ASISTENTE_CONFIG.faq
+  // en panel_comunal.html para el ejemplo con alcalde/gasto por habitante).
+  const FAQ = CFG.faq || [
     { texto: "¿Cómo evolucionó esta comuna en el tiempo?", incluirHistorial: true },
-    { texto: "¿Qué comuna tiene el valor más alto o más bajo?", incluirRanking: true },
-    { texto: "Explícamelo en lenguaje simple" },
+    { texto: `¿Qué comuna tiene el valor más alto en ${CFG.temaLabel}?`, incluirRanking: true },
   ];
 
   // Preguntas escritas a mano que también deberían disparar el ranking
