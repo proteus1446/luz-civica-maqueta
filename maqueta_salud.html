@@ -267,14 +267,14 @@
     <div class="panel-propio">
       <div class="eyebrow-propio">¿Quiénes utilizan la salud municipal?</div>
       <div class="big-propio" id="p-inscritos">—</div>
-      <div class="big-label-propio">inscritos en FONASA (HPISM)</div>
+      <div class="big-label-propio">inscritos en FONASA</div>
       <div style="margin-top:16px;">
         <div style="display:flex;justify-content:space-between;font-size:12.5px;">
           <span style="font-weight:700;color:var(--text-main);">Cobertura de salud primaria</span>
           <span style="font-weight:800;color:var(--royal);" id="p-cob-pct">—</span>
         </div>
         <div class="cov-bar-propio"><div id="p-cob-bar" style="width:0%;"></div></div>
-        <div style="font-size:11.5px;color:var(--text-muted);" id="p-cob-note">Cobertura de Salud Primaria Municipal (ISAL005)</div>
+        <div style="font-size:11.5px;color:var(--text-muted);" id="p-cob-note">Cobertura de Salud Primaria Municipal</div>
       </div>
     </div>
     <div class="panel-propio">
@@ -283,8 +283,9 @@
       <div class="big-label-propio">personas trabajando en salud (por tipo de contrato)</div>
       <div style="margin-top:16px;">
         <div class="split-row-propio"><span class="nm">Personal clínico</span><span style="font-weight:800;color:var(--royal);" id="p-clinico-val">—</span></div>
-        <div class="bar-track-propio"><i id="p-clinico-bar" style="background:var(--royal-mid);"></i><i id="p-admin-bar" style="background:#F5A623;"></i></div>
-        <div class="split-row-propio"><span class="nm">Resto de la dotación</span><span style="font-weight:800;color:var(--royal);" id="p-admin-val">—</span></div>
+        <div class="bar-track-propio"><i id="p-clinico-bar" style="background:var(--royal-mid);"></i></div>
+        <div class="split-row-propio"><span class="nm">Resto de la dotación (no clínico)</span><span style="font-weight:800;color:var(--royal);" id="p-admin-val">—</span></div>
+        <div class="bar-track-propio"><i id="p-admin-bar" style="background:#F5A623;"></i></div>
       </div>
     </div>
   </div>
@@ -332,9 +333,9 @@
     <div class="traj-card" style="margin-top:18px;">
       <div class="traj-title-hl">EVOLUCIÓN ANUAL DE FINANZAS MUNICIPALES</div>
       <div class="traj-legend">
-        <span><i style="background:#2563eb;"></i>Gasto total (ISAL018)</span>
-        <span><i style="background:#16a34a;"></i>Ingresos (ISAL009)</span>
-        <span><i style="background:#d97706;"></i>Aporte municipal (ISAL013)</span>
+        <span><i style="background:#2563eb;"></i>Gasto total</span>
+        <span><i style="background:#16a34a;"></i>Ingresos</span>
+        <span><i style="background:#d97706;"></i>Aporte municipal</span>
       </div>
       <div class="chart-box" style="height:280px;"><canvas id="lineChart"></canvas></div>
     </div>
@@ -528,17 +529,17 @@ function render(){
   const aporteMinsal = (d.ISAL012!=null && d.ISAL009!=null) ? d.ISAL012/100*d.ISAL009 : null;
   const otrosIng = (d.ISAL009!=null && d.ISAL013!=null && aporteMinsal!=null) ? Math.max(0, d.ISAL009 - d.ISAL013 - aporteMinsal) : null;
   renderStackYDetalle('f-ing-stack','f-ing-items',[
-    ['Aporte municipal (ISAL013)', d.ISAL013, 'var(--royal)'],
-    ['Aporte MINSAL per cápita (ISAL012)', aporteMinsal, '#0D9488'],
+    ['Aporte municipal', d.ISAL013, 'var(--royal)'],
+    ['Aporte MINSAL', aporteMinsal, '#0D9488'],
     ['Otros ingresos', otrosIng, '#F5A623']
   ], d.ISAL009);
 
   document.getElementById('f-gas-total').textContent = fmtM(d.ISAL018);
   const otrosGasto = (d.ISAL018!=null) ? Math.max(0, d.ISAL018 - (d.ISAL019||0) - (d.ISAL021||0) - (d.ISAL023||0)) : null;
   renderStackYDetalle('f-gas-stack','f-gas-items',[
-    ['Personal (ISAL019)', d.ISAL019, 'var(--royal)'],
-    ['Operacional (ISAL021)', d.ISAL021, '#F5A623'],
-    ['Inversión (ISAL023)', d.ISAL023, '#16a34a'],
+    ['Personal', d.ISAL019, 'var(--royal)'],
+    ['Operacional', d.ISAL021, '#F5A623'],
+    ['Inversión', d.ISAL023, '#16a34a'],
     ['Otros', otrosGasto, '#9AA3B0']
   ], d.ISAL018);
 
