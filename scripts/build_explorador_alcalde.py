@@ -102,7 +102,7 @@ def main():
 
     db["catalog"].append({
         "id": var_id,
-        "area": "Administración",
+        "area": "Otros",
         "label": "Remuneración bruta (sueldo) del alcalde/alcaldesa (mediana mensual)",
         "unidad": "$",
         "code": "alcalde.mediana",
