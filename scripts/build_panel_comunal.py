@@ -255,6 +255,12 @@ def main():
                     "gasto_hab": gasto_hab,
                     "dependencia_fcm": (a.get("kpis") or {}).get("dependencia_fcm"),
                     "deuda_flotante_pagado_pct": (a.get("kpis") or {}).get("deuda_flotante_pagado_pct"),
+                    # ingresos.total/gastos.total ya venían cargados en `a`
+                    # (data_administracion.js completo), solo no se copiaban
+                    # a la salida del Panel — por eso "cuánto fue el ingreso
+                    # de la comuna" no se podía responder desde acá.
+                    "ingresos": a.get("ingresos"),
+                    "gastos": a.get("gastos"),
                 },
                 "educacion": {
                     "activa": bool(edu.get("activa")),
