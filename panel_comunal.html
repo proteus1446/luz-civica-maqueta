@@ -133,6 +133,10 @@
     margin-bottom:6px;min-height:28px}
   .substats .ss .sv{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;
     font-variant-numeric:tabular-nums;line-height:1.2;word-break:break-word}
+  /* 'Gasto en personal' (Dotación) es un monto en MM que no debe partirse
+     ('$81.640' en una línea y 'MM' en otra) — se achica un poco y no se
+     envuelve, para que quede en una sola línea junto a sus vecinos. */
+  #c5-gastopersonal{white-space:nowrap;font-size:14px;}
 
   .foot{display:flex;justify-content:flex-end;margin-top:14px}
   .go{font-size:11.5px;font-weight:700;color:var(--royal-mid);display:flex;align-items:center;gap:4px}
@@ -432,7 +436,7 @@
   </div>
   <div class="substats">
     <div class="ss"><div class="sl">Gasto en personal</div><div class="sv" id="c5-gastopersonal">—</div></div>
-    <div class="ss"><div class="sl">Nivel de profesionalización (Municipal)</div><div class="sv" id="c5-profesionalizacion">—</div></div>
+    <div class="ss"><div class="sl">Profesionalización</div><div class="sv" id="c5-profesionalizacion">—</div></div>
     <div class="ss"><div class="sl">Func./1.000 hab.</div><div class="sv" id="c5-func1000">—</div></div>
   </div>
   <div class="foot"><div class="go">Ver personal municipal <i class="ti ti-arrow-right"></i></div></div>
@@ -522,7 +526,7 @@ function populateComunas(){
 function fmtInt(n){ if(n===null||n===undefined) return "Sin dato"; return Math.round(n).toLocaleString('es-CL'); }
 function fmtPct(n,dec){ if(n===null||n===undefined) return "Sin dato"; return n.toLocaleString('es-CL',{minimumFractionDigits:dec||1,maximumFractionDigits:dec||1}); }
 function fmtCLP(n){ if(n===null||n===undefined) return "Sin dato"; const s=n<0?"-$":"$"; return s+Math.abs(Math.round(n)).toLocaleString('es-CL'); }
-function fmtMM(n){ if(n===null||n===undefined) return "Sin dato"; const mm=n/1000; const s=mm<0?"-$":"+$"; return s+Math.round(Math.abs(mm)).toLocaleString('es-CL')+" MM"; }
+function fmtMM(n){ if(n===null||n===undefined) return "Sin dato"; const mm=n/1000; const s=mm<0?"-$":"+$"; return s+Math.round(Math.abs(mm)).toLocaleString('es-CL')+" MM"; }
 function initials(name){ if(!name) return "—"; const p=name.trim().split(/\s+/); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
 
 function setChip(el, textEl, cls, text, icon){
@@ -624,7 +628,10 @@ function render(){
     if(edu.admin_tipo){ c3chip3.style.display='inline-flex'; document.getElementById('c3-chip3-text').textContent = `Administra: ${edu.admin_tipo}`; }
     else { c3chip3.style.display='none'; }
     document.getElementById('c3-cobertura').textContent = edu.cobertura!==null ? fmtPct(edu.cobertura,1)+'%' : 'Sin dato';
-    document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? '$'+Math.round(edu.gasto_alumno_mensual).toLocaleString('es-CL')+' mil' : 'Sin dato';
+    // gasto_alumno_mensual viene en miles de pesos — se multiplica x1.000
+    // para mostrar el peso real (antes decía "$278 mil", inconsistente con
+    // la página de Educación que ya muestra el monto real completo).
+    document.getElementById('c3-gastoalu').textContent = edu.gasto_alumno_mensual!==null ? '$'+Math.round(edu.gasto_alumno_mensual*1000).toLocaleString('es-CL') : 'Sin dato';
     document.getElementById('c3-aludoc').textContent = edu.alumnos_docente!==null ? fmtPct(edu.alumnos_docente,1) : 'Sin dato';
   }
 
