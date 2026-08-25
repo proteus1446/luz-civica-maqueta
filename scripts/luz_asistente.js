@@ -335,7 +335,7 @@
       if (!iniciado) {
         iniciado = true;
         addMsg(
-          "Puedo explicarte los datos de esta comuna, o comparar entre todas las comunas (ej. \"qué comuna tiene mayor dotación\", \"qué alcalde gana más\"). No invento cifras: si algo no está disponible, te lo digo. Verifica siempre las fuentes oficiales para decisiones importantes.",
+          "Puedo explicarte los datos de esta comuna, o comparar entre todas las comunas (ej. \"qué comuna tiene mayor dotación\", \"qué alcalde gana más\"). No invento cifras: si algo no está disponible, te lo digo. Solo veo los datos de la página en la que estás — si buscas algo de otro tema (ej. Remuneraciones estando en Educación), prueba abrir esa página específica. Verifica siempre las fuentes oficiales para decisiones importantes.",
           "sys"
         );
       }
