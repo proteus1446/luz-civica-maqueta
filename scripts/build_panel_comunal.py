@@ -285,7 +285,12 @@ def main():
                     # dot_muni.
                     "municipal_detalle": dot.get("municipal"),
                     "educacion": dot_edu,
+                    # Mismo criterio que municipal_detalle: desglose por tipo
+                    # de contrato del área educación/salud (los 4-5 valores
+                    # suman dot_edu / dot_sal respectivamente).
+                    "educacion_detalle": dot.get("educacion"),
                     "salud": dot_sal,
+                    "salud_detalle": dot.get("salud"),
                     "gasto_personal": (dot.get("gasto") or {}).get("total"),
                     "planta_pct": planta_pct,
                     "lim40": (dot.get("limites") or {}).get("lim40"),

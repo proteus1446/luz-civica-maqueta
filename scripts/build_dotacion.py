@@ -241,7 +241,27 @@ def main():
                 "comunitarios": g(rh, "IRH16"),
             },
             "educacion_total": educacion_total,
+            # Mismo desglose que "municipal" arriba, pero para el área
+            # educación. IEDU040/042/043/041/MPECT son los mismos códigos
+            # que ya se suman en educacion_total.
+            "educacion": {
+                "planta": g(e, "IEDU040"),
+                "contrata": g(e, "IEDU042"),
+                "honorarios": g(e, "IEDU043"),
+                "cdt": g(e, "IEDU041"),
+                "comunitarios": g(e, "MPECT"),
+            },
             "salud_total": salud_total,
+            # Mismo desglose que "municipal" arriba, pero para el área
+            # salud. MPSP/MPSCC/MPSH/MPSCDT/MPSOC son los mismos códigos
+            # que ya se suman en salud_total.
+            "salud": {
+                "planta": g(s, "MPSP"),
+                "contrata": g(s, "MPSCC"),
+                "honorarios": g(s, "MPSH"),
+                "cdt": g(s, "MPSCDT"),
+                "comunitarios": g(s, "MPSOC"),
+            },
             "consolidado_total": (None
                 if municipal_total is None and educacion_total is None and salud_total is None
                 else (municipal_total or 0) + (educacion_total or 0) + (salud_total or 0)),
