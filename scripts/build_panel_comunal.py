@@ -12,7 +12,7 @@ original hardcodeado de panel_comunal.html:
   administracion.gasto_hab = (gastos.total - (fcm+salud+educacion)) / poblacion
   administracion.delta_pct = (deficit[año] - deficit[año-1]) / |deficit[año-1]| * 100
   administracion.dependencia_fcm    = kpis.dependencia_fcm (de data_administracion.js, = IADM75)
-  administracion.deuda_flotante_pct = kpis.deuda_flotante_pct (de data_administracion.js)
+  administracion.deuda_flotante_pagado_pct = kpis.deuda_flotante_pagado_pct (de data_administracion.js)
   educacion.activa   = activa (de data_educacion.js, = bool(IEDU025))
   educacion.administra = administra (de data_educacion.js, viene de MTASE —
     más confiable que activa para decidir "no administra" en la UI, ver
@@ -254,7 +254,7 @@ def main():
                     "delta_pct": delta_pct(a.get("deficit"), a_prev.get("deficit")),
                     "gasto_hab": gasto_hab,
                     "dependencia_fcm": (a.get("kpis") or {}).get("dependencia_fcm"),
-                    "deuda_flotante_pct": (a.get("kpis") or {}).get("deuda_flotante_pct"),
+                    "deuda_flotante_pagado_pct": (a.get("kpis") or {}).get("deuda_flotante_pagado_pct"),
                 },
                 "educacion": {
                     "activa": bool(edu.get("activa")),

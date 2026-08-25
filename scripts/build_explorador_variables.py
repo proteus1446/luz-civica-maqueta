@@ -65,7 +65,7 @@ ADMIN_VARS = [
     ("adm_ejecucion", "Administración", "Ejecución presupuestaria", "%", "kpis.ejecucion"),
     ("adm_dependencia_fcm", "Administración", "Dependencia del Fondo Común Municipal", "%", "kpis.dependencia_fcm"),
     ("adm_eficiencia_cobro", "Administración", "Eficiencia de cobro de patentes", "%", "kpis.eficiencia_cobro"),
-    ("adm_deuda_flotante_pct", "Administración", "% pagado de deuda de arrastre", "%", "kpis.deuda_flotante_pct"),
+    ("adm_deuda_flotante_pct", "Administración", "% pagado de deuda de arrastre", "%", "kpis.deuda_flotante_pagado_pct"),
     ("adm_ing_total", "Administración", "Ingresos municipales totales", "M$", "ingresos.total"),
     ("adm_ing_fcm_recibido", "Administración", "Ingresos por Fondo Común Municipal", "M$", "ingresos.fcm_recibido"),
     ("adm_ing_transferencias", "Administración", "Transferencias recibidas", "M$", "ingresos.transferencias"),

@@ -511,8 +511,8 @@ function render(){
     : 'Depende del Fondo Común Municipal para una parte relevante de su operación.';
   document.getElementById('kpi-ejec-n').textContent = fmtPct(k.ejecucion,1);
   document.getElementById('kpi-ejec-d').textContent = 'Porcentaje del presupuesto vigente que efectivamente se ejecutó (IADM 125).';
-  document.getElementById('kpi-deuda-n').textContent = fmtPct(k.deuda_flotante_pct,1);
-  document.getElementById('kpi-deuda-d').textContent = `Pagó ${fmtPct(k.deuda_flotante_pct,1)}% de lo que debía de años anteriores (fuente: Contraloría).`;
+  document.getElementById('kpi-deuda-n').textContent = fmtPct(k.deuda_flotante_pagado_pct,1);
+  document.getElementById('kpi-deuda-d').textContent = `Pagó ${fmtPct(k.deuda_flotante_pagado_pct,1)}% de lo que debía de años anteriores (fuente: Contraloría).`;
   document.getElementById('kpi-cobro-n').textContent = fmtPct(k.eficiencia_cobro,1);
   document.getElementById('kpi-cobro-d').textContent = `${fmtPct(k.eficiencia_cobro,0)} de cada 100 patentes emitidas se cobran efectivamente.`;
 
@@ -608,7 +608,7 @@ function render(){
   });
   const dLast = DATA[comuna][years[years.length-1]];
   document.getElementById('traj-deuda-text').textContent = dLast.deuda_flotante!==null
-    ? `En ${years[years.length-1]} registra $${fmtInt(dLast.deuda_flotante)} de deuda flotante, de la cual pagó ${fmtPct(dLast.kpis.deuda_flotante_pct,1)}%.`
+    ? `En ${years[years.length-1]} registra $${fmtInt(dLast.deuda_flotante)} de deuda flotante, de la cual pagó ${fmtPct(dLast.kpis.deuda_flotante_pagado_pct,1)}%.`
     : 'Sin dato de deuda flotante para el año seleccionado.';
 }
 

@@ -13,7 +13,7 @@ Fórmulas (verificadas contra los valores hardcodeados originales de Providencia
   kpis.dependencia_fcm   = IADM75  (%)
   kpis.ejecucion         = IADM 125 (%)
   kpis.eficiencia_cobro  = IADM100 (%)
-  kpis.deuda_flotante_pct= pagado/flotante*100 (100 si flotante es 0/nulo, null si no hay fila)
+  kpis.deuda_flotante_pagado_pct= pagado/flotante*100 (100 si flotante es 0/nulo, null si no hay fila)
   ingresos.ipp           = IADM41
   ingresos.traspaso_fcm  = "Ingreso para fondo comun" (Contraloría) — NO
     usa IADM39 como respaldo (IADM39 es una cuenta de GASTO, no de
@@ -206,7 +206,7 @@ def load_admin():
             "kpis": {
                 "dependencia_fcm": g("dependencia_fcm"),
                 "ejecucion": g("ejecucion"),
-                "deuda_flotante_pct": None,  # filled later
+                "deuda_flotante_pagado_pct": None,  # filled later
                 "eficiencia_cobro": g("eficiencia_cobro"),
             },
             "ingresos": {
@@ -300,7 +300,7 @@ def add_contraloria(data):
             d["situacion"] = situacion
             d["deuda_flotante"] = flotante
             d["deuda_flotante_pagado"] = pagado
-            d["kpis"]["deuda_flotante_pct"] = pct
+            d["kpis"]["deuda_flotante_pagado_pct"] = pct
             # "Ingreso para fondo comun" (Contraloría) es la fuente de
             # ingresos.traspaso_fcm — reemplaza el 0 asumido por defecto en
             # load_admin() (para comunas/años sin fila en Contraloría) y

@@ -604,7 +604,7 @@ function render(){
       `${up?'+':''}${fmtPct(adm.delta_pct,1)}% vs. ${anio-1}`, up?'ti-arrow-up-right':'ti-arrow-down-right');
   } else { document.getElementById('c2-chip2').style.display='none'; }
   document.getElementById('c2-fcm').textContent = adm.dependencia_fcm!==null && adm.dependencia_fcm!==undefined ? fmtPct(adm.dependencia_fcm,1)+'%' : 'Sin dato';
-  document.getElementById('c2-deuda').textContent = adm.deuda_flotante_pct!==null && adm.deuda_flotante_pct!==undefined ? fmtPct(adm.deuda_flotante_pct,1)+'%' : 'Sin dato';
+  document.getElementById('c2-deuda').textContent = adm.deuda_flotante_pagado_pct!==null && adm.deuda_flotante_pagado_pct!==undefined ? fmtPct(adm.deuda_flotante_pagado_pct,1)+'%' : 'Sin dato';
   document.getElementById('c2-gastohab').textContent = adm.gasto_hab!==null ? fmtCLP(adm.gasto_hab) : 'Sin dato';
 
   // ---- 03 Educación ----
