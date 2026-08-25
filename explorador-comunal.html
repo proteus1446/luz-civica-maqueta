@@ -287,21 +287,9 @@ svg text{font-family:inherit}
 
     </aside>
     <div class="main-stack">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-        <div class="tabs" id="tabs">
-          <div class="tab on" data-tab="evolucion"><i class="ti ti-chart-line"></i> Evolución y comparación</div>
-          <div class="tab" data-tab="ranking"><i class="ti ti-trophy"></i> Ranking</div>
-        </div>
-        <div class="ranking-controls" id="rankingCtrls" style="display:none;align-items:center;gap:10px">
-          <div style="display:flex;align-items:center;gap:6px;background:rgba(13,46,107,.08);border-radius:9px;padding:6px 10px">
-            <span style="font-size:9.5px;font-weight:800;color:var(--muted-soft)">AÑO</span>
-            <select id="selYearTop" style="font-size:13px;font-weight:800;color:var(--royal);background:transparent;border:none;cursor:pointer"></select>
-          </div>
-          <div class="seg" id="segOrder">
-            <button data-order="desc" class="on">Mayor → menor</button>
-            <button data-order="asc">Menor → mayor</button>
-          </div>
-        </div>
+      <div class="tabs" id="tabs">
+        <div class="tab on" data-tab="evolucion"><i class="ti ti-chart-line"></i> Evolución y comparación</div>
+        <div class="tab" data-tab="ranking"><i class="ti ti-trophy"></i> Ranking</div>
       </div>
 
       <div class="stat-row" id="statRow"></div>
@@ -339,11 +327,21 @@ svg text{font-family:inherit}
         <div class="note" id="interpretation"></div>
       </div>
 
-      <!-- tabs movido arriba -->
-      </div>
-
       <div class="card" id="rankingCard" style="display:none">
-        <div class="card-h"><div><div class="t">Ranking nacional · <span id="rankYearLabel"></span></div><div class="s" id="rankSubtitle"></div></div><input id="filterRank" placeholder="Filtrar comunas..." style="font-size:12.5px;padding:7px 11px;border-radius:9px;border:1px solid var(--line);min-width:200px"></div>
+        <div class="card-h">
+          <div><div class="t">Ranking nacional · <span id="rankYearLabel"></span></div><div class="s" id="rankSubtitle"></div></div>
+          <input id="filterRank" placeholder="Filtrar comunas..." style="font-size:12.5px;padding:7px 11px;border-radius:9px;border:1px solid var(--line);min-width:200px">
+        </div>
+        <div class="ranking-controls" id="rankingCtrls" style="align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(13,46,107,.08);border-radius:9px;padding:6px 10px">
+            <span style="font-size:9.5px;font-weight:800;color:var(--muted-soft)">AÑO</span>
+            <select id="selYearTop" style="font-size:13px;font-weight:800;color:var(--royal);background:transparent;border:none;cursor:pointer"></select>
+          </div>
+          <div class="seg" id="segOrder">
+            <button data-order="desc" class="on">Mayor → menor</button>
+            <button data-order="asc">Menor → mayor</button>
+          </div>
+        </div>
         <div class="rank-table-wrap"><table class="rank-table" id="rankTable"><thead><tr><th>Pos</th><th>Comuna</th><th>Valor</th><th style="min-width:90px">Barra</th></tr></thead><tbody></tbody></table></div>
         <div class="note" id="rankNote"></div>
       </div>
