@@ -31,7 +31,13 @@ de Providencia 2008):
   gasto.planta       = IADM78 + IEDU040.1 + ISAL029
   gasto.contrata      = IADM79 + IEDU042.1 + ISAL031
   gasto.honorarios    = IADM80 + IEDU043.1 + ISAL032
-  gasto.comunitarios  = IADM111  (solo categoría municipal)
+  gasto.comunitarios  = IADM111 (Municipal, código propio)
+    + (IEDU026.1 - IEDU040.1 - IEDU042.1 - IEDU043.1) (Educación, residuo —
+      sin código propio en SINIM; verificado exacto contra Providencia
+      2024, residuo = 0, coincide con MPECT = 0 ese año/comuna)
+    + (ISAL019.1 - ISAL029 - ISAL031 - ISAL032) (Salud, mismo criterio)
+    Cada residuo se topa en 0 si diera negativo (no debería, pero por si
+    hay descalce de redondeo entre las columnas del mismo archivo).
   gasto.total         = IADM61 + IEDU026.1 + ISAL019.1
   limites.lim42 (gasto en personal)   = (IADM61 / (IADM42 * 0.42)) * 100
     "Participación de Gastos en Personal Respecto del Umbral Legal (42%)",
@@ -166,7 +172,15 @@ def main():
         gasto_planta = g(a, "IADM78") + g(e, "IEDU040.1") + g(s, "ISAL029")
         gasto_contrata = g(a, "IADM79") + g(e, "IEDU042.1") + g(s, "ISAL031")
         gasto_honorarios = g(a, "IADM80") + g(e, "IEDU043.1") + g(s, "ISAL032")
-        gasto_comunitarios = g(a, "IADM111")
+        # Educación y Salud no tienen un código SINIM propio para "gasto en
+        # Programas Comunitarios" (a diferencia de Municipal, que sí lo
+        # tiene: IADM111) — se calcula como residuo: gasto total del sector
+        # menos planta/contrata/honorarios de ese mismo sector. Verificado
+        # exacto contra Providencia 2024 (residuo = 0 en ambos sectores,
+        # coincide con MPECT=0 ese año/comuna).
+        gasto_edu_comunitarios = max(0.0, g(e, "IEDU026.1") - g(e, "IEDU040.1") - g(e, "IEDU042.1") - g(e, "IEDU043.1"))
+        gasto_sal_comunitarios = max(0.0, g(s, "ISAL019.1") - g(s, "ISAL029") - g(s, "ISAL031") - g(s, "ISAL032"))
+        gasto_comunitarios = g(a, "IADM111") + gasto_edu_comunitarios + gasto_sal_comunitarios
         gasto_total = g(a, "IADM61") + g(e, "IEDU026.1") + g(s, "ISAL019.1")
 
         iadm78 = a.get("IADM78")

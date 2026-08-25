@@ -227,14 +227,14 @@
   </div>
   <nav class="nav-areas-real">
     <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Volver al panel</button>
-    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html'">Administración</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_administracion.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Administración</button>
     <button class="btn-area-real activo" type="button">Salud</button>
-    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html'">Educación</button>
-    <button class="btn-area-real" type="button" onclick="location.href='maqueta_social.html'">Social</button>
-    <button class="btn-area-real" type="button" onclick="location.href='maqueta_perfil.html'">Perfil</button>
-    <button class="btn-area-real" type="button" onclick="location.href='maqueta_dotacion.html'">Dotación</button>
-    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html'">Remuneraciones</button>
-    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html'">Explorador</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_educacion.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Educación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_social.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Social</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_perfil.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Perfil</button>
+    <button class="btn-area-real" type="button" onclick="location.href='maqueta_dotacion.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Dotación</button>
+    <button class="btn-area-real" type="button" onclick="location.href='remuneraciones.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Remuneraciones</button>
+    <button class="btn-area-real" type="button" onclick="location.href='explorador-comunal.html?comuna='+encodeURIComponent(document.getElementById('selComuna').value)+'&anio='+encodeURIComponent(document.getElementById('selAnio').value)">Explorador</button>
   </nav>
 </div>
 
@@ -440,7 +440,7 @@ let state = { comuna:'PROVIDENCIA', anio:'2025' };
   if (anioParam && YEARS.includes(anioParam)) state.anio = anioParam;
 }
 
-function fmtM(v){ if(v==null) return '—'; return '$' + Math.round(v).toLocaleString('es-CL') + 'M'; }
+function fmtM(v){ if(v==null) return '—'; return '$' + Math.round(v).toLocaleString('es-CL'); }
 function fmtN(v){ if(v==null) return '—'; return Math.round(v).toLocaleString('es-CL'); }
 function fmtPct(v){ if(v==null) return '—'; return v.toFixed(1).replace('.',',') + '%'; }
 function fmtK(v){ if(v==null) return '—'; return '$' + Math.round(v*1000).toLocaleString('es-CL').slice(0,-3) + 'K'; }
