@@ -485,7 +485,9 @@ function render(){
   const administra = (d.MASM || '').trim() === 'Si';
   document.getElementById('no-data-salud').style.display = administra ? 'none' : 'block';
   document.getElementById('salud-content').style.display = administra ? '' : 'none';
+  document.getElementById('kpiRow').style.display = administra ? '' : 'none';
   if (!administra) {
+    document.getElementById('kpiRow').innerHTML = '';
     renderTrendCards();
     renderIndicatorList(document.getElementById('searchInput').value);
     return;
