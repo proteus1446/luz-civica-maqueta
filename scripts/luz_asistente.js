@@ -39,6 +39,11 @@
   const PATRON_COMPARATIVA =
     /(qu[ée]\s+comuna|cu[áa]l\s+comuna|m[áa]s\s+alt[oa]|m[áa]s\s+baj[oa]|mayor\b|menor\b|ranking|compar|todas\s+las\s+comunas|qu[ée]\s+alcalde|cu[áa]l\s+alcalde)/i;
 
+  // Igual que PATRON_COMPARATIVA pero para preguntas de evolución/tendencia
+  // en el tiempo, escritas a mano (sin usar el botón de FAQ).
+  const PATRON_EVOLUCION =
+    /(evolucion|evoluci[oó]n|hist[oó]rico|en el tiempo|a través de los años|a lo largo de los años|tendencia|ha (subido|bajado|aumentado|disminuido)|(subi|baj|aument|disminuy)[oó])/i;
+
   function hoyKey() {
     const d = new Date();
     return "lc_asist_uso_" + d.toISOString().slice(0, 10);
@@ -350,7 +355,7 @@
   async function enviar(preguntaForzada, opts) {
     const pregunta = (preguntaForzada || input.value || "").trim();
     if (!pregunta) return;
-    const incluirHistorial = !!(opts && opts.incluirHistorial);
+    const incluirHistorial = !!(opts && opts.incluirHistorial) || PATRON_EVOLUCION.test(pregunta);
     const incluirRanking = !!(opts && opts.incluirRanking) || PATRON_COMPARATIVA.test(pregunta);
 
     if (!CFG.endpoint) {
