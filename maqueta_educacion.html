@@ -215,6 +215,9 @@
   .duel-box-propio .dl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-soft);margin-bottom:5px;}
   .duel-box-propio .dn{font-size:24px;font-weight:800;color:var(--royal);line-height:1;}
   .duel-box-propio .ds{font-size:10.5px;color:var(--text-muted);margin-top:4px;}
+  .info-box-propio{background:rgba(245,166,35,.14);border-radius:10px;padding:10px 12px;margin-top:10px;}
+  .info-box-propio .info-box-title{font-size:11px;font-weight:800;color:#92400E;display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+  .info-box-propio .info-box-text{font-size:11px;color:#92400E;line-height:1.5;}
   .traj-axis-propio span{flex:1;text-align:center;font-size:8.5px;color:var(--muted-soft);font-weight:600;}
   .traj-text-propio{font-size:12px;color:var(--ink);line-height:1.6;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;}
   .traj-text-propio b{color:var(--royal);}
@@ -316,7 +319,7 @@
   <!-- ZONA 2 -->
   <div class="dashboard-grid-2" style="margin-bottom:26px;">
     <div class="panel-propio">
-      <div class="eyebrow-propio">¿Cuántos niños estudian en colegios municipales?</div>
+      <div class="eyebrow-propio">¿Cuántos estudiantes asisten a colegios municipales?</div>
       <div class="fin-total"><span id="kpi-cobertura-n">—</span><span style="font-size:16px;">%</span></div>
       <div style="font-size:12.5px;color:var(--text-muted);font-weight:600;margin-bottom:14px;">de los alumnos de la comuna estudian en establecimientos municipales</div>
       <div class="stat-row-propio">
@@ -344,9 +347,12 @@
       <div class="split-row-propio"><span class="nm">No docentes (asistentes de la educación)</span><span style="font-weight:800;color:var(--royal);" id="pers-nodocentes">—</span></div>
       <div class="duel-propio">
         <div class="duel-box-propio"><div class="dl">Según función (MINEDUC)</div><div class="dn" id="duel-funcion">—</div><div class="ds">personas declaradas</div></div>
-        <div class="duel-box-propio"><div class="dl">Según tipo de contrato (Municipio)</div><div class="dn" id="duel-contrato">—</div><div class="ds">contratos registrados</div></div>
+        <div class="duel-box-propio"><div class="dl">Otra fuente — el municipio registra</div><div class="dn" id="duel-contrato">—</div><div class="ds">contratos, según tipo de contrato</div></div>
       </div>
-      <div id="pers-nota" style="font-size:11px;color:#92400E;background:rgba(245,166,35,.14);border-radius:8px;padding:8px 12px;margin-top:10px;line-height:1.5;">—</div>
+      <div class="info-box-propio">
+        <div class="info-box-title">ⓘ ¿Por qué las cifras son diferentes?</div>
+        <div class="info-box-text" id="pers-nota">—</div>
+      </div>
     </div>
   </div>
 
@@ -492,8 +498,8 @@ function render(){
   document.getElementById('duel-funcion').textContent = fmtInt(pf.total);
   document.getElementById('duel-contrato').textContent = fmtInt(pc.total);
   const diff = (pf.total!==null && pc.total!==null) ? Math.abs(pf.total-pc.total) : null;
-  document.getElementById('pers-nota').textContent = diff
-    ? `SINIM almacena dos fuentes distintas para el personal y no coinciden: MINEDUC declara ${fmtInt(pf.total)} personas por función, el municipio registra ${fmtInt(pc.total)} por tipo de contrato — una diferencia de ${fmtInt(diff)} personas.`
+  document.getElementById('pers-nota').textContent = diff!==null
+    ? 'MINEDUC cuenta personas según la función que cumplen (docente o no docente); el municipio informa cargos vigentes por tipo de contrato (planta, contrata, honorarios, código del trabajo). Son fuentes y criterios distintos, no un error de conteo.'
     : 'Sin datos suficientes para comparar ambas fuentes este año.';
 
   // ---- Ingresos ----
