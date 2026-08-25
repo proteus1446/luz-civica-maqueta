@@ -229,6 +229,17 @@ def main():
             "profesionalizacion_pct": pct_norm(rh.get("IADM25")),
             "participacion_femenina_pct": pct_norm(rh.get("IADM33")),
             "municipal_total": municipal_total,
+            # Desglose SOLO del área municipal (a diferencia de "consolidado",
+            # que mezcla municipal + educación + salud). IRH05/12/15/16 son
+            # los mismos códigos que ya se suman en municipal_total, aquí se
+            # exponen por separado para poder responder "composición del
+            # área municipal" sin tener que restarle educación/salud a mano.
+            "municipal": {
+                "planta": g(rh, "IRH05"),
+                "contrata": g(rh, "IRH12"),
+                "honorarios": g(rh, "IRH15"),
+                "comunitarios": g(rh, "IRH16"),
+            },
             "educacion_total": educacion_total,
             "salud_total": salud_total,
             "consolidado_total": (None
