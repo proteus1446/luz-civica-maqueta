@@ -593,7 +593,9 @@ function render(){
   } else { document.getElementById('c2-chip2').style.display='none'; }
   document.getElementById('c2-fcm').textContent = adm.dependencia_fcm!==null && adm.dependencia_fcm!==undefined ? fmtPct(adm.dependencia_fcm,1)+'%' : 'Sin dato';
   document.getElementById('c2-deuda').textContent = adm.deuda_flotante_pagado_pct!==null && adm.deuda_flotante_pagado_pct!==undefined ? fmtPct(adm.deuda_flotante_pagado_pct,1)+'%' : 'Sin dato';
-  document.getElementById('c2-gastohab').textContent = adm.gasto_hab!==null ? fmtCLP(adm.gasto_hab) : 'Sin dato';
+  // gasto_hab viene en miles de pesos — se multiplica x1.000 para mostrar
+  // el peso real (mismo criterio que Asistencia social/hab, más abajo).
+  document.getElementById('c2-gastohab').textContent = adm.gasto_hab!==null ? fmtCLP(adm.gasto_hab*1000) : 'Sin dato';
 
   // ---- 03 Educación ----
   const edu = d.educacion;
@@ -647,7 +649,10 @@ function render(){
     else { c4chip3.style.display='none'; }
     document.getElementById('c4-medicos').textContent = sal.medicos_1000!==null ? fmtPct(sal.medicos_1000,2) : 'Sin dato';
     document.getElementById('c4-inscritos').textContent = fmtInt(sal.inscritos_fonasa);
-    document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito).toLocaleString('es-CL')+' mil' : 'Sin dato';
+    // gasto_inscrito viene en miles de pesos — se multiplica x1.000 y se
+    // muestra el peso real completo (antes decía "$296 mil", inconsistente
+    // con la tarjeta de Salud que ya muestra el monto real completo).
+    document.getElementById('c4-gastoinsc').textContent = sal.gasto_inscrito!==null ? '$'+Math.round(sal.gasto_inscrito*1000).toLocaleString('es-CL') : 'Sin dato';
   }
 
   // ---- 05 Dotación (donut) ----

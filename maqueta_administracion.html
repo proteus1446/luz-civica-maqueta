@@ -521,8 +521,11 @@ function render(){
     const pct = ing.total ? (i.val/ing.total*100).toFixed(1).replace('.',',')+'%' : '';
     return litem(i.label, i.color, fmtCLP(i.val), pct);
   }).join('');
+  // ingPerHab viene en miles de pesos (igual que el resto de la página) —
+  // se multiplica por 1.000 solo acá para mostrar el peso real, porque un
+  // "per cápita" chico se puede confundir con pesos literales.
   const ingPerHab = d.poblacion ? (ing.ipp + ing.fcm_recibido + (ing.otros||0) + (ing.transferencias||0)) / d.poblacion : null;
-  document.getElementById('ing-perhab').innerHTML = ingPerHab!==null ? `${fmtCLP(ingPerHab)} <span class="fpc-unit">/hab</span>` : 'Sin dato';
+  document.getElementById('ing-perhab').innerHTML = ingPerHab!==null ? `${fmtCLP(ingPerHab*1000)} <span class="fpc-unit">/hab</span>` : 'Sin dato';
   document.getElementById('ing-perhab-formula').textContent = `Ingresos propios permanentes + FCM + Otros ingresos corrientes + Transferencias recibidas, dividido por población (${fmtInt(d.poblacion)} hab.).`;
 
   // ---- Gastos ----
@@ -548,7 +551,7 @@ function render(){
   document.getElementById('gas-transf-n').textContent = fmtCLP(transfOtras);
   document.getElementById('gas-transf-p').textContent = gas.total ? (transfOtras/gas.total*100).toFixed(1).replace('.',',')+'%' : '';
   const gasPerHab = d.poblacion ? (gas.total - transfOtras) / d.poblacion : null;
-  document.getElementById('gas-perhab').innerHTML = gasPerHab!==null ? `${fmtCLP(gasPerHab)} <span class="fpc-unit">/hab</span>` : 'Sin dato';
+  document.getElementById('gas-perhab').innerHTML = gasPerHab!==null ? `${fmtCLP(gasPerHab*1000)} <span class="fpc-unit">/hab</span>` : 'Sin dato';
   document.getElementById('gas-perhab-formula').textContent = `Gasto total menos lo transferido a FCM, Salud y Educación, dividido por población (${fmtInt(d.poblacion)} hab.).`;
 
   // ---- Verdict ----
