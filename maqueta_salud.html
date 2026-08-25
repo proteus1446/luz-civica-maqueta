@@ -493,11 +493,18 @@ function render(){
 
   // ============ ZONA 1 — KPIs propios (sin círculos, sin semáforo) ============
   // Indicadores de cómo opera la comuna: financiamiento, personal, gasto por persona.
-  const brechaFin = (d.ISAL018 && d.ISAL009!=null) ? ((d.ISAL018 - d.ISAL009) / d.ISAL018 * 100) : null;
+  // Cobertura del gasto: ingresos del área / gasto total, en %. <100% = faltó
+  // financiamiento (déficit), 100% = equilibrio, >100% = excedente — misma
+  // lógica en los 3 casos, fácil de comparar entre comunas y años. El monto
+  // absoluto (déficit/superávit en $) se muestra más abajo en el veredicto.
+  const coberturaGasto = (d.ISAL018 && d.ISAL009!=null) ? (d.ISAL009 / d.ISAL018 * 100) : null;
+  const coberturaTexto = coberturaGasto==null ? 'Sin datos suficientes para calcular este indicador.'
+    : coberturaGasto>=100 ? `Los ingresos cubrieron todos los gastos y dejaron un excedente equivalente al ${fmtPct(coberturaGasto-100)} del gasto total.`
+    : `Los ingresos cubrieron el ${fmtPct(coberturaGasto)} de los gastos del sistema de salud municipal.`;
   const medicosPer1000 = (d.MTFCM!=null && d.HPISM) ? (d.MTFCM / d.HPISM * 1000) : null;
   document.getElementById('kpiRow').innerHTML = `
-    <div class="kpi-propio"><div class="kn">${brechaFin!=null?fmtPct(brechaFin):'—'}</div><div class="kt">Brecha de financiamiento</div><div class="kd">Parte del gasto en salud que no cubren los ingresos propios del área (ISAL018 vs ISAL009)</div></div>
-    <div class="kpi-propio"><div class="kn">${medicosPer1000!=null?medicosPer1000.toFixed(2).replace('.',','):'—'}</div><div class="kt">Médicos por 1.000 inscritos</div><div class="kd">MTFCM / HPISM × 1.000</div></div>
+    <div class="kpi-propio"><div class="kn">${coberturaGasto!=null?fmtPct(coberturaGasto):'—'}</div><div class="kt">¿Qué parte del gasto pudo financiarse?</div><div class="kd">${coberturaTexto}</div></div>
+    <div class="kpi-propio"><div class="kn">${medicosPer1000!=null?medicosPer1000.toFixed(2).replace('.',','):'—'}</div><div class="kt">Médicos por 1.000 inscritos</div><div class="kd">Cantidad de médicos por cada 1.000 personas inscritas en el sistema de salud municipal</div></div>
     <div class="kpi-propio"><div class="kn">${fmtK(d.ISAL23)}</div><div class="kt">Gasto por habitante inscrito</div><div class="kd">${state.comuna} gasta ${fmtK(d.ISAL23)} por persona inscrita</div></div>
   `;
 
