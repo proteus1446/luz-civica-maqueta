@@ -25,14 +25,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Ar
   background-attachment:fixed;min-height:100vh;color:var(--ink);line-height:1.5}
 .top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.75);
   backdrop-filter:blur(22px);border-bottom:1px solid var(--glass-border)}
-.top-inner{max-width:1320px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;gap:12px}
+.top-inner{max-width:1600px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;gap:12px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:#000;text-decoration:none;letter-spacing:-.02em}
 .lamp{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#FFF3B0,#F5A623 68%);box-shadow:0 0 12px rgba(245,166,35,.4)}
 .nav{display:flex;gap:2px;align-items:center}
 .nav a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:9px}
 .nav a:hover{background:rgba(13,46,107,.06);color:var(--royal)}
 .nav a.active{background:rgba(13,46,107,.1);color:var(--royal);font-weight:700}
-.wrap{max-width:1320px;margin:0 auto;padding:18px 24px 60px}
+.wrap{max-width:1600px;margin:0 auto;padding:18px 24px 60px}
 .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:8px 0 18px}
 @media(max-width:960px){.hero{grid-template-columns:1fr}}
 .hero-main{background:var(--glass-strong);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:20px;padding:22px 24px;box-shadow:var(--shadow)}
@@ -280,7 +280,7 @@ svg text{font-family:inherit}
               <span style="font-size:11px;color:var(--muted-soft)" id="varCount"></span>
             </div>
             <div class="step-sub">Selecciona una variable para explorar su evolución y comparar.</div>
-            <div class="var-list" id="varList" style="max-height:460px"></div>
+            <div class="var-list" id="varList" style="max-height:420px"></div>
           </div>
         </div>
       </div>
@@ -615,7 +615,7 @@ function renderChart(){
   }
 
   const maxV=Math.max(...allVals); const minV=Math.min(0, Math.min(...allVals));
-  const W=760,H=235,padL=62,padR=16,padT=10,padB=32;
+  const W=760,H=260,padL=62,padR=16,padT=10,padB=32;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const range=(maxV-minV)||1;
   const x=(i)=> padL + i/(allYears.length-1)*plotW;
