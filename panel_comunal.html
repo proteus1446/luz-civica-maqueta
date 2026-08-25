@@ -232,8 +232,8 @@
     display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px}
   .rb-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
   .rb-name{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.01em;line-height:1.25;margin-top:3px}
-  .rb-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
-    margin-top:6px;padding:2px 9px;border-radius:999px;background:rgba(14,116,144,.10);color:#0E7490}
+  .rb-badge{margin-top:7px;font-size:12px}
+  .rb-badge i{font-size:14px}
   .rb-stats{display:flex;gap:26px;flex-wrap:wrap}
   .rb-stat{min-width:120px}
   .rb-stat .al{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
@@ -476,7 +476,7 @@
     <div>
       <div class="rb-role">Análisis de remuneraciones</div>
       <div class="rb-name">¿Gana cada funcionario lo esperado para su cargo?</div>
-      <div class="rb-badge" id="rb-badge"><i class="ti ti-alert-triangle"></i><span id="rb-badge-text">—</span></div>
+      <div class="rb-badge chip" id="rb-badge"><i class="ti ti-alert-triangle"></i><span id="rb-badge-text">—</span></div>
     </div>
   </div>
   <div class="rb-stats" id="rb-stats">
@@ -722,18 +722,17 @@ function render(){
 
   // ---- Franja Remuneraciones ----
   const rb = REMUN_LOOKUP[comuna];
+  const rbBadge = document.getElementById('rb-badge');
   if(rb){
     document.getElementById('rbanda-block').style.display = '';
-    document.getElementById('rb-badge').style.background = '';
-    document.getElementById('rb-badge').style.color = '';
-    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-circle-check';
+    rbBadge.classList.remove('neutral'); rbBadge.classList.add('good');
+    rbBadge.querySelector('i').className = 'ti ti-circle-check';
     document.getElementById('rb-badge-text').textContent = 'Con datos disponibles';
     document.getElementById('rb-comparacion').textContent = 'Por cargo, grado y vínculo';
   } else {
     document.getElementById('rbanda-block').style.display = '';
-    document.getElementById('rb-badge').style.background = 'rgba(107,114,128,.12)';
-    document.getElementById('rb-badge').style.color = '#6B7280';
-    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-info-circle';
+    rbBadge.classList.remove('good'); rbBadge.classList.add('neutral');
+    rbBadge.querySelector('i').className = 'ti ti-info-circle';
     document.getElementById('rb-badge-text').textContent = 'Sin datos disponibles';
     document.getElementById('rb-comparacion').textContent = 'Información no disponible';
   }
