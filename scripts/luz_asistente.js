@@ -18,7 +18,9 @@
       endpoint: "", // URL del Worker, ej: "https://luz-civica-asistente.TU-CUENTA.workers.dev/asistente"
       tema: "general",
       temaLabel: "Luz Cívica",
-      limiteDiario: 8,
+      // Subido temporalmente (era 8) para la demo de Raúl — bajarlo de
+      // vuelta a 8 (o el número que sea) después de la demo.
+      limiteDiario: 500,
       faq: null, // opcional: array de {texto, incluirHistorial?, incluirRanking?} para reemplazar las preguntas por defecto de esta página
     },
     window.LUZ_ASISTENTE_CONFIG || {}
