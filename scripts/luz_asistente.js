@@ -257,6 +257,8 @@
   .lc-faq button{font-size:11.5px;background:#EBF2FC;color:#1A4A9C;border:1px solid #d7e4f7;border-radius:999px;
     padding:5px 10px;cursor:pointer;}
   .lc-faq button:hover{background:#dce9fa;}
+  .lc-asist-warn{display:flex;align-items:center;gap:6px;font-size:11px;color:#92400E;background:#FEF3E2;
+    border-top:1px solid #FDE4B8;padding:6px 12px;}
   .lc-asist-foot{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #eee;background:#fff;}
   .lc-asist-foot textarea{flex:1;resize:none;border:1px solid #ddd;border-radius:10px;padding:8px 10px;
     font:13px/1.3 inherit;height:38px;max-height:90px;}
@@ -282,6 +284,7 @@
     </div>
     <div class="lc-asist-body" id="lc-body"></div>
     <div class="lc-faq" id="lc-faq"></div>
+    <div class="lc-asist-warn">⚠️ Modelo gratis: preguntas cortas (botones de arriba) son confiables. Cifras grandes en pesos pueden salir mal — verifícalas en la página.</div>
     <div class="lc-asist-foot">
       <textarea id="lc-input" placeholder="Escribe tu pregunta sobre estos datos…"></textarea>
       <button id="lc-send">Enviar</button>
@@ -335,7 +338,7 @@
       if (!iniciado) {
         iniciado = true;
         addMsg(
-          "Puedo explicarte los datos de esta comuna, o comparar entre todas las comunas (ej. \"qué comuna tiene mayor dotación\", \"qué alcalde gana más\"). No invento cifras: si algo no está disponible, te lo digo. Solo veo los datos de la página en la que estás — si buscas algo de otro tema (ej. Remuneraciones estando en Educación), prueba abrir esa página específica. Verifica siempre las fuentes oficiales para decisiones importantes.",
+          "Puedo explicarte los datos de esta comuna, o comparar entre todas las comunas. Uso los botones de abajo o escribe tu propia pregunta. Solo veo los datos de esta página — si buscas otro tema, abre esa página específica.",
           "sys"
         );
       }
