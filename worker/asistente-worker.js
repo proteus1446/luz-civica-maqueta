@@ -43,7 +43,8 @@ Reglas estrictas:
 - Distingue con claridad: (1) el dato tal cual, (2) una comparación si hay base para hacerla dentro de los mismos datos, (3) una interpretación en lenguaje simple.
 - Nunca calcules un déficit, indicador financiero o metodológico distinto al que ya viene calculado en los datos; solo explica lo que ya está calculado.
 - Para las unidades de cada cifra (pesos, miles de $, %, etc.), usa EXACTAMENTE la unidad indicada en el GLOSARIO para ese campo. No multipliques, no dividas ni conviertas de escala (ej. no transformes "miles de $" en "millones" salvo que el GLOSARIO lo pida explícitamente) — copia el número tal cual viene en DATOS/HISTORIAL, solo agregándole la unidad correspondiente.
-- IMPORTANTE sobre decimales: los números en DATOS/HISTORIAL vienen en formato JSON, con PUNTO como separador decimal (ej. 664.297 significa "664 coma 297", NO "664 mil 297"). En español de Chile el punto se usa para separar miles, así que mostrar ese número tal cual con un punto confundiría al lector. Por eso, al presentar cifras al usuario, REDONDEA a entero (sin decimales) los montos en pesos/miles de $ y las cantidades (ej. "664", "46.745.454"), y usa como máximo 1 decimal con COMA (ej. "17,3%") en los porcentajes.
+- IMPORTANTE sobre decimales: los números en DATOS/HISTORIAL vienen en formato JSON, con PUNTO como separador decimal (ej. 664.297 significa "664 coma 297", NO "664 mil 297"). En español de Chile el punto se usa para separar miles, así que mostrar ese número tal cual con un punto confundiría al lector. Por eso, al presentar cifras al usuario, REDONDEA a entero (sin decimales) las cantidades (ej. "664"), y usa como máximo 1 decimal con COMA (ej. "17,3%") en los porcentajes.
+- IMPORTANTE sobre montos grandes en pesos: para que los leas bien, cualquier monto que en la fuente original estaba en "miles de $" y era muy grande (100.000 o más) YA VIENE DIVIDIDO POR 1.000 en los datos que recibes — es decir, ya está en MILLONES de $, no en miles. Ejemplo: si ves "202885.4" en un campo que el glosario describe como "miles de $", son en realidad $202.885,4 millones (no 202 mil, no 202 millones exactos) — di "$202.885 millones" o redondea a "$202.885 millones" (con 0-1 decimal). Los montos que quedaron con pocos dígitos (menores a 100.000) SÍ siguen en miles de $ tal como dice el glosario. Los porcentajes y conteos de personas NUNCA se reescalan.
 - Responde en español de Chile, en 2-5 frases, tono claro y neutral, sin tecnicismos innecesarios.
 - Si el bloque DATOS viene vacío o nulo, dile al usuario que seleccione una comuna y año en la página.`;
 
@@ -144,11 +145,31 @@ export default {
       });
     }
 
+    // El modelo (chico, gratis) lee mal números de 8-9 dígitos — pero los
+    // conteos de personas y porcentajes (números cortos) los lee bien. Los
+    // montos grandes en pesos casi siempre vienen en "miles de $"; acá se
+    // reescalan a "millones de $" (menos dígitos) ANTES de mandarlos al
+    // modelo. No toca porcentajes ni conteos, que ya son números cortos.
+    const UMBRAL_REESCALA = 100000;
+    function reescalarMontos(v) {
+      if (typeof v === "number") {
+        if (Math.abs(v) >= UMBRAL_REESCALA) return Math.round((v / 1000) * 10) / 10;
+        return v;
+      }
+      if (Array.isArray(v)) return v.map(reescalarMontos);
+      if (v && typeof v === "object") {
+        const out = {};
+        for (const k of Object.keys(v)) out[k] = reescalarMontos(v[k]);
+        return out;
+      }
+      return v;
+    }
+
     // Limita el tamaño de los bloques que se mandan al modelo (evita
     // payloads gigantes y mantiene el consumo de tokens bajo).
     let datosTexto = "null";
     try {
-      datosTexto = JSON.stringify(body.datos ?? null).slice(0, 4000);
+      datosTexto = JSON.stringify(reescalarMontos(body.datos ?? null)).slice(0, 4000);
     } catch {
       datosTexto = "null";
     }
@@ -156,7 +177,7 @@ export default {
     let historialTexto = "";
     if (body.historial) {
       try {
-        historialTexto = JSON.stringify(body.historial).slice(0, 6000);
+        historialTexto = JSON.stringify(reescalarMontos(body.historial)).slice(0, 6000);
       } catch {
         historialTexto = "";
       }
@@ -165,7 +186,7 @@ export default {
     let rankingTexto = "";
     if (body.ranking) {
       try {
-        rankingTexto = JSON.stringify(body.ranking).slice(0, 9000);
+        rankingTexto = JSON.stringify(reescalarMontos(body.ranking)).slice(0, 9000);
       } catch {
         rankingTexto = "";
       }
