@@ -823,7 +823,23 @@ function renderRanking(){
     }
   });
   document.getElementById('rankNote').innerHTML=`<b>Cómo se calcula:</b> Posición = comunas ordenadas ${state.order==='desc'?'de mayor a menor valor':'de menor a mayor valor'}. Mediana nacional (${stats.total} comunas) = ${fmt(stats.med,m.unidad)}.`;
+  fitRankTableHeight();
 }
+
+function fitRankTableHeight(){
+  const card=document.getElementById('rankingCard');
+  const wrap=card? card.querySelector('.rank-table-wrap'): null;
+  const note=document.getElementById('rankNote');
+  if(!card||!wrap||card.style.display==='none') return;
+  wrap.style.maxHeight='560px'; // reset antes de medir, para no arrastrar un alto previo
+  const cardRect=card.getBoundingClientRect();
+  const wrapRect=wrap.getBoundingClientRect();
+  const noteH=note? note.getBoundingClientRect().height: 0;
+  const padBottom=parseFloat(getComputedStyle(card).paddingBottom)||0;
+  const available=cardRect.bottom - wrapRect.top - noteH - padBottom - 12;
+  wrap.style.maxHeight=Math.max(360, available)+'px';
+}
+window.addEventListener('resize', ()=>{ if(state.tab==='ranking') fitRankTableHeight(); });
 
 
 
