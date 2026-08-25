@@ -192,7 +192,11 @@ svg text{font-family:inherit}
 .hero-bento{margin:8px 0 14px}
 .hero-card{padding:14px 20px}
 .layout{display:grid;grid-template-columns:300px 1fr;gap:16px}
-@media(max-width:1020px){.layout{grid-template-columns:1fr}}
+.left-col{position:sticky;top:72px}
+@media(max-width:1020px){
+  .layout{grid-template-columns:1fr}
+  .left-col{position:static}
+}
 .left-col .panel{box-shadow:var(--shadow)}
 .main-stack{display:flex;flex-direction:column;gap:14px}
 
@@ -228,7 +232,7 @@ svg text{font-family:inherit}
   </div>
 
   <div class="layout">
-    <aside class="left-col" style="display:flex;flex-direction:column;gap:14px;align-self:start;position:sticky;top:72px">
+    <aside class="left-col" style="display:flex;flex-direction:column;gap:14px;align-self:start">
       
       
       <!-- Selector comunal simple - ancho tarjeta -->
