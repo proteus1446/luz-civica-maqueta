@@ -82,7 +82,7 @@ const GLOSARIO = {
   // "municipal" es un OBJETO con desglose — ver GLOSARIO.dotacion, son
   // estructuras distintas aunque compartan nombre de campo.
   dotacion_panel:
-    "total: dotación total de funcionarios municipales (todas las áreas) · municipal: funcionarios del área municipal propiamente tal (no educación/salud) · educacion/salud: funcionarios de los establecimientos de esas áreas dependientes del municipio · gasto_personal: gasto total consolidado en remuneraciones de personal, en miles de $ · planta_pct: % de la dotación que está en calidad de planta (v/s contrata, honorarios, código del trabajo) · lim40: gasto en personal a contrata como % del límite legal (40% del gasto en personal de planta) — un valor >100% indica que se excede el límite legal",
+    "total: dotación total de funcionarios municipales (todas las áreas) · municipal: cantidad TOTAL de funcionarios del área municipal propiamente tal (no educación/salud) · municipal_detalle.planta/contrata/honorarios/comunitarios: desglose de esos mismos funcionarios municipales por tipo de contrato (los 4 valores suman 'municipal') · educacion/salud: funcionarios de los establecimientos de esas áreas dependientes del municipio · gasto_personal: gasto total consolidado en remuneraciones de personal, en miles de $ · planta_pct: % de la dotación que está en calidad de planta (v/s contrata, honorarios, código del trabajo) · lim40: gasto en personal a contrata como % del límite legal (40% del gasto en personal de planta) — un valor >100% indica que se excede el límite legal",
   // Página dedicada de Dotación (maqueta_dotacion.html). Estructura real y
   // más detallada que la del Panel Comunal.
   dotacion:

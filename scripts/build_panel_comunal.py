@@ -278,6 +278,12 @@ def main():
                 "dotacion": {
                     "total": dot_total_activo,
                     "municipal": dot_muni,
+                    # Desglose del área municipal por tipo de contrato (mismo
+                    # campo "municipal" de build_dotacion.py, solo que acá se
+                    # renombra a "municipal_detalle" porque "municipal" ya lo
+                    # usa el total simple de arriba). Los 4 valores suman
+                    # dot_muni.
+                    "municipal_detalle": dot.get("municipal"),
                     "educacion": dot_edu,
                     "salud": dot_sal,
                     "gasto_personal": (dot.get("gasto") or {}).get("total"),
