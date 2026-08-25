@@ -376,7 +376,7 @@
   <!-- ZONA 3 — Veredicto -->
   <div class="veredicto" style="margin-bottom:26px;">
     <div class="vtext" id="v-text">—</div>
-    <div class="vbadge"><div class="n" id="v-num">—</div><div class="l">Resultado del período</div></div>
+    <div class="vbadge" id="v-badge"><div class="n" id="v-num">—</div><div class="l">Resultado del período</div></div>
   </div>
   </div>
 
@@ -477,8 +477,13 @@ function render(){
   }
 
   // ---- KPIs ----
-  document.getElementById('kpi-gastoalu-n').textContent = fmtCLP(d.gasto_alumno_anual);
-  document.getElementById('kpi-gastoalu-d').textContent = `${fmtCLP(d.gasto_alumno_mensual)} mensuales por cada alumno matriculado — gasto total / matrícula inicial`;
+  // gasto_alumno_anual/mensual vienen en miles de pesos (igual que el resto
+  // de los montos de esta página) — se multiplican por 1.000 solo acá para
+  // mostrar el peso real, porque un número "por alumno" chico (ej. "$2.800")
+  // se puede leer como pesos literales y confundir; el resto de la página
+  // sigue en miles como siempre.
+  document.getElementById('kpi-gastoalu-n').textContent = fmtCLP(d.gasto_alumno_anual!=null ? d.gasto_alumno_anual*1000 : null);
+  document.getElementById('kpi-gastoalu-d').textContent = `${fmtCLP(d.gasto_alumno_mensual!=null ? d.gasto_alumno_mensual*1000 : null)} mensuales por cada alumno matriculado — gasto total / matrícula inicial`;
   document.getElementById('kpi-aludoc-n').textContent = fmtPct(d.alumnos_por_docente,1);
   document.getElementById('kpi-dep-n').textContent = fmtPct(d.dependencia_subvencion_pct,1);
 
@@ -543,7 +548,7 @@ function render(){
   document.getElementById('v-text').innerHTML = resultado===null ? 'Sin datos suficientes para calcular el resultado del sector.' :
     `${NOMBRES[comuna]} cerró ${anio} con <b>${sup?'un superávit':'un déficit'}</b> en su sector educación, financiado en un <b>${fmtPct(d.dependencia_subvencion_pct,1)}%</b> por la subvención estatal (Mineduc) y complementado con un aporte municipal propio equivalente al <b>${fmtPct(d.aporte_municipal_pct_ingreso_muni,2)}%</b> de su ingreso municipal total.`;
   document.getElementById('v-num').textContent = resultado===null ? 'Sin dato' : (sup?'+':'') + fmtCLP(resultado);
-  document.getElementById('v-num').style.color = resultado===null ? '' : (sup ? '' : '#dc2626');
+  document.getElementById('v-badge').className = resultado===null ? 'vbadge' : (sup ? 'vbadge pos' : 'vbadge neg');
 
   // ---- Gráficos ----
   destroyCharts();

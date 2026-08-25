@@ -444,7 +444,7 @@ let state = { comuna:'PROVIDENCIA', anio:'2025' };
 function fmtM(v){ if(v==null) return '—'; return '$' + Math.round(v).toLocaleString('es-CL'); }
 function fmtN(v){ if(v==null) return '—'; return Math.round(v).toLocaleString('es-CL'); }
 function fmtPct(v){ if(v==null) return '—'; return v.toFixed(1).replace('.',',') + '%'; }
-function fmtK(v){ if(v==null) return '—'; return '$' + Math.round(v*1000).toLocaleString('es-CL').slice(0,-3) + 'K'; }
+function fmtK(v){ if(v==null) return '—'; return '$' + Math.round(v*1000).toLocaleString('es-CL'); }
 
 function rec(comuna, anio){ return (DATA[comuna] && DATA[comuna][anio]) || {}; }
 
@@ -498,7 +498,7 @@ function render(){
   document.getElementById('kpiRow').innerHTML = `
     <div class="kpi-propio"><div class="kn">${brechaFin!=null?fmtPct(brechaFin):'—'}</div><div class="kt">Brecha de financiamiento</div><div class="kd">Parte del gasto en salud que no cubren los ingresos propios del área (ISAL018 vs ISAL009)</div></div>
     <div class="kpi-propio"><div class="kn">${medicosPer1000!=null?medicosPer1000.toFixed(2).replace('.',','):'—'}</div><div class="kt">Médicos por 1.000 inscritos</div><div class="kd">MTFCM / HPISM × 1.000</div></div>
-    <div class="kpi-propio"><div class="kn">${fmtK(d.ISAL23)}</div><div class="kt">Gasto por habitante inscrito</div><div class="kd">ISAL23 — ${state.comuna} gasta ${fmtK(d.ISAL23)} por persona inscrita</div></div>
+    <div class="kpi-propio"><div class="kn">${fmtK(d.ISAL23)}</div><div class="kt">Gasto por habitante inscrito</div><div class="kd">${state.comuna} gasta ${fmtK(d.ISAL23)} por persona inscrita</div></div>
   `;
 
   // ============ ZONA 2 — Cobertura FONASA + Personal clínico/administrativo ============
