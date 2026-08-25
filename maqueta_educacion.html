@@ -343,10 +343,12 @@
       <div class="eyebrow-propio">¿Cuántas personas trabajan en educación municipal?</div>
       <div class="fin-total"><span id="pers-funcion-total">—</span> <span style="font-size:13px;color:var(--text-muted);font-weight:500;">personas, según función (MINEDUC)</span></div>
       <div class="split-row-propio" style="margin-top:10px;"><span class="nm">Docentes</span><span style="font-weight:800;color:var(--royal);" id="pers-docentes">—</span></div>
-      <div class="bar-track-propio" id="pers-bar"></div>
+      <div class="bar-track-propio"><i id="pers-bar-doc" style="background:var(--royal-mid);"></i></div>
       <div class="split-row-propio"><span class="nm">No docentes (asistentes de la educación)</span><span style="font-weight:800;color:var(--royal);" id="pers-nodocentes">—</span></div>
+      <div class="bar-track-propio"><i id="pers-bar-nodoc" style="background:#F5A623;"></i></div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin:-6px 0 12px;">Docentes + No docentes = <b id="pers-suma-funcion" style="color:var(--royal);">—</b> personas (MINEDUC)</div>
       <div class="duel-propio">
-        <div class="duel-box-propio"><div class="dl">Según función (MINEDUC)</div><div class="dn" id="duel-funcion">—</div><div class="ds">personas declaradas</div></div>
+        <div class="duel-box-propio"><div class="dl">Suma docentes + no docentes (MINEDUC)</div><div class="dn" id="duel-funcion">—</div><div class="ds">personas declaradas</div></div>
         <div class="duel-box-propio"><div class="dl">Otra fuente — el municipio registra</div><div class="dn" id="duel-contrato">—</div><div class="ds">contratos, según tipo de contrato</div></div>
       </div>
       <div class="info-box-propio">
@@ -494,12 +496,14 @@ function render(){
   const nodocPct = pf.total ? (pf.no_docentes/pf.total*100) : 0;
   document.getElementById('pers-docentes').textContent = `${fmtInt(pf.docentes)} · ${docPct.toFixed(1).replace('.',',')}%`;
   document.getElementById('pers-nodocentes').textContent = `${fmtInt(pf.no_docentes)} · ${nodocPct.toFixed(1).replace('.',',')}%`;
-  document.getElementById('pers-bar').innerHTML = `<i style="width:${docPct}%;background:var(--royal-mid);"></i><i style="width:${nodocPct}%;background:#F5A623;"></i>`;
+  document.getElementById('pers-bar-doc').style.width = docPct + '%';
+  document.getElementById('pers-bar-nodoc').style.width = nodocPct + '%';
+  document.getElementById('pers-suma-funcion').textContent = fmtInt(pf.total);
   document.getElementById('duel-funcion').textContent = fmtInt(pf.total);
   document.getElementById('duel-contrato').textContent = fmtInt(pc.total);
   const diff = (pf.total!==null && pc.total!==null) ? Math.abs(pf.total-pc.total) : null;
   document.getElementById('pers-nota').textContent = diff!==null
-    ? 'MINEDUC cuenta personas según la función que cumplen (docente o no docente); el municipio informa cargos vigentes por tipo de contrato (planta, contrata, honorarios, código del trabajo). Son fuentes y criterios distintos, no un error de conteo.'
+    ? `SINIM almacena dos fuentes distintas para el personal y no coinciden: MINEDUC declara ${fmtInt(pf.total)} personas por función, el municipio registra ${fmtInt(pc.total)} por tipo de contrato — una diferencia de ${fmtInt(diff)} personas.`
     : 'Sin datos suficientes para comparar ambas fuentes este año.';
 
   // ---- Ingresos ----
