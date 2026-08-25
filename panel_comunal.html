@@ -481,10 +481,6 @@
   </div>
   <div class="rb-stats" id="rb-stats">
     <div class="rb-stat">
-      <div class="al">Funcionarios analizados</div>
-      <div class="av" id="rb-funcionarios">—</div>
-    </div>
-    <div class="rb-stat">
       <div class="al">Comparación</div>
       <div class="av" id="rb-comparacion">Por cargo, grado y vínculo</div>
     </div>
@@ -730,17 +726,15 @@ function render(){
     document.getElementById('rbanda-block').style.display = '';
     document.getElementById('rb-badge').style.background = '';
     document.getElementById('rb-badge').style.color = '';
-    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-alert-triangle';
-    document.getElementById('rb-badge-text').textContent = `${fmtInt(rb.n_atipicos)} sueldos por sobre lo esperado`;
-    document.getElementById('rb-funcionarios').textContent = fmtInt(rb.n_total);
+    document.getElementById('rb-badge').querySelector('i').className = 'ti ti-circle-check';
+    document.getElementById('rb-badge-text').textContent = 'Con datos disponibles';
     document.getElementById('rb-comparacion').textContent = 'Por cargo, grado y vínculo';
   } else {
     document.getElementById('rbanda-block').style.display = '';
     document.getElementById('rb-badge').style.background = 'rgba(107,114,128,.12)';
     document.getElementById('rb-badge').style.color = '#6B7280';
     document.getElementById('rb-badge').querySelector('i').className = 'ti ti-info-circle';
-    document.getElementById('rb-badge-text').textContent = `${nombre} — Información no disponible (no reporta a Transparencia)`;
-    document.getElementById('rb-funcionarios').textContent = 'Información no disponible';
+    document.getElementById('rb-badge-text').textContent = 'Sin datos disponibles';
     document.getElementById('rb-comparacion').textContent = 'Información no disponible';
   }
 
