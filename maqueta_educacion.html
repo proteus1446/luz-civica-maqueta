@@ -312,6 +312,7 @@
     </div>
   </div>
 
+  <div id="edu-content">
   <!-- ZONA 2 -->
   <div class="dashboard-grid-2" style="margin-bottom:26px;">
     <div class="panel-propio">
@@ -369,6 +370,7 @@
   <div class="veredicto" style="margin-bottom:26px;">
     <div class="vtext" id="v-text">—</div>
     <div class="vbadge"><div class="n" id="v-num">—</div><div class="l">Resultado del período</div></div>
+  </div>
   </div>
 
   <section class="card-glass" id="sec-evolucion">
@@ -442,6 +444,7 @@ function render(){
 
   document.getElementById('no-data-edu').style.display = d.activa ? 'none' : 'block';
   document.getElementById('zona-kpis').style.display = d.activa ? '' : 'none';
+  document.getElementById('edu-content').style.display = d.activa ? '' : 'none';
 
   if(!d.activa){
     // d.activa (bool(IEDU025)) solo dice si SINIM trajo gasto ese año — no
