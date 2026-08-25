@@ -541,7 +541,7 @@ function render(){
   const resultado = (ing.total!==null && gas.total!==null) ? ing.total - gas.total : null;
   const sup = resultado!==null && resultado>=0;
   document.getElementById('v-text').innerHTML = resultado===null ? 'Sin datos suficientes para calcular el resultado del sector.' :
-    `${NOMBRES[comuna]} cerró ${anio} con <b>${sup?'un superávit':'un déficit'}</b> en su sector educación, financiado en un <b>${fmtPct(d.dependencia_subvencion_pct,1)}%</b> por la subvención estatal (Mineduc) y complementado con un aporte municipal propio equivalente al <b>${fmtPct(d.aporte_municipal_pct_gasto_muni,2)}%</b> de su ingreso municipal total.`;
+    `${NOMBRES[comuna]} cerró ${anio} con <b>${sup?'un superávit':'un déficit'}</b> en su sector educación, financiado en un <b>${fmtPct(d.dependencia_subvencion_pct,1)}%</b> por la subvención estatal (Mineduc) y complementado con un aporte municipal propio equivalente al <b>${fmtPct(d.aporte_municipal_pct_ingreso_muni,2)}%</b> de su ingreso municipal total.`;
   document.getElementById('v-num').textContent = resultado===null ? 'Sin dato' : (sup?'+':'') + fmtCLP(resultado);
   document.getElementById('v-num').style.color = resultado===null ? '' : (sup ? '' : '#dc2626');
 

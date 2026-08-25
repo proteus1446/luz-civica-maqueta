@@ -110,7 +110,7 @@ EDUCACION_VARS = [
     ("edu_gas_operacional", "Educación", "Gasto operacional de Educación", "M$", "gastos.operacional"),
     ("edu_docentes", "Educación", "N° de docentes (por función)", "personas", "personal_funcion.docentes"),
     ("edu_no_docentes", "Educación", "N° de no docentes (por función)", "personas", "personal_funcion.no_docentes"),
-    ("edu_aporte_municipal_pct", "Educación", "Aporte municipal / ingreso municipal total", "%", "aporte_municipal_pct_gasto_muni"),
+    ("edu_aporte_municipal_pct", "Educación", "Aporte municipal / ingreso municipal total", "%", "aporte_municipal_pct_ingreso_muni"),
 ]
 
 SALUD_VARS = [

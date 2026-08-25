@@ -47,10 +47,10 @@ Fórmulas (verificadas exactas contra Providencia 2008/2009 hardcodeado):
   personal_contrato.honorarios = IEDU043
   personal_contrato.total      = suma de las 4 categorías
   ingreso_municipal_total       = IADM999 (archivo de Administración)
-  aporte_municipal_pct_gasto_muni = None si aporte_municipal es 0/None, si no
+  aporte_municipal_pct_ingreso_muni = None si aporte_municipal es 0/None, si no
     round(aporte_municipal / ingreso_municipal_total * 100, 2)
-    (el nombre del campo dice "gasto_muni" pero numéricamente usa el ingreso
-    municipal total, no el gasto — confirmado reproduciendo 3.78% exacto)
+    (qué parte del ingreso municipal total se destina como aporte propio a
+    Educación — verificado reproduciendo 3.78% exacto de Providencia)
 """
 import json
 import re
@@ -233,7 +233,7 @@ def main():
                 "total": planta + contrata + cdt + honorarios,
             },
             "ingreso_municipal_total": ingreso_municipal_total,
-            "aporte_municipal_pct_gasto_muni": aporte_pct,
+            "aporte_municipal_pct_ingreso_muni": aporte_pct,
         }
 
     with open(OUT_JS, "w", encoding="utf-8") as f:
