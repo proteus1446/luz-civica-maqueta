@@ -51,8 +51,15 @@ Reglas estrictas:
 // de las fórmulas reales en scripts/build_*.py (que a su vez usan los
 // códigos oficiales SINIM) — no son suposiciones por nombre de campo.
 const GLOSARIO = {
-  administracion:
+  // Usado SOLO dentro del Panel Comunal — ahí administracion es la versión
+  // simplificada (solo estos 3 campos). La página dedicada de Administración
+  // (tema="administracion") tiene una estructura mucho más completa, ver
+  // GLOSARIO.administracion más abajo.
+  administracion_panel:
     "deficit: superávit(+)/déficit(-) presupuestario municipal, dato oficial reportado a Contraloría, en miles de $ · delta_pct: variación % del déficit vs. año anterior · gasto_hab: gasto municipal (excluyendo lo transferido a educación y salud) por habitante, EN PESOS (no en miles)",
+  // Página dedicada de Administración (maqueta_administracion.html).
+  administracion:
+    "poblacion: población total de la comuna · deficit: superávit(+)/déficit(-) presupuestario municipal, dato oficial reportado a Contraloría, en miles de $ · situacion: texto \"Superávit\" o \"Déficit\" (mismo signo que deficit) · deuda_flotante: deuda flotante municipal a fin de año, en miles de $ (obligaciones pendientes de pago) · deuda_flotante_pagado: parte de esa deuda flotante que ya fue pagada, en miles de $ · kpis.dependencia_fcm: % de los ingresos municipales que provienen del Fondo Común Municipal (FCM) — mientras más alto, más depende la comuna de la redistribución nacional y menos de ingresos propios · kpis.ejecucion: % del presupuesto vigente que efectivamente se gastó/ejecutó en el año (ejecución presupuestaria) · kpis.eficiencia_cobro: % de eficiencia en el cobro de ingresos propios (permisos, patentes, impuesto territorial, etc.) · kpis.deuda_flotante_pagado_pct: % de la deuda flotante que fue pagada durante el año (100% si no había deuda) · ingresos.ipp: ingresos propios permanentes (patentes, permisos, impuesto territorial), en miles de $ · ingresos.fcm_recibido: monto recibido del Fondo Común Municipal, en miles de $ · ingresos.transferencias: transferencias de otras instituciones públicas, en miles de $ · ingresos.otros: otros ingresos no clasificados en las categorías anteriores, en miles de $ · ingresos.total: ingresos municipales totales, en miles de $ · gastos.personal: gasto en remuneraciones de personal municipal, en miles de $ · gastos.bienes_servicios: gasto en bienes y servicios de consumo, en miles de $ · gastos.salud/educacion: gasto municipal transferido a los sectores salud/educación, en miles de $ · gastos.inversion: gasto en inversión (obras, equipamiento), en miles de $ · gastos.fcm: aporte que la comuna hace AL Fondo Común Municipal (distinto de ingresos.fcm_recibido, que es lo que recibe DE vuelta), en miles de $ · gastos.otros: otros gastos no clasificados, en miles de $ · gastos.total: gasto municipal total, en miles de $",
   educacion:
     "deficit: ingresos menos gastos del área educación municipal, en miles de $ · delta_pct: variación % vs. año anterior · admin_tipo: quién administra los establecimientos (DAEM, Corporación municipal, Depto./Dirección) · cobertura: % de cobertura de matrícula municipal (indicador SINIM IEDU009) · gasto_alumno_mensual: gasto mensual por alumno, en miles de $ · alumnos_docente: cantidad de alumnos por cada docente",
   salud:
@@ -77,7 +84,7 @@ const GLOSARIO = {
 // 'alcalde'), así que recibe el glosario completo de todos los temas.
 GLOSARIO.panel =
   "Cada año trae sub-objetos: administracion, educacion, salud, dotacion, social, perfil, y 'alcalde' (nombre/partido). Significado de cada campo por sub-objeto — " +
-  "administracion: {" + GLOSARIO.administracion + "} · " +
+  "administracion: {" + GLOSARIO.administracion_panel + "} · " +
   "educacion: {" + GLOSARIO.educacion + "} · " +
   "salud: {" + GLOSARIO.salud + "} · " +
   "dotacion: {" + GLOSARIO.dotacion_panel + "} · " +
