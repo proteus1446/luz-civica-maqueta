@@ -436,6 +436,11 @@ function filteredCatalog(){
       if(sa!==sb) return sa?-1:1;          // coincidencias por inicio primero
       return la.localeCompare(lb,'es');     // luego orden alfabético
     });
+  }else{
+    // sin búsqueda activa: orden alfabético (si no, las variables agregadas
+    // más tarde al catálogo quedan al final de la lista y hay que scrollear
+    // para encontrarlas)
+    list=list.slice().sort((a,b)=>a.label.localeCompare(b.label,'es'));
   }
   return list;
 }
