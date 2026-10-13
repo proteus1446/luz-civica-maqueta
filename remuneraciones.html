@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Remuneraciones municipales | Luz Cívica</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/dist/tabler-icons.min.css">
 <style>
@@ -196,6 +197,35 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
   table.mini thead th{padding:4px 4px; font-size:9px;}
   table.mini tbody td{padding:5px 4px;}
 }
+
+/* Nuevos controles conservan la paleta y tipografía de la sección. */
+.card-glass #banner-veredicto span{color:rgba(255,255,255,.86)!important}
+.dist-filters{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin:18px 0}
+.dist-filters label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:700;color:var(--muted)}
+.dist-filters select,.dist-filters button{font:inherit;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:white;color:var(--royal);min-height:42px}
+.dist-filters button{cursor:pointer;background:var(--royal);color:white;font-weight:700}
+.dist-filters button:disabled{opacity:.5;cursor:default}
+.dist-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dist-metric{padding:16px;background:rgba(29,78,216,.04);border:1px solid var(--border);border-radius:12px}
+.dist-metric span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+.dist-metric strong{display:block;font-size:20px;margin-top:7px;line-height:1.4}
+.dist-h3{font-size:15px;margin:24px 0 14px}
+.dist-hist-row{display:grid;grid-template-columns:minmax(190px,1.3fr) 2fr minmax(45px,.4fr);gap:14px;align-items:center;margin:10px 0;font-size:12px}
+.dist-hist-track{background:rgba(15,42,95,.07);height:16px;border-radius:4px;overflow:hidden}
+.dist-hist-track div{height:100%;background:var(--royal,#1D4ED8);border-radius:4px}
+.dist-hist-row b{text-align:right}
+.dist-note,.dist-details{font-size:12px;line-height:1.7;color:var(--muted);margin-top:18px}
+.dist-details summary{cursor:pointer;color:var(--royal);font-weight:700}
+.dist-conclusion{padding:20px;background:rgba(29,78,216,.04);border-radius:12px}
+.dist-conclusion h3{font-size:22px;line-height:1.5;margin:0 0 12px}
+.dist-conclusion p{line-height:1.6}
+#dist-descargar{margin:16px 0;padding:10px 14px;border-radius:8px;border:0;background:#1D4ED8;color:white;cursor:pointer}
+.periodo-aviso{font-size:13px;line-height:1.6;padding:14px 18px;margin:18px 0;background:rgba(245,185,18,.1);border:1px solid rgba(184,134,11,.22);border-radius:12px;color:var(--royal)}
+select:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #F5B912;outline-offset:3px}
+@media(max-width:760px){.dist-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dist-hist-row{grid-template-columns:minmax(145px,1.4fr) 1fr 50px;gap:8px}.dist-metric strong{font-size:17px}}
+@media(max-width:420px){.dist-metrics{grid-template-columns:1fr}.dist-hist-row{font-size:10px;grid-template-columns:minmax(125px,1.4fr) 1fr 40px}}
+
+.metodo-summary{cursor:pointer;font-size:15px;font-weight:700;color:var(--royal);line-height:1.6}.metodo-summary::marker{color:var(--royal)}
 </style>
 </head>
 <body>
@@ -211,7 +241,7 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
   <div class="filtros-reales">
     <div class="filtro-box-real"><label>Región</label><select id="sel-region"></select></div>
     <div class="filtro-box-real"><label>Comuna</label><select id="sel-comuna"></select></div>
-    <div class="filtro-box-real"><label>Año</label><select id="sel-anio"></select></div>
+    <div class="filtro-box-real"><label>Año del gasto y distribución</label><select id="sel-anio"></select></div>
   </div>
   <nav class="nav-areas-real">
     <button class="btn-volver-real" type="button" onclick="location.href='panel_comunal.html?comuna='+encodeURIComponent(document.getElementById('sel-comuna').value)+'&anio='+encodeURIComponent(document.getElementById('sel-anio').value)">Volver al panel</button>
@@ -233,7 +263,8 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
     <p class="hero-sub" id="banner-eyebrow"></p>
     <nav class="panel-quick-nav" style="border-top:none; padding-top:0; margin-top:10px;">
       <span class="panel-quick-title">Ir a</span>
-      <button class="panel-quick-btn" type="button" onclick="document.getElementById('metodo-anchor').scrollIntoView({behavior:'smooth'})">Metodología</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('distribucion-anchor').scrollIntoView({behavior:'smooth'})">Distribución de pagos</button>
+      <button class="panel-quick-btn" type="button" onclick="document.getElementById('metodo-anchor').open=true;document.getElementById('metodo-anchor').scrollIntoView({behavior:'smooth'})">Metodología</button>
       <button class="panel-quick-btn" type="button" onclick="document.getElementById('gasto-anchor').scrollIntoView({behavior:'smooth'})">Evolución del gasto</button>
       <button class="panel-quick-btn" type="button" onclick="document.getElementById('detalle-anchor').scrollIntoView({behavior:'smooth'})">Detalle por cargo</button>
       <button class="panel-quick-btn" type="button" onclick="document.getElementById('honorarios-anchor').scrollIntoView({behavior:'smooth'})">Honorarios y Código del Trabajo</button>
@@ -247,33 +278,29 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
   </div>
 
   
+
+<details class="panel" id="metodo-anchor" style="margin-top:26px">
+  <summary class="metodo-summary">Metodología · cómo se hizo y qué significan las cifras</summary>
+  <div class="metodo-item"><div class="metodo-t">Fuente y selección</div><div class="metodo-d">Usamos el archivo nacional de personal municipal de Transparencia Activa. Para la distribución de pagos seleccionamos organismos con código MU y años desde 2017. El área es la declarada en la fuente: Municipal, Salud, Educación u otra. MU no significa que todos los pagos sean de administración municipal. Las profesiones no se reclasificaron.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Registro de pago y unidad de los montos</div><div class="metodo-d">Un registro es una fila del archivo, no una persona única: alguien puede aparecer varias veces en el año o en un mes. La distribución usa la remuneración bruta positiva de cada fila, en pesos chilenos (CLP), redondeados al peso y sin ajuste por inflación. Se excluyen montos ausentes, inválidos, cero o negativos. No se eliminan duplicados ni valores extremos y no se añaden bonos u horas extras por separado.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Mediana: el pago del centro</div><div class="metodo-d">Ordenamos los importes de menor a mayor. La mediana, también llamada P50, deja aproximadamente la mitad por debajo y la mitad por encima. Por ejemplo, entre $100.000, $200.000 y $900.000, la mediana es $200.000. Un importe extremo puede cambiar mucho el promedio; la mediana es menos sensible a él. Aquí describe pagos registrados, no el sueldo mensual de una persona.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Percentiles: dónde queda un pago dentro del conjunto</div><div class="metodo-d">P10 indica el importe por debajo del cual queda aproximadamente el 10% de los pagos; P90, el 90%. Entre P25 y P75 queda aproximadamente la mitad central. Por eso mostramos ese intervalo como referencia de los pagos habituales. Los calculamos sobre las filas seleccionadas, interpolando en la posición (n−1) × proporción. Si hay importes iguales, las proporciones pueden variar.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Mínimo, máximo, suma y pagos de mayor monto</div><div class="metodo-d">Mínimo y máximo son las filas positivas de menor y mayor importe. La suma reúne todos los pagos seleccionados; no acredita una nómina completa ni el gasto presupuestario total. Para la concentración elegimos el 10% de las filas de mayor monto, redondeando su cantidad hacia arriba, y dividimos su suma por la suma de todos los pagos. Es una regla descriptiva, no un límite legal.</div><div id="metodo-cifras-actuales" class="metodo-d" aria-live="polite"></div></div>
+  <div class="metodo-item"><div class="metodo-t">Detalle por cargo y casos destacados</div><div class="metodo-d">El detalle existente agrupa por cargo, vínculo y grado municipal, categoría de salud o jornada de educación. Sus resúmenes por estamento aproximan la mediana ponderando medianas de grupos; no son la mediana directa de las filas de la distribución. El rango por grado es mediana ± MAD: MAD mide la distancia habitual de los valores respecto de la mediana. Los casos destacados comparan diferencias dentro del grupo, por mes o por la mediana de los meses informados. Los campos pueden contener errores: no acreditan trabajos equivalentes ni irregularidades.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Honorarios, Código del Trabajo y casos puntuales</div><div class="metodo-d">Los rangos de estas modalidades describen los registros persona-vínculo con pagos en tres o más meses informados, según la salida disponible. Los casos puntuales muestran los cinco importes acumulados más altos con pagos en uno o dos meses del año seleccionado; no son necesariamente un único pago ni un sueldo mensual. La opción de máximos históricos reúne distintos años, indicados en cada fila. No se fusionan automáticamente nombres parecidos.</div></div>
+  <div class="metodo-item"><div class="metodo-t">Años, meses y comparación entre comunas</div><div class="metodo-d">La distribución, el gasto general y los casos puntuales siguen el año seleccionado. El detalle por grupos conserva el año indicado en el aviso. Un mes sin registros positivos es un dato ausente, no gasto cero. El percentil nacional de honorarios ordena comunas por su proporción de filas a honorarios: es otra comparación y no mide personas únicas.</div></div>
+</details>
+
+<section class="panel" id="distribucion-anchor" style="margin-top:26px;" aria-labelledby="dist-titulo">
+  <div class="section-label"><span id="dist-titulo"><i class="ti ti-chart-histogram" aria-hidden="true"></i>Distribución de pagos registrados</span><div class="line"></div></div>
+  <p class="card-sub">Vista general de los pagos disponibles de la comuna en el año seleccionado, reuniendo las áreas y modalidades de contrato del archivo. Más abajo puedes revisar el detalle de Municipal, Salud y Educación.</p>
+  <p class="dist-note"><strong>Todos los montos están en pesos chilenos (CLP), no en miles ni millones de pesos.</strong> Se muestran redondeados al peso y sin ajuste por inflación.</p>
+  <p id="dist-periodo" class="card-sub"></p>
+  <div id="dist-contenido" aria-live="polite"></div>
+</section>
+<p class="periodo-aviso" id="detalle-periodo-aviso"></p>
+
 <!-- EVOLUCIÓN DEL GASTO MENSUAL -->
-  <div class="panel" style="margin-top:26px;">
-  <div id="metodo-anchor"></div>
-  <div class="section-label"><span><i class="ti ti-scale"></i> Metodología: cómo se calculan estos números</span><div class="line"></div></div>
-
-  <div class="metodo-item">
-    <div class="metodo-t"><i class="ti ti-chart-bar"></i>Mediana, no promedio</div>
-    <div class="metodo-d">Un sueldo excepcionalmente alto o bajo distorsiona un promedio; la mediana (el valor central) no. Se usa en toda la página: sueldos típicos, gasto, rangos.</div>
-  </div>
-  <div class="metodo-item">
-    <div class="metodo-t"><i class="ti ti-users-group"></i>Grupos de comparación</div>
-    <div class="metodo-d">Municipal se compara por cargo + grado + vínculo. Salud por cargo + categoría (A-F, Ley 19.378) + vínculo. Educación por cargo + horas de jornada + vínculo. Nunca se compara Planta contra Contrata, ni un cargo contra otro, ni una jornada parcial contra una completa — son escalas legales distintas.</div>
-  </div>
-  <div class="metodo-item">
-    <div class="metodo-t"><i class="ti ti-alert-triangle"></i>Casos sostenidos vs. casos puntuales</div>
-    <div class="metodo-d"><b>Sostenidos</b> (mediana anual): esta persona ganó distinto todo el año, comparada contra su mismo grupo — se excluyen los z negativos (sueldos bajos por meses parciales o licencias, no son un hallazgo). <b>Puntuales</b> (un mes específico): el resto del año es normal, pero un mes se salió de lo esperado — puede ser un bono legítimo, un ajuste retroactivo, o un error; el dato no distingue la causa, solo declara el hecho.</div>
-  </div>
-  <div class="metodo-item">
-    <div class="metodo-t"><i class="ti ti-file-description"></i>Honorarios y Código del Trabajo</div>
-    <div class="metodo-d">Sin escala legal — el pago se pacta por contrato individual, no hay grado ni categoría que comparar. Se muestra el rango habitual de pago de la comuna (percentiles), no una comparación grupo por grupo.</div>
-  </div>
-  <div class="metodo-item" style="border-bottom:none; padding-bottom:0;">
-    <div class="metodo-t"><i class="ti ti-calendar"></i>Período de los datos</div>
-    <div class="metodo-d">Datos del año seleccionado, mediana anual (no un solo mes) — salvo los "casos puntuales de un mes", que por definición miran un mes específico.</div>
-  </div>
-  </div>
-
   <div id="gasto-anchor"></div>
   <div class="panel" style="margin-top:26px;">
   <div class="section-label"><span><i class="ti ti-chart-line"></i> Evolución del gasto en remuneraciones</span><div class="line"></div></div>
@@ -287,7 +314,7 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
 
   <div class="card view-panel-gasto" id="panel-gasto-total">
     <div class="card-title"><i class="ti ti-chart-line"></i>Gasto mensual total en remuneraciones</div>
-    <div class="card-sub">Suma de todo el personal (Planta, Contrata, Honorarios, Código del Trabajo). Los picos suelen coincidir con reajustes o pagos retroactivos acumulados.</div>
+    <div class="card-sub">Suma de todo el personal (Planta, Contrata, Honorarios, Código del Trabajo). Un pico no identifica por sí solo la causa. Los meses sin registros de pago positivos quedan como sin dato.</div>
     <div id="chart-gasto-total"></div>
     <div class="stat-row" id="stats-gasto-total" style="display:flex; gap:24px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); flex-wrap:wrap;"></div>
   </div>
@@ -312,7 +339,7 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
 
   
 <div id="detalle-anchor"></div>
-<div class="panel" style="margin-top:26px;">
+<div id="detalle-grupos-panel" class="panel" style="margin-top:26px;">
 <div class="section-label"><span><i class="ti ti-users"></i> Sueldos por cargo, grado y vínculo</span><div class="line"></div></div>
 <div class="area-tabs" id="area-tabs"></div>
 
@@ -331,12 +358,12 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
       <div class="detalle-grid" id="detalle-municipal"></div>
       <div class="nota-header">
         <i class="ti ti-search"></i>
-        <span>Casos sostenidos <span class="nota-header-sub">— ganan distinto todo el año, comparados contra su mismo cargo, grado y vínculo (z-score robusto)</span></span>
+        <span>Casos por período informado <span class="nota-header-sub">— diferencia en la mediana de los meses informados, comparados contra su mismo cargo, grado y vínculo (z-score robusto)</span></span>
       </div>
       <div id="nota-municipal"></div>
       <div class="nota-header" style="margin-top:14px;">
         <i class="ti ti-calendar-event"></i>
-        <span>Casos puntuales de un mes <span class="nota-header-sub">— sueldo normal el resto del año, pero un mes específico se salió de lo normal (podría ser un bono, un error, un ajuste retroactivo)</span></span>
+        <span>Casos detectados por mes <span class="nota-header-sub">— diferencia detectada en un mes; el registro no identifica la causa</span></span>
       </div>
       <div id="nota-mensual-municipal"></div>
     </div>
@@ -357,12 +384,12 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
       <div class="detalle-grid" id="detalle-salud"></div>
       <div class="nota-header">
         <i class="ti ti-search"></i>
-        <span>Casos sostenidos <span class="nota-header-sub">— ganan distinto todo el año, comparados contra su misma categoría y vínculo (z-score robusto)</span></span>
+        <span>Casos por período informado <span class="nota-header-sub">— diferencia en la mediana de los meses informados, comparados contra su misma categoría y vínculo (z-score robusto)</span></span>
       </div>
       <div id="nota-salud"></div>
       <div class="nota-header" style="margin-top:14px;">
         <i class="ti ti-calendar-event"></i>
-        <span>Casos puntuales de un mes <span class="nota-header-sub">— sueldo normal el resto del año, pero un mes específico se salió de lo normal</span></span>
+        <span>Casos detectados por mes <span class="nota-header-sub">— diferencia detectada en un mes; el registro no identifica la causa</span></span>
       </div>
       <div id="nota-mensual-salud"></div>
     </div>
@@ -378,12 +405,12 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
       <div id="resumen-educacion"></div>
       <div class="nota-header" style="margin-top:14px;">
         <i class="ti ti-search"></i>
-        <span>Casos sostenidos <span class="nota-header-sub">— comparados contra su misma jornada/estamento y vínculo (z-score robusto)</span></span>
+        <span>Casos por período informado <span class="nota-header-sub">— comparados contra su misma jornada/estamento y vínculo (z-score robusto)</span></span>
       </div>
       <div id="nota-educacion"></div>
       <div class="nota-header" style="margin-top:14px;">
         <i class="ti ti-calendar-event"></i>
-        <span>Casos puntuales de un mes</span>
+        <span>Casos detectados por mes</span>
       </div>
       <div id="nota-mensual-educacion"></div>
     </div>
@@ -409,7 +436,7 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
   </div>
 
   <!-- HONORARIOS Y CÓDIGO DEL TRABAJO -- una sola tarjeta -->
-  <div class="card mercado">
+  <div id="honorarios-grupos-panel" class="card mercado">
     <div class="card-title"><i class="ti ti-file-description"></i>Honorarios y Código del Trabajo</div>
     <div class="card-sub">Sin escala legal — el pago se pacta por contrato individual. Solo se incluye el grupo "sostenido" (3+ meses) en los rangos; los pagos puntuales (proyectos de un mes) se muestran aparte, para no mezclar un pago único con un sueldo recurrente.</div>
 
@@ -420,7 +447,9 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
     <div class="mini-section-title">¿Cómo se compara con el resto del país?</div>
     <div class="card-sub" id="honorarios-contexto-texto"></div>
 
-    <div class="mini-section-title">Montos más altos (casos puntuales, no representan a la mayoría)</div>
+    <div class="mini-section-title" id="honorarios-casos-titulo"></div>
+<div class="dist-filters"><label>Vista de los casos<select id="honorarios-casos-periodo" onchange="pintarCasosHonorarios()"></select></label></div>
+<p id="honorarios-casos-alcance" class="card-sub"></p>
     <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
       <thead><tr style="border-bottom:2px solid var(--border);">
         <th style="text-align:left; padding:6px 8px; font-size:10px; color:var(--muted); text-transform:uppercase;">Persona</th>
@@ -436,20 +465,21 @@ table.mini tbody td{padding:7px 6px; border-bottom:1px solid var(--border);}
 </div>
 
 <script src="data/data_remuneraciones.js"></script>
+<script src="data/data_distribucion_registros.js"></script>
 <script>
 // COMUNAS viene de data/data_remuneraciones.js (generado por scripts/build_remuneraciones_f1..f4.py)
 const COMUNAS = COMUNAS_REM;
 const MESES_GASTO = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const fmtM = v => "$" + Math.round(v/1000).toLocaleString('es-CL') + " mil";
-const fmtFull = v => "$" + Math.round(v).toLocaleString('es-CL');
+const fmtFull = v => Number.isFinite(v) ? "$" + Math.round(v).toLocaleString('es-CL') : "Sin dato";
 
 function generarVeredicto(d){
   const areasTexto = d.areas.length === 1 ? d.areas[0]
     : d.areas.slice(0,-1).join(', ') + ' y ' + d.areas[d.areas.length-1];
-  const titulo = `${fmtFull(d.gasto_anual_total)} en remuneraciones, ${d.n_total.toLocaleString('es-CL')} funcionarios en ${areasTexto}.`;
+  const titulo = `${fmtFull(d.gasto_anual_total)} en importes brutos registrados en ${d.anyo}, en ${areasTexto}.`;
   let sub;
-  if (d.n_atipicos === 0) sub = `Sin remuneraciones por sobre lo esperado detectadas (comparación por cargo, grado y vínculo, mediana anual).`;
-  else sub = `${d.n_atipicos} remuneraciones por sobre lo esperado (${d.tasa_atipicos_100.toFixed(2)} cada 100 funcionarios) — comparación por cargo, grado y vínculo, mediana anual.`;
+  if (d.n_atipicos === 0) sub = `Sin casos destacados en la salida del análisis. Los grupos sin información suficiente quedan fuera de la detección.`;
+  else sub = `${d.n_atipicos} casos de períodos con pagos atípicos detectados en los grupos analizados. No es un conteo de personas únicas ni una conclusión de irregularidad.`;
   return { titulo, sub };
 }
 
@@ -499,17 +529,21 @@ function pintarResumen(el, resumen, orden){
   });
 }
 
-function pintarNotaCasos(el, casos, tipoZonaClass){
-  if(!casos || !casos.length){
-    el.innerHTML = `<div class="flag-note none"><i class="ti ti-check"></i><div><div class="t">Sin remuneraciones por sobre lo esperado</div><div class="d">Ningún caso superó el umbral de comparación dentro de su grupo (cargo, grado y vínculo) este período.</div></div></div>`;
-    return;
-  }
-  el.innerHTML = casos.slice(0,4).map(c=>{
-    const pctMas = Math.round((c.monto/c.mediana_grupo - 1) * 100);
-    const mesTxt = c.mes ? `${c.mes} — ` : '';
+function htmlTexto(v){
+  return String(v??'Sin dato').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function pintarNotaCasos(el,casos,tipoZonaClass){
+  if(!casos||!casos.length){el.innerHTML='<div class="flag-note none"><div><div class="t">Sin casos destacados en esta salida</div><div class="d">Los grupos con información insuficiente quedan fuera del análisis.</div></div></div>';return;}
+  el.innerHTML=casos.slice(0,4).map(c=>{
+    const comparable=Number.isFinite(c.mediana_grupo)&&c.mediana_grupo>0&&Number.isFinite(c.n_grupo)&&c.n_grupo>=8;
+    const pct=comparable?(c.monto/c.mediana_grupo-1)*100:null;
+    const diferencia=comparable?`${Math.round(Math.abs(pct))}% ${pct>=0?'por encima':'por debajo'} de la mediana del grupo`:'Sin grupo comparable informado';
+    const periodo=Number.isFinite(c.meses_informados)?`Mediana sobre ${c.meses_informados} meses informados; no necesariamente consecutivos.`:'';
+    const extras=c.flag_extras_altas?` Seleccionado también por pagos de horas extra elevados (mediana informada: ${fmtFull(c.extras_mediana)}); no implica sueldo base alto.`:'';
+    const comparacion=comparable?`Mediana del grupo: <b>${fmtFull(c.mediana_grupo)}</b> (${c.n_grupo} registros de períodos).`:'No se calcula una diferencia porcentual sin una mediana de grupo válida.';
     return `<div class="flag-note ${tipoZonaClass}"><i class="ti ti-alert-triangle"></i><div>
-      <div class="t">${mesTxt}${c.nombre} — ${c.cargo} — ${pctMas}% más que el sueldo típico de su grupo</div>
-      <div class="d">${c.estamento}, ${c.grado?('grado/cat. '+c.grado+', '):''}${c.vinculo}. Registró <b>${fmtFull(c.monto)}</b> vs. típico de su grupo (n=${c.n_grupo}) de <b>${fmtFull(c.mediana_grupo)}</b>. No indica irregularidad por sí solo.</div>
+      <div class="t">${c.mes?htmlTexto(c.mes)+' — ':''}${htmlTexto(c.nombre)} — ${htmlTexto(c.cargo)} — ${diferencia}</div>
+      <div class="d">${htmlTexto(c.estamento)}, ${c.grado?'grado/cat. '+htmlTexto(c.grado)+', ':''}${htmlTexto(c.vinculo)}. Pago sin horas extras informado: <b>${fmtFull(c.monto)}</b>. ${comparacion} ${periodo}${extras} No indica irregularidad por sí solo.</div>
     </div></div>`;
   }).join('');
 }
@@ -521,8 +555,8 @@ function pintarPanoramaHonorarios(el, panorama){
   el.innerHTML = `
     <div class="panorama-item">
       <div class="panorama-legend">
-        <span><span class="dot" style="background:var(--royal);"></span>Trabajaron 3 meses o más (sueldo regular)</span>
-        <span><span class="dot" style="background:var(--contrata);"></span>Trabajaron 1-2 meses (tarea puntual)</span>
+        <span><span class="dot" style="background:var(--royal);"></span>Pagos informados en 3 meses o más</span>
+        <span><span class="dot" style="background:var(--contrata);"></span>Pagos informados en 1–2 meses</span>
       </div>
       <div class="panorama-bar-wrap">
         <div class="panorama-bar-fill sostenido" style="width:${pctSost}%">${pctSost>=15?pctSost+'%':''}</div>
@@ -530,8 +564,8 @@ function pintarPanoramaHonorarios(el, panorama){
       </div>
     </div>
     <div class="panorama-stat-row">
-      <div class="panorama-stat"><div class="panorama-stat-n">${panorama.n_total.toLocaleString('es-CL')}</div><div class="panorama-stat-lbl">personas a Honorarios/Código Trabajo (Honorarios + Código del Trabajo)</div></div>
-      <div class="panorama-stat"><div class="panorama-stat-n">${panorama.pct_multitrabajo}%</div><div class="panorama-stat-lbl">tuvo 2 o más trabajos simultáneos con la comuna en algún mes</div></div>
+      <div class="panorama-stat"><div class="panorama-stat-n">${panorama.n_total.toLocaleString('es-CL')}</div><div class="panorama-stat-lbl">registros de persona y vínculo (puede haber coincidencias de nombres)</div></div>
+      <div class="panorama-stat"><div class="panorama-stat-n">${panorama.pct_multitrabajo}%</div><div class="panorama-stat-lbl">presenta 2 o más filas de pago en algún mes; no acredita contratos distintos</div></div>
     </div>`;
 }
 
@@ -543,8 +577,18 @@ function render(key){
 
   document.getElementById('sel-comuna').value = key;
 
+  const detalle=document.getElementById('detalle-grupos-panel');
+  if(detalle) detalle.hidden=!!d._sinDetalle;
+  const honorariosPanel=document.getElementById('honorarios-grupos-panel');
+  if(honorariosPanel) honorariosPanel.hidden=!!d._sinDetalle;
+  if(d._sinDetalle){
+    document.getElementById('banner-eyebrow').textContent=`${d.nombre.toUpperCase()} · distribución de registros disponible`;
+    document.getElementById('banner-veredicto').textContent='Consulta la distribución de pagos y el gasto del año seleccionado. No hay grupos salariales comparables en la salida anterior para esta comuna.';
+    document.getElementById('footnote').textContent='Fuente: registros de Transparencia Activa del archivo nacional.';
+    return;
+  }
   const v = generarVeredicto(d);
-  document.getElementById('banner-eyebrow').textContent = `${d.nombre.toUpperCase()} · Año ${d.anyo} · Montos en pesos, mediana anual`;
+  document.getElementById('banner-eyebrow').textContent = `${d.nombre.toUpperCase()} · Año ${d.anyo} · Detalle por grupos de este año · montos en pesos`;
   document.getElementById('banner-titulo').textContent = v.titulo;
   document.getElementById('banner-sub').textContent = v.sub;
   document.getElementById('banner-veredicto').innerHTML = `<b>${v.titulo}</b><br><span style="color:var(--muted); font-weight:500;">${v.sub}</span>`;
@@ -648,12 +692,12 @@ function render(key){
   VINCULOS_ESPERADOS.forEach(vinc=>{
     const h = d.honorarios[vinc];
     if(!h){
-      bloquesEl.innerHTML += `<div class="vinc-block"><div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">0 personas</span></div></div>`;
+      bloquesEl.innerHTML += `<div class="vinc-block"><div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">Sin resumen disponible</span></div></div>`;
       return;
     }
     if(h.n < MINIMO_RANGO_COMPLETO){
       bloquesEl.innerHTML += `<div class="vinc-block">
-        <div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">solo ${h.n} ${h.n===1?'persona':'personas'} bajo esta modalidad</span></div>
+        <div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">solo ${h.n} ${h.n===1?'registro persona-vínculo':'registros persona-vínculo'} bajo esta modalidad</span></div>
         <div class="stat-row"><div class="stat">Rango de pago: <b>${fmtFull(h.min)} – ${fmtFull(h.max)}</b></div></div>
       </div>`;
       return;
@@ -661,7 +705,7 @@ function render(key){
     const globalMax = h.max*1.05;
     const pct = v => (v/globalMax*100).toFixed(1);
     bloquesEl.innerHTML += `<div class="vinc-block">
-      <div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">${h.n.toLocaleString('es-CL')} personas con contrato sostenido</span></div>
+      <div class="vinc-head"><b>${vinc}</b><span style="font-size:12px;color:var(--muted);">${h.n.toLocaleString('es-CL')} registros persona-vínculo con 3 o más meses informados</span></div>
       <div class="range-wrap"><div class="range-track"></div>
         <div class="range-p1090" style="left:${pct(h.p10)}%; width:${(pct(h.p90)-pct(h.p10)).toFixed(1)}%"></div>
         <div class="range-p2575" style="left:${pct(h.p25)}%; width:${(pct(h.p75)-pct(h.p25)).toFixed(1)}%"></div>
@@ -680,23 +724,32 @@ function render(key){
   const ctxEl = document.getElementById('honorarios-contexto-texto');
   if(ctxEl && hc.ratio_pct != null){
     const nivel = hc.percentil_nacional >= 75 ? 'muy por sobre' : hc.percentil_nacional >= 40 ? 'cerca de' : 'por debajo de';
-    ctxEl.innerHTML = `<b>${hc.ratio_pct}%</b> del personal de ${d.nombre} está a honorarios — percentil <b>${hc.percentil_nacional}</b> a nivel nacional (${nivel} el promedio del país).`;
+    ctxEl.innerHTML = `<b>${hc.ratio_pct}%</b> de los registros de pago incluidos en el ranking de ${d.nombre} corresponde a honorarios — percentil <b>${hc.percentil_nacional}</b> entre las comunas con información. Este porcentaje no mide personas únicas.`;
   }
-  const casosEl = document.getElementById('honorarios-top-casos');
-  if(casosEl){
-    casosEl.innerHTML = (hc.top_casos||[]).map(c=>{
-      const situacion = c.tipo_periodo==='sostenido'
-        ? `Trabajó ${c.meses}/12 meses${c.trabajos_simultaneos>1?` · hasta ${c.trabajos_simultaneos} trabajos a la vez`:''}`
-        : `Pago puntual · ${c.meses} ${c.meses===1?'mes':'meses'}`;
-      return `<tr>
-      <td style="padding:8px;border-bottom:1px solid var(--border);">${c.nombre}</td>
-      <td style="padding:8px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11.5px;">${situacion}</td>
-      <td style="padding:8px;border-bottom:1px solid var(--border);text-align:right;font-weight:700;">${fmtFull(c.monto)}</td>
-    </tr>`;
-    }).join('');
-  }
+  prepararCasosHonorarios();
 
-    document.getElementById('footnote').innerHTML = `Fuente: Transparencia Activa, personal municipal ${d.anyo}. Ver detalle completo de la metodología al inicio de la página.`;
+    document.getElementById('footnote').innerHTML = `Fuente: Transparencia Activa. Ficha por grupos: ${d.anyo}. Casos puntuales: año indicado en su selector. Ver metodología al inicio.`;
+}
+
+function prepararCasosHonorarios(){
+  const d=COMUNAS[comunaActual], sel=document.getElementById('honorarios-casos-periodo');
+  const year=document.getElementById('sel-anio').value||String(d.anyo);
+  sel.innerHTML=`<option value="anio">Año seleccionado · ${year}</option><option value="original">Ver máximos históricos</option>`;
+  sel.value='anio';
+  pintarCasosHonorarios();
+}
+function pintarCasosHonorarios(){
+  const d=COMUNAS[comunaActual], hc=d.honorarios_contexto||{};
+  const historico=document.getElementById('honorarios-casos-periodo').value==='original';
+  const year=document.getElementById('sel-anio').value||String(d.anyo);
+  const casos=historico?(hc.top_casos_historico||[]):(hc.top_casos_por_anio?.[year]||[]);
+  document.getElementById('honorarios-casos-titulo').textContent=historico?'Mayores montos en pagos puntuales · máximos históricos':`Mayores montos en pagos puntuales · ${year}`;
+  document.getElementById('honorarios-casos-alcance').textContent=(historico?'Los cinco casos de la lista histórica original, de distintos años.':`Los cinco casos de mayor monto disponibles en ${year}, a honorarios o Código del Trabajo.`)+' Importes acumulados en uno o dos meses, en pesos chilenos (CLP); no representan el pago habitual de la mayoría.';
+  document.getElementById('honorarios-top-casos').innerHTML=casos.length?casos.map(c=>`<tr>
+    <td style="padding:8px;border-bottom:1px solid var(--border)">${htmlTexto(c.nombre)}</td>
+    <td style="padding:8px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11.5px">Pago puntual · ${c.meses} ${c.meses===1?'mes':'meses'}<small style="display:block">${c.anyo} · ${htmlTexto(c.vinculo)}</small></td>
+    <td style="padding:8px;border-bottom:1px solid var(--border);text-align:right;font-weight:700">${fmtFull(c.monto)}<small style="display:block;font-weight:400">Total del período</small></td>
+  </tr>`).join(''):`<tr><td colspan="3" style="padding:12px">Sin casos puntuales en la salida disponible para ${year}. Esto no significa que no existan pagos.</td></tr>`;
 }
 
 // -------- EVOLUCIÓN DEL GASTO MENSUAL (funciones globales, no dentro de render) --------
@@ -705,42 +758,54 @@ let anyoGastoActual = null;
 let vistaGastoActual = 'total';
 let estamentoGastoActual = null;
 
-function svgLinea(vals, W, H, padL, padR, padT, padB, colorLinea){
-  const max = Math.max(...vals)*1.1 || 1;
-  const xx = i => padL + (W-padL-padR) * i/(vals.length-1);
-  const yy = v => H-padB - (H-padT-padB) * v/max;
-  let gridLines='', yLabels='';
-  for(let i=0;i<=4;i++){
-    const val=max*i/4, y2=yy(val);
-    gridLines += `<line x1="${padL}" y1="${y2}" x2="${W-padR}" y2="${y2}" stroke="rgba(13,46,107,0.08)" stroke-width="1"/>`;
-    yLabels += `<text x="${padL-10}" y="${y2+4}" font-size="10" fill="#5C6880" text-anchor="end">${fmtFull(val)}</text>`;
-  }
-  const path = vals.map((v,i)=>(i===0?'M':'L')+xx(i)+','+yy(v)).join(' ');
-  const area = path + ` L${xx(vals.length-1)},${H-padB} L${xx(0)},${H-padB} Z`;
-  let puntos='', xLabels='';
-  vals.forEach((v,i)=>{
-    puntos += `<circle cx="${xx(i)}" cy="${yy(v)}" r="3.5" fill="${colorLinea}" stroke="white" stroke-width="1.5"><title>${MESES_GASTO[i]}: ${fmtFull(v)}</title></circle>`;
-    xLabels += `<text x="${xx(i)}" y="${H-padB+18}" font-size="9.5" fill="#5C6880" text-anchor="middle">${MESES_GASTO[i]}</text>`;
-  });
-  return `<svg viewBox="0 0 ${W} ${H}">${gridLines}${yLabels}<path d="${area}" fill="rgba(13,46,107,0.06)"/><path d="${path}" fill="none" stroke="${colorLinea}" stroke-width="2.5"/>${puntos}${xLabels}</svg>`;
+function serieObservada(vals){
+  return vals.map(v=>Number.isFinite(v)&&v>0?v:null);
 }
-
+function svgLinea(vals, W, H, padL, padR, padT, padB, colorLinea){
+  vals = serieObservada(vals);
+  const observados = vals.filter(Number.isFinite);
+  if(!observados.length) return '<p class="card-sub">Sin registros de pago positivos para esta selección.</p>';
+  const max = Math.max(...observados)*1.1 || 1;
+  const xx = i => padL + (W-padL-padR) * i/Math.max(1,vals.length-1);
+  const yy = v => H-padB - (H-padT-padB) * v/max;
+  let gridLines='',yLabels='';
+  for(let i=0;i<=4;i++){
+    const val=max*i/4,y=yy(val);
+    gridLines+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(13,46,107,0.08)"/>`;
+    yLabels+=`<text x="${padL-10}" y="${y+4}" font-size="10" fill="#5C6880" text-anchor="end">${fmtFull(val)}</text>`;
+  }
+  let path='',continuo=false,puntos='',xLabels='';
+  vals.forEach((v,i)=>{
+    if(v!==null){path+=(continuo?'L':'M')+xx(i)+','+yy(v)+' ';continuo=true;
+      puntos+=`<circle cx="${xx(i)}" cy="${yy(v)}" r="3.5" fill="${colorLinea}" stroke="white"><title>${MESES_GASTO[i]}: ${fmtFull(v)}</title></circle>`;
+    }else{continuo=false;}
+    xLabels+=`<text x="${xx(i)}" y="${H-padB+18}" font-size="9.5" fill="#5C6880" text-anchor="middle">${MESES_GASTO[i]}${v===null?'*':''}</text>`;
+  });
+  return `<svg role="img" aria-label="Gasto mensual; asterisco indica ausencia de pagos positivos" viewBox="0 0 ${W} ${H}">${gridLines}${yLabels}<path d="${path}" fill="none" stroke="${colorLinea}" stroke-width="2.5"/>${puntos}${xLabels}</svg>`;
+}
 function pintarGastoTotal(){
-  const vals = COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].total;
-  document.getElementById('chart-gasto-total').innerHTML = svgLinea(vals, 820,280,65,20,20,40, '#0F2A5F');
-  const min_v=Math.min(...vals), max_v=Math.max(...vals);
-  document.getElementById('stats-gasto-total').innerHTML = `
-    <div class="stat">Mes más bajo<b>${fmtFull(min_v)}</b></div>
-    <div class="stat">Mes más alto<b>${fmtFull(max_v)}</b></div>
-    <div class="stat">Variación<b>${((max_v/min_v-1)*100).toFixed(1)}%</b></div>
-    <div class="stat">Total anual<b>${fmtFull(vals.reduce((a,b)=>a+b,0))}</b></div>`;
+  const codigo=typeof LuzDistribucion!=='undefined'?LuzDistribucion.resolveCode(DISTRIBUCION_REGISTROS.organismos,comunaActual):null;
+  const registros=codigo?DISTRIBUCION_REGISTROS.organismos[codigo]?.anios[anyoGastoActual]?.mensual:null;
+  const vals=registros?registros.map(m=>m?m.total:null):serieObservada(COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].total);
+  document.getElementById('chart-gasto-total').innerHTML=svgLinea(vals,820,280,65,20,20,40,'#0F2A5F');
+  const observados=vals.filter(v=>Number.isFinite(v)&&v>0);
+  if(!observados.length){document.getElementById('stats-gasto-total').textContent='Sin meses con pagos positivos.';return;}
+  const min_v=Math.min(...observados),max_v=Math.max(...observados);
+  document.getElementById('stats-gasto-total').innerHTML=`
+    <div class="stat">Meses con pagos<b>${observados.length}/12</b></div>
+    <div class="stat">Mes observado más bajo<b>${fmtFull(min_v)}</b></div>
+    <div class="stat">Mes observado más alto<b>${fmtFull(max_v)}</b></div>
+    <div class="stat">Variación entre extremos observados<b>${observados.length>=2?((max_v/min_v-1)*100).toFixed(1)+'%':'No comparable (un mes)'}</b></div>
+    <div class="stat">Suma de meses observados<b>${fmtFull(observados.reduce((a,b)=>a+b,0))}</b></div>
+    <div class="stat">* Sin registros positivos; no equivale a gasto cero.</div>`;
 }
 
 function pintarGastoVinculo(){
   const series = COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].vinculo;
   const vincs = Object.keys(series);
+  if(!vincs.length){document.getElementById('chart-gasto-vinculo').textContent='Sin series mensuales por vínculo; consulta la distribución anual de pagos.';document.getElementById('legend-gasto-vinculo').textContent='';document.getElementById('insight-gasto-vinculo').textContent='';return;}
   const W=860,H=300,padL=65,padR=20,padT=20,padB=40;
-  const allVals = vincs.flatMap(v=>series[v]);
+  const allVals = vincs.flatMap(v=>series[v]).filter(v=>Number.isFinite(v)&&v>0);
   const max = Math.max(...allVals)*1.1 || 1;
   const xx = i => padL + (W-padL-padR) * i/(MESES_GASTO.length-1);
   const yy = v => H-padB - (H-padT-padB) * v/max;
@@ -751,19 +816,21 @@ function pintarGastoVinculo(){
   let paths='', puntos='';
   vincs.forEach(v=>{
     const vals=series[v], color=COLORES_VINC[v]||'#999';
-    const path = vals.map((val,i)=>(i===0?'M':'L')+xx(i)+','+yy(val)).join(' ');
+    let path='',continuo=false; vals.forEach((val,i)=>{if(Number.isFinite(val)&&val>0){path+=(continuo?'L':'M')+xx(i)+','+yy(val)+' ';continuo=true;}else{continuo=false;}});
     paths += `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
-    vals.forEach((val,i)=>{ puntos += `<circle cx="${xx(i)}" cy="${yy(val)}" r="3" fill="${color}" stroke="white" stroke-width="1"><title>${v} · ${MESES_GASTO[i]}: ${fmtFull(val)}</title></circle>`; });
+    vals.forEach((val,i)=>{ if(!Number.isFinite(val)||val<=0)return;
+      puntos += `<circle cx="${xx(i)}" cy="${yy(val)}" r="3" fill="${color}" stroke="white" stroke-width="1"><title>${v} · ${MESES_GASTO[i]}: ${fmtFull(val)}</title></circle>`; });
   });
   let xLabels=''; MESES_GASTO.forEach((m,i)=>{ xLabels += `<text x="${xx(i)}" y="${H-padB+18}" font-size="9.5" fill="#5C6880" text-anchor="middle">${m}</text>`; });
   document.getElementById('chart-gasto-vinculo').innerHTML = `<svg viewBox="0 0 ${W} ${H}">${gridLines}${yLabels}${paths}${puntos}${xLabels}</svg>`;
   document.getElementById('legend-gasto-vinculo').innerHTML = vincs.map(v=>`<span><span class="dot" style="background:${COLORES_VINC[v]||'#999'}"></span>${v}</span>`).join('');
-  const variaciones = vincs.map(v=>{ const vals=series[v]; const mn=Math.min(...vals),mx=Math.max(...vals); return {v,pct:mn>0?(mx/mn-1)*100:0}; }).sort((a,b)=>b.pct-a.pct);
-  document.getElementById('insight-gasto-vinculo').innerHTML = `<div><b>${variaciones[0].v}</b> es el vínculo con mayor variación (${variaciones[0].pct.toFixed(0)}%). <b>${variaciones[variaciones.length-1].v}</b> es el más estable (${variaciones[variaciones.length-1].pct.toFixed(0)}%).</div>`;
+  const variaciones = vincs.map(v=>{ const vals=series[v].filter(x=>Number.isFinite(x)&&x>0); const mn=Math.min(...vals),mx=Math.max(...vals); return {v,pct:mn>0?(mx/mn-1)*100:0}; }).sort((a,b)=>b.pct-a.pct);
+  document.getElementById('insight-gasto-vinculo').innerHTML = `<div><b>${variaciones[0].v}</b> es el vínculo con mayor variación (${variaciones[0].pct.toFixed(0)}%). <b>${variaciones[variaciones.length-1].v}</b> tiene menor variación entre sus meses con pagos (${variaciones[variaciones.length-1].pct.toFixed(0)}%).</div>`;
 }
 
 function pintarGastoEstamento(){
   const ests = Object.keys(COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].estamento);
+  if(!ests.length){document.getElementById('chart-gasto-estamento').textContent='Sin grupos de estamento disponibles.';document.getElementById('chips-gasto-estamento').textContent='';document.getElementById('stats-gasto-estamento').textContent='';document.getElementById('ranking-gasto-estamento').textContent='';return;}
   if(!ests.includes(estamentoGastoActual)) estamentoGastoActual = ests[0];
   const chipsEl = document.getElementById('chips-gasto-estamento');
   chipsEl.innerHTML = '';
@@ -778,12 +845,12 @@ function pintarGastoEstamento(){
   function dibujarGastoEstChart(){
     const vals = COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].estamento[estamentoGastoActual];
     document.getElementById('chart-gasto-estamento').innerHTML = svgLinea(vals, 820,260,65,20,20,40, '#0F2A5F');
-    const min_v=Math.min(...vals), max_v=Math.max(...vals);
+    const obs=vals.filter(x=>Number.isFinite(x)&&x>0); const min_v=obs.length?Math.min(...obs):null, max_v=obs.length?Math.max(...obs):null;
     document.getElementById('stats-gasto-estamento').innerHTML = `
       <div class="stat">Mes más bajo<b>${fmtFull(min_v)}</b></div>
       <div class="stat">Mes más alto<b>${fmtFull(max_v)}</b></div>
       <div class="stat">Variación<b>${min_v>0?((max_v/min_v-1)*100).toFixed(1):'—'}%</b></div>`;
-    const rankings = ests.map(e=>{ const v=COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].estamento[e]; const mn=Math.min(...v),mx=Math.max(...v); return {e,pct:mn>0?(mx/mn-1)*100:0}; }).sort((a,b)=>b.pct-a.pct);
+    const rankings = ests.map(e=>{ const v=COMUNAS[comunaActual].gasto_mensual[anyoGastoActual].estamento[e].filter(x=>Number.isFinite(x)&&x>0); const mn=Math.min(...v),mx=Math.max(...v); return {e,pct:mn>0?(mx/mn-1)*100:0}; }).sort((a,b)=>b.pct-a.pct);
     document.getElementById('ranking-gasto-estamento').innerHTML = `<b>Ranking de variación:</b> ` + rankings.map(r=>`${r.e} (${r.pct.toFixed(0)}%)`).join(' · ');
   }
 }
@@ -826,7 +893,7 @@ function pintarComunasSelect(){
 }
 
 function pintarAnioSelect(key){
-  const anyos = Object.keys(COMUNAS[key].gasto_mensual || {}).sort().reverse();
+  const anyos = Object.keys(COMUNAS[key].gasto_mensual || {}).filter(a=>Number(a)>=2017).sort().reverse();
   selAnioEl.innerHTML = anyos.map(a=>`<option value="${a}">${a}</option>`).join('');
 }
 
@@ -851,13 +918,18 @@ selAnioEl.onchange = ()=>{
 };
 
 // arranque inicial
-selRegion.value = regiones[0];
+const parametros = new URLSearchParams(location.search);
+const comunaSolicitada = parametros.get('comuna');
+selRegion.value = COMUNAS[comunaSolicitada]?.region || regiones[0];
 pintarComunasSelect();
+if(COMUNAS[comunaSolicitada]) selComunaEl.value=comunaSolicitada;
 const primeraComuna = selComunaEl.value;
 pintarAnioSelect(primeraComuna);
+if([...selAnioEl.options].some(o=>o.value===parametros.get('anio'))) selAnioEl.value=parametros.get('anio');
 anyoGastoActual = selAnioEl.value;
 render(primeraComuna);
 renderGasto();
 </script>
+<script src="scripts/distribucion_remuneraciones.js"></script>
 </body>
 </html>
