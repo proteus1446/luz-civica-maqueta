@@ -15,8 +15,6 @@ Fórmulas (verificadas exactas contra Ñuñoa/Maipú/Puerto Montt):
   casos_mensuales_<area> = top 8 filas de outliers_detectados_mensual.csv,
                       mismo criterio pero ordenado por z_robusto_mes
 """
-import os
-from pathlib import Path
 import json
 import re
 import sys
@@ -26,10 +24,10 @@ import pandas as pd
 sys.path.insert(0, ".")
 from organismo_mapping import organismo_a_comuna_key
 
-OUTLIERS_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "outliers_detectados.csv")
-OUTLIERS_MENSUAL_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "outliers_detectados_mensual.csv")
-F1_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f1.json")
-OUT_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f3.json")
+OUTLIERS_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/outliers_detectados.csv"
+OUTLIERS_MENSUAL_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/outliers_detectados_mensual.csv"
+F1_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f1.json"
+OUT_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f3.json"
 
 AREAS = {"Municipal": "municipal", "Salud": "salud", "Educación": "educacion"}
 TOP_N = 8

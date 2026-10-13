@@ -25,8 +25,6 @@ n) — no es matemáticamente idéntica a la mediana real sobre las personas,
 pero es la mejor aproximación posible sin volver a procesar el archivo
 nacional. Se documenta explícitamente para que quede claro que es un proxy.
 """
-import os
-from pathlib import Path
 import json
 import re
 import sys
@@ -36,10 +34,10 @@ import pandas as pd
 sys.path.insert(0, ".")
 from organismo_mapping import organismo_a_comuna_key
 
-GRUPOS_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "grupos_estadisticas.csv")
-GASTO_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "gasto_mensual.csv")
-NOMBRES_JS = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/nombres_comunas.js")
-OUT_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f1.json")
+GRUPOS_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/grupos_estadisticas.csv"
+GASTO_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/gasto_mensual.csv"
+NOMBRES_JS = "/Users/cristobal/Downloads/maqueta/data/nombres_comunas.js"
+OUT_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f1.json"
 
 # --- Mapeo estamento_norm -> etiqueta de display -------------------------
 MUNICIPAL_ESTAMENTOS = {

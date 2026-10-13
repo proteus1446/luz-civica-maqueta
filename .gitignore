@@ -5,13 +5,3 @@ __pycache__/
 *.pyc
 data/remuneraciones_f*.json
 worker/.wrangler/
-
-# Entradas nacionales, resultados locales y credenciales de remuneraciones.
-.venv/
-.env
-salida/
-*.duckdb
-*.duckdb.wal
-*.js.bak
-data/data_remuneraciones.antes_detalle.js
-TA_PersonalMunicipal*.csv

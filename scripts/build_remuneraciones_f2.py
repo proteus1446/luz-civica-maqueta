@@ -25,8 +25,6 @@ reciente de cada comuna):
                          TODOS los años disponibles de la comuna (no solo el
                          año más reciente)
 """
-import os
-from pathlib import Path
 import json
 import re
 import sys
@@ -36,10 +34,10 @@ import pandas as pd
 sys.path.insert(0, ".")
 from organismo_mapping import organismo_a_comuna_key
 
-HONORARIOS_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "honorarios_personas.csv")
-RANKING_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "honorarios_ranking_comunas.csv")
-F1_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f1.json")
-OUT_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f2.json")
+HONORARIOS_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/honorarios_personas.csv"
+RANKING_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/honorarios_ranking_comunas.csv"
+F1_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f1.json"
+OUT_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f2.json"
 
 UMBRAL_2M = 2_000_000
 

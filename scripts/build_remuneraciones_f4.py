@@ -10,8 +10,6 @@ Fórmulas (verificadas exactas contra Ñuñoa/Maipú/Puerto Montt):
   gasto_mensual[año].vinculo[v]   = ídem, filtrado por tipo_vinculo
   gasto_mensual[año].estamento[e] = ídem, filtrado por estamento
 """
-import os
-from pathlib import Path
 import json
 import re
 import sys
@@ -22,12 +20,12 @@ sys.path.insert(0, ".")
 from organismo_mapping import organismo_a_comuna_key
 from build_remuneraciones_f1 import FULL_REGION_NAMES
 
-GASTO_CSV = str(Path(os.environ.get("REM_LEGACY_DIR", "salida/legacy")) / "gasto_mensual.csv")
-REGIONES_JS = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/regiones_comunas.js")
-F1_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f1.json")
-F2_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f2.json")
-F3_JSON = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/remuneraciones_f3.json")
-OUT_JS = str(Path(os.environ.get("REM_WEB_DIR", str(Path(__file__).resolve().parents[1]))) / "data/data_remuneraciones.js")
+GASTO_CSV = "/Users/cristobal/prueba/luz-civica-web/script sueldo/gasto_mensual.csv"
+REGIONES_JS = "/Users/cristobal/Downloads/maqueta/data/regiones_comunas.js"
+F1_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f1.json"
+F2_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f2.json"
+F3_JSON = "/Users/cristobal/Downloads/maqueta/data/remuneraciones_f3.json"
+OUT_JS = "/Users/cristobal/Downloads/maqueta/data/data_remuneraciones.js"
 
 MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
          "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
