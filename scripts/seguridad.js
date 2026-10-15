@@ -10,13 +10,12 @@
     const [data,geo]=await Promise.all(['data/seguridad_comunal.json','data/seguridad_comunas.geojson'].map(async u=>{const r=await fetch(u);if(!r.ok)throw new Error('No se pudo cargar '+u);return r.json()}));
     const params=new URLSearchParams(location.search),requested=params.get('comuna');
     const initial=Object.keys(data.comunas).find(k=>k===requested||norm(data.comunas[k].clave_portal)===norm(requested||'')||norm(data.comunas[k].nombre)===norm(requested||''))||'13120';
-    const state={cut:initial,year:data.anios.includes(+params.get('anio'))?+params.get('anio'):2025,region:data.comunas[initial].region,delito:-1,mode:'nivel',resource:'camaras'};
+    const state={cut:initial,year:data.anios.includes(+params.get('anio'))?+params.get('anio'):2025,region:data.comunas[initial].region,delito:-1,mode:'nivel'};
     const options=(id,rows)=>{const s=$(id);s.replaceChildren(...rows.map(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;return o}));s.disabled=false};
     const regions=[...new Set(Object.values(data.comunas).map(c=>c.region))].sort();
     options('region',[['all','Chile continental'],...regions.map(r=>[r,Object.values(data.comunas).find(c=>c.region===r).nombre_region])]);
     options('anio',[...data.anios].reverse().map(y=>[y,y]));
     options('delito',[[-1,'Suma de las 30 categorías del GitHub'],...data.delitos.map((d,i)=>[i,d])]);
-    options('resource',Object.entries(fields));
     const record=(cut,y)=>data.comunas[cut]?.anios[String(y)];
     const count=(cut,y)=>{const r=record(cut,y);return !r?null:state.delito===-1?r.casos:r.categorias[state.delito]};
     const rate=(cut,y)=>{const r=record(cut,y),n=count(cut,y);return r?.poblacion>0&&n!=null?n/r.poblacion*100000:null};
@@ -37,10 +36,10 @@
       $('scope').textContent=state.delito===-1?'Suma de categorías del GitHub: incluye superposición en armas y excluye otras categorías CEAD. No es un total oficial.':'Casos registrados en esta categoría. No equivale a víctimas únicas ni a todos los hechos ocurridos.';
       $('resource-year').textContent='SINIM · mismo año seleccionado: '+state.year;
       $('resources').replaceChildren(...Object.entries(fields).slice(0,7).map(([key,label])=>{const box=document.createElement('div');box.className='resource-item';const n=document.createElement('strong');n.textContent=fmt(resource(state.cut,state.year,key));const l=document.createElement('span');l.textContent=label;box.append(n,l);const p=resource(state.cut,state.year-1,key),v=resource(state.cut,state.year,key);if(v!=null){const small=document.createElement('small');small.textContent=p==null?'Declarado en SINIM':`${v-p>=0?'+':''}${fmt(v-p)} vs. ${state.year-1}`;box.append(small)}return box}));
-      $('evolution-title').textContent=c.nombre+': casos y recursos, en paralelo';
-      const k=state.resource;$('resource-chart-title').textContent=fields[k]+' · SINIM';
-      const changeRes=resource(state.cut,state.year,k),prevRes=resource(state.cut,state.year-1,k);
-      $('reading').textContent=(changeRes!=null&&prevRes!=null?`${fields[k]}: ${fmt(prevRes)} en ${state.year-1} y ${fmt(changeRes)} en ${state.year}. `:'No hay dos años consecutivos de este recurso para comparar. ')+'Estos registros describen recursos y casos; no permiten concluir que el recurso causó la variación.';
+      $('evolution-title').textContent=c.nombre+': evolución de los casos policiales';
+      const current=count(state.cut,state.year),previous=count(state.cut,state.year-1);
+      const variation=previous>0?(current/previous-1)*100:null;
+      $('reading').textContent=variation==null?'Sin base para calcular el cambio porcentual de casos del año seleccionado.':`${state.year}: ${fmt(current)} casos frente a ${fmt(previous)} en ${state.year-1}. Variación de casos: ${variation>=0?'+':''}${fmt(variation,1)}%. La variación de la tasa puede ser distinta por el cambio de población.`;
     }
     let zoom,mapSvg,selectedPaths;
     function drawMap(){
@@ -77,13 +76,27 @@
       const selected=valid.find(d=>d.year===state.year);if(selected)svg.append('text').attr('x',x(selected.year)).attr('y',y(selected.value)-10).attr('text-anchor',selected.year>=2023?'end':'start').text(fmt(selected.value,1));
       el.replaceChildren(svg.node());
     }
-    function drawCharts(){drawChart('chart-rate',data.anios.map(y=>({year:y,value:rate(state.cut,y)})),'casos / 100.000');drawChart('chart-resource',data.anios.map(y=>({year:y,value:resource(state.cut,y,state.resource)})),fields[state.resource])}
+    function drawChanges(){
+      const el=$('chart-change'),width=Math.max(260,el.clientWidth),height=220,m={left:58,right:20,top:22,bottom:40};
+      const values=data.anios.map(year=>{const current=count(state.cut,year),previous=count(state.cut,year-1);return {year,current,previous,value:current!=null&&previous>0?(current/previous-1)*100:null}});
+      const valid=values.filter(d=>d.value!=null),svg=d3.create('svg').attr('viewBox',`0 0 ${width} ${height}`).attr('role','img').attr('aria-label','Variación porcentual anual de casos; barras sobre cero indican aumentos y bajo cero disminuciones.');
+      if(!valid.length){svg.append('text').attr('x',width/2).attr('y',100).attr('text-anchor','middle').text('Sin base de comparación');el.replaceChildren(svg.node());return}
+      const x=d3.scaleBand().domain(data.anios).range([m.left,width-m.right]).padding(.25);
+      const extent=d3.extent(valid,d=>d.value),low=Math.min(0,extent[0]),high=Math.max(0,extent[1]);
+      const span=high-low||1,y=d3.scaleLinear().domain(low===0&&high===0?[-1,1]:[low<0?low-span*.15:0,high>0?high+span*.15:0]).nice().range([height-m.bottom,m.top]);
+      svg.append('g').attr('transform',`translate(0,${height-m.bottom})`).call(d3.axisBottom(x).tickValues(width<400?[2010,2015,2020,2025]:[2010,2013,2016,2019,2022,2025]));
+      svg.append('g').attr('transform',`translate(${m.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(n=>fmt(n)+'%'));
+      svg.append('line').attr('x1',m.left).attr('x2',width-m.right).attr('y1',y(0)).attr('y2',y(0)).attr('stroke','#526177');
+      svg.selectAll('rect').data(valid).join('rect').attr('x',d=>x(d.year)).attr('width',x.bandwidth()).attr('y',d=>y(Math.max(0,d.value))).attr('height',d=>Math.max(1,Math.abs(y(d.value)-y(0)))).attr('fill',d=>d.value<0?'#1a4a9c':'#b45309').attr('stroke',d=>d.year===state.year?'#0f2a5f':'none').attr('stroke-width',2).append('title').text(d=>`${d.year}: ${d.value>=0?'+':''}${fmt(d.value,1)}% · ${fmt(d.previous)} → ${fmt(d.current)} casos`);
+      const selected=valid.find(d=>d.year===state.year);if(selected)svg.append('text').attr('x',x(selected.year)+x.bandwidth()/2).attr('y',selected.value>=0?y(selected.value)-8:y(selected.value)+15).attr('text-anchor',selected.year>=2023?'end':'middle').text((selected.value>=0?'+':'')+fmt(selected.value,1)+'%');
+      el.replaceChildren(svg.node());
+    }
+    function drawCharts(){drawChart('chart-rate',data.anios.map(y=>({year:y,value:rate(state.cut,y)})),'casos / 100.000');drawChanges()}
     function render(){sync();details();drawMap();drawCharts()}
     $('region').addEventListener('change',e=>{state.region=e.target.value;if(state.region!=='all'&&data.comunas[state.cut].region!==state.region)state.cut=Object.keys(data.comunas).find(k=>data.comunas[k].region===state.region);optionComunas();render()});
     $('comuna').addEventListener('change',e=>{state.cut=e.target.value;render()});
     $('anio').addEventListener('change',e=>{state.year=+e.target.value;render()});
     $('delito').addEventListener('change',e=>{state.delito=+e.target.value;render()});
-    $('resource').addEventListener('change',e=>{state.resource=e.target.value;details();drawCharts()});
     for(const mode of ['nivel','cambio'])$(mode).addEventListener('click',()=>{state.mode=mode;$('nivel').setAttribute('aria-pressed',mode==='nivel');$('cambio').setAttribute('aria-pressed',mode==='cambio');drawMap()});
     $('chile').addEventListener('click',()=>{state.region='all';optionComunas();render()});
     $('zoom-in').onclick=()=>mapSvg.call(zoom.scaleBy,1.5);$('zoom-out').onclick=()=>mapSvg.call(zoom.scaleBy,1/1.5);$('zoom-reset').onclick=()=>mapSvg.call(zoom.transform,d3.zoomIdentity);

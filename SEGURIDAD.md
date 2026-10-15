@@ -6,7 +6,7 @@ Abrir `seguridad_comunal.html` mediante un servidor HTTP. La portada, el panel c
 
 345 comunas, 2010–2025, 30 categorías de la recopilación de Bastián Olea de CEAD. La opción inicial suma todas las categorías, según la selección solicitada: **no representa el total completo de las ocho familias oficiales**, conserva superposición en armas y excluye otras categorías. La interfaz lo informa y permite explorar cada categoría por separado.
 
-Las tasas usan población proyectada del mismo año del repositorio de origen, base INE 2017. No se utiliza población 2024 fija para años diferentes. Los cambios anuales comparan tasas, no frecuencias. Los recursos se consultan para el mismo año y se conservan valores nulos frente a ceros declarados. No se calcula gasto, índice de eficacia ni efecto causal.
+Las tasas usan población proyectada del mismo año del repositorio de origen, base INE 2017. No se utiliza población 2024 fija para años diferentes. El mapa de cambio compara tasas. El gráfico de barras muestra la variación porcentual anual de la cantidad de casos: (casos actuales / casos anteriores − 1) × 100; sin base o con base cero no se calcula porcentaje. Los recursos se consultan para el mismo año y se conservan valores nulos frente a ceros declarados. No se calcula gasto, índice de eficacia ni efecto causal.
 
 Se corrigieron 108 valores fraccionarios del Parquet multiplicándolos por 1.000, según la interpretación de separadores acordada; `data/seguridad_correcciones.json` conserva los registros antes y después. No se modificaron valores enteros. Los registros ambiguos por separadores ya perdidos y la comparabilidad histórica requieren validación contra CEAD antes de tratar los resultados como cifras oficiales.
 
