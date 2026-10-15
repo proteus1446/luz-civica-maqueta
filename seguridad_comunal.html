@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Mapa de tasas de casos policiales y recursos municipales de seguridad. Comparación comunal y evolución anual en Luz Cívica.">
+  <title>Seguridad comunal — Luz Cívica</title>
+  <link rel="stylesheet" href="styles/seguridad.css">
+  <script defer src="vendor/d3.min.js"></script>
+  <script defer src="scripts/seguridad.js"></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="luz_civica_portada_v2.html">LUZ CÍVICA<span>Datos para entender tu comuna</span></a><a id="volver" href="panel_comunal.html">Volver al panel ↗</a></header>
+  <main>
+    <div class="heading"><div><span class="eyebrow">SEGURIDAD COMUNAL</span><h1>¿Cómo cambian los casos policiales?</h1><p>Tasas para comparar comunas. Recursos municipales para ponerlas en contexto.</p></div><span class="tag">2010–2025</span></div>
+    <form class="filters" onsubmit="return false" aria-label="Filtros de seguridad">
+      <label>Región<select id="region" disabled></select></label>
+      <label>Comuna<select id="comuna" disabled></select></label>
+      <label>Año<select id="anio" disabled></select></label>
+      <label>Indicador<select id="delito" disabled></select></label>
+    </form>
+    <div id="status" role="status">Cargando datos comunales…</div>
+    <section class="layout" id="contenido" hidden>
+      <section class="map-panel" aria-labelledby="map-title">
+        <div class="section-head"><div><h2 id="map-title">Casos por 100.000 habitantes</h2><p id="map-subtitle"></p></div><button id="chile" type="button">Ver Chile</button></div>
+        <div class="switch" aria-label="Color del mapa"><button id="nivel" type="button" aria-pressed="true">Tasa del año</button><button id="cambio" type="button" aria-pressed="false">Cambio anual</button></div>
+        <div id="mapa" aria-label="Mapa comunal interactivo"></div>
+        <div class="map-tools"><button id="zoom-in" type="button" aria-label="Acercar mapa">+</button><button id="zoom-out" type="button" aria-label="Alejar mapa">−</button><button id="zoom-reset" type="button">Restablecer vista</button></div>
+        <div id="legend" class="legend"></div>
+        <p class="map-note">Selecciona una comuna en el mapa o en el selector. Las islas oceánicas se consultan desde su región o comuna. Los límites están simplificados para visualización.</p>
+      </section>
+      <aside class="detail" aria-labelledby="detail-title">
+        <div class="eyebrow" id="detail-region"></div><h2 id="detail-title"></h2><p id="detail-period"></p>
+        <div class="rate"><strong id="rate">—</strong><span>casos por 100.000 habitantes</span></div>
+        <p id="change" class="change"></p>
+        <div class="mini-stats"><div><strong id="count">—</strong><span>casos en la selección</span></div><div><strong id="population">—</strong><span>habitantes proyectados</span></div></div>
+        <p class="scope" id="scope"></p>
+        <h3>Recursos municipales declarados</h3><p class="muted" id="resource-year"></p>
+        <div id="resources" class="resources"></div>
+        <p class="resource-note">Cantidades declaradas a SINIM; no indican disponibilidad operativa. Sin dato ≠ cero. No incluyen la dotación nacional de Carabineros ni PDI.</p>
+        <a id="perfil" class="text-link" href="maqueta_perfil.html">Ver perfil comunal →</a>
+      </aside>
+    </section>
+    <section class="evolution" id="evolution-panel" hidden><div class="section-head"><div><span class="eyebrow">EVOLUCIÓN ANUAL</span><h2 id="evolution-title">Casos y recursos, en paralelo</h2></div><label>Recurso a comparar<select id="resource"></select></label></div>
+      <p>Dos series en sus propias escalas. Coincidir en el tiempo no demuestra una relación causal.</p>
+      <div class="charts"><div><h3>Tasa de casos por 100.000 habitantes</h3><div id="chart-rate"></div></div><div><h3 id="resource-chart-title">Cámaras declaradas</h3><div id="chart-resource"></div></div></div>
+      <div id="reading" class="reading" aria-live="polite"></div>
+    </section>
+    <details class="method"><summary>Qué mide este mapa y cómo se calculó</summary><div>
+      <p><strong>Alcance:</strong> casos policiales conocidos por Carabineros y PDI, según la recopilación de Bastián Olea. Se conservan las 30 categorías del GitHub sin excluir ninguna. La suma incluye superposición en armas y omite categorías del CEAD; no es el total completo de las ocho familias oficiales. Sirve como exploración de esta selección, no como cifra oficial total.</p>
+      <p><strong>Tasa:</strong> casos del año divididos por población proyectada de esa comuna y ese mismo año, por 100.000. Para el país se suman casos y población antes de dividir. La población residente no refleja visitantes o población flotante. Frecuencia no equivale a personas distintas victimizadas.</p>
+      <p><strong>Comparación:</strong> el cambio anual usa años completos consecutivos. Cuando el valor anterior es cero, el porcentaje se muestra sin base de comparación. Antes de publicar conclusiones históricas deben validarse los cambios de clasificación y la cobertura sustantiva; tener 12 meses registrados no basta.</p>
+      <p><strong>Corrección numérica:</strong> los registros fraccionarios de casos se multiplicaron por 1.000 según la interpretación de puntos de miles acordada. No se modificaron registros enteros. Valores ambiguos como 1.000 convertido previamente en 1.0 necesitan revisar el original. <a href="data/seguridad_correcciones.json">Ver registros corregidos</a>.</p>
+      <p><strong>Recursos:</strong> cámaras, drones, autos, camionetas, motos, bicicletas y personal provienen del archivo SINIM Social y comunitaria. Un cero se muestra como cero declarado; ausencias y textos no numéricos se muestran como sin dato. No se usa gasto ni se estima eficacia. Carabineros, PDI, disposición a denunciar, cambios de registro, economía y otros factores pueden influir en las cifras.</p>
+      <p><strong>Fuentes:</strong> <a href="https://github.com/bastianolea/delincuencia_chile" target="_blank" rel="noopener">Recopilación de casos y proyecciones de población</a> · <a href="https://cead.minsegpublica.gob.cl/estadisticas-delictuales/" target="_blank" rel="noopener">CEAD</a> · <a href="https://datos.sinim.gov.cl/" target="_blank" rel="noopener">SINIM</a> · <a href="https://github.com/pachadotdev/chilemapas" target="_blank" rel="noopener">Cartografía chilemapas</a>.</p>
+      <p>Casos descargados el 14 de octubre de 2026. Prototipo: sin contraste completo contra CEAD. <a href="data/seguridad_comunal.json" download>Descargar datos y metadatos</a>.</p>
+    </div></details>
+  </main>
+  <div id="tooltip" role="tooltip" hidden></div>
+  <footer>Luz Cívica · Información pública, contexto y trazabilidad</footer>
+</body></html>
